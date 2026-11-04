@@ -24,11 +24,13 @@ import {
   MESSAGGIO_ALTRO_FONDO,
   MESSAGGIO_BUSTA_ASSENTE,
   MESSAGGIO_BUSTA_COLLEGATA,
+  esitoBustaAncoraDaVersare,
   esitoLetturaAnonima,
   esitoRifiutoAtteso,
   esitoScritturaAltrui,
   esitoScritturaAnonima,
   esitoStatoInvariato,
+  mancanzaCollegamentoPerso,
   mancanzeConteggi,
   riepilogo,
   type Controllo,
@@ -144,27 +146,16 @@ async function statoCollegamento(bustaId: string): Promise<StatoCollegamento> {
   }
 }
 
-async function tentativo(salva: () => Promise<string>): Promise<TentativoAltrui> {
+/** Converte un rifiuto del DB in esito; conserva il valore di un salvataggio riuscito per la pulizia (R9). */
+async function tentativo<T>(
+  salva: () => Promise<T>,
+): Promise<{ esito: TentativoAltrui; valore: T | null }> {
   try {
-    await salva()
-    return { tipo: 'riuscito' }
-  } catch (e) {
-    if (eErroreDati(e)) return { tipo: 'rifiutato', errore: e.tipo, messaggio: e.messaggio }
-    throw e
-  }
-}
-
-/** Come `tentativo()`, ma conserva l'id di un salvataggio riuscito per la pulizia (R9). */
-async function tentaMovimento(
-  bozza: Bozza<Movimento>,
-  bustaId: string,
-): Promise<{ esito: TentativoAltrui; creato: string | null }> {
-  try {
-    const creato = await salvaMovimento(bozza, [bustaId])
-    return { esito: { tipo: 'riuscito' }, creato }
+    const valore = await salva()
+    return { esito: { tipo: 'riuscito' }, valore }
   } catch (e) {
     if (eErroreDati(e)) {
-      return { esito: { tipo: 'rifiutato', errore: e.tipo, messaggio: e.messaggio }, creato: null }
+      return { esito: { tipo: 'rifiutato', errore: e.tipo, messaggio: e.messaggio }, valore: null }
     }
     throw e
   }
@@ -207,10 +198,17 @@ async function provaBustaCollegata(busta: BustaPaga | null): Promise<Controllo[]
   }
   const creati: string[] = []
   const controlli: Controllo[] = []
+  // Fuori dal try: la riga del collegamento perso serve anche se la pulizia fallisce.
+  let collegamentoPerso: string | null = null
   try {
     const prima = await statoCollegamento(busta.id)
-    const { esito, creato } = await tentaMovimento(bozzaProva(busta.fondoId), busta.id)
-    if (creato !== null) creati.push(creato)
+    const { esito, valore: creato } = await tentativo(() =>
+      salvaMovimento(bozzaProva(busta.fondoId), [busta.id]),
+    )
+    if (creato !== null) {
+      creati.push(creato)
+      collegamentoPerso = mancanzaCollegamentoPerso(busta.id, prima.movimentoId)
+    }
     const dopo = await statoCollegamento(busta.id)
     controlli.push(
       {
@@ -226,6 +224,12 @@ async function provaBustaCollegata(busta: BustaPaga | null): Promise<Controllo[]
   } finally {
     const residuo = await pulizia('utente 1', creati, null)
     if (residuo !== null) controlli.push(residuo)
+    if (collegamentoPerso !== null) {
+      controlli.push({
+        nome: 'utente 1: R1 collegamento originale della busta',
+        mancanza: collegamentoPerso,
+      })
+    }
   }
   return controlli
 }
@@ -255,7 +259,9 @@ async function provaAltroFondo(busta: BustaPaga | null): Promise<Controllo[]> {
   const controlli: Controllo[] = []
   try {
     const prima = await statoCollegamento(busta.id)
-    const { esito, creato } = await tentaMovimento(bozzaProva(fondo.id), busta.id)
+    const { esito, valore: creato } = await tentativo(() =>
+      salvaMovimento(bozzaProva(fondo.id), [busta.id]),
+    )
     if (creato !== null) creati.push(creato)
     const dopo = await statoCollegamento(busta.id)
     controlli.push(
@@ -300,7 +306,9 @@ async function provaBustaAltrui(busta: BustaPaga | null): Promise<Controllo[]> {
   const creati: string[] = []
   const controlli: Controllo[] = []
   try {
-    const { esito, creato } = await tentaMovimento(bozzaProva(fondo.id), busta.id)
+    const { esito, valore: creato } = await tentativo(() =>
+      salvaMovimento(bozzaProva(fondo.id), [busta.id]),
+    )
     if (creato !== null) creati.push(creato)
     controlli.push({
       nome: 'utente 2: R5 collegare una busta altrui',
@@ -330,10 +338,10 @@ async function utente2(
     // R10: il fondo temporaneo sparisce prima del controllo «zero righe».
     const prove = await provaBustaAltrui(daVersare)
     const { id, fondoId, competenza, data, note, righe } = altrui
-    const aggiorna = await tentativo(() =>
+    const { esito: aggiorna } = await tentativo(() =>
       salvaBusta({ id, fondoId, competenza, data, note, righe }),
     )
-    const crea = await tentativo(() =>
+    const { esito: crea } = await tentativo(() =>
       salvaBusta({ fondoId, competenza, data, note: 'verifica', righe }),
     )
     // Dopo i tentativi: se uno fosse riuscito, la riga creata comparirebbe qui.
@@ -373,16 +381,13 @@ async function rientroUtente1(
   await accedi(email, password)
   try {
     const [buste, fondi] = await Promise.all([elencaBuste(), elencaFondi()])
-    let r6: string | null = null
-    if (bustaR5 === null) {
-      r6 = 'l’utente 1 non ha buste da versare'
-    } else {
-      const dopo = buste.find((b) => b.id === bustaR5.id)
-      if (dopo === undefined) r6 = `la busta ${bustaR5.id} non si trova più`
-      else if (dopo.movimentoId !== null) {
-        r6 = `la busta ${bustaR5.id} è collegata al movimento ${dopo.movimentoId}`
-      }
-    }
+    const r6 =
+      bustaR5 === null
+        ? 'l’utente 1 non ha buste da versare'
+        : esitoBustaAncoraDaVersare(
+            bustaR5.id,
+            buste.find((b) => b.id === bustaR5.id),
+          )
     const residui = fondi.filter((f) => f.nome === NOME_TEMPORANEO)
     return [
       { nome: 'utente 1: R6 busta di R5 ancora da versare', mancanza: r6 },

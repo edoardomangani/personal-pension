@@ -113,6 +113,26 @@ export function esitoStatoInvariato(prima: StatoCollegamento, dopo: StatoCollega
   return differenze.length === 0 ? null : differenze.join('; ')
 }
 
+/** R6: la busta usata dall'utente 2 esiste ancora e resta da versare. */
+export function esitoBustaAncoraDaVersare(
+  bustaId: string,
+  busta: { movimentoId: string | null } | undefined,
+): Mancanza {
+  if (busta === undefined) return `la busta ${bustaId} non si trova più`
+  if (busta.movimentoId !== null) {
+    return `la busta ${bustaId} è collegata al movimento ${busta.movimentoId}`
+  }
+  return null
+}
+
+/** R1 riuscita per errore: la busta ha perso il collegamento originale e nessuno lo ripristina. */
+export function mancanzaCollegamentoPerso(
+  bustaId: string,
+  movimentoOriginale: string | null,
+): string {
+  return `la busta ${bustaId} era collegata al movimento ${movimentoOriginale ?? 'nessuno'} e ora non lo è più: rifai npm run db:collaudo`
+}
+
 /** R13: l'utente 2 deve vedere zero righe in ogni tabella. */
 export function mancanzeConteggi(conteggi: Record<TabellaUtente, number>): string[] {
   return TABELLE_UTENTE.filter((t) => conteggi[t] !== 0).map(

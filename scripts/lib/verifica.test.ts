@@ -2,11 +2,13 @@
 import { describe, expect, it } from 'vitest'
 import { TABELLE_UTENTE, type TabellaUtente } from './importa'
 import {
+  esitoBustaAncoraDaVersare,
   esitoLetturaAnonima,
   esitoRifiutoAtteso,
   esitoScritturaAltrui,
   esitoScritturaAnonima,
   esitoStatoInvariato,
+  mancanzaCollegamentoPerso,
   mancanzeConteggi,
   MESSAGGIO_BUSTA_ASSENTE,
   MESSAGGIO_BUSTA_COLLEGATA,
@@ -174,6 +176,35 @@ describe('esitoStatoInvariato (R8)', () => {
   it('più differenze → tutte elencate', () => {
     const m = esitoStatoInvariato(prima, { movimenti: 5, righe: 10, movimentoId: 'm2' })
     expect(m?.split('; ')).toHaveLength(3)
+  })
+})
+
+describe('esitoBustaAncoraDaVersare (R6)', () => {
+  it('busta non trovata → mancanza', () => {
+    expect(esitoBustaAncoraDaVersare('b1', undefined)).toBe('la busta b1 non si trova più')
+  })
+
+  it('busta collegata a m2 → mancanza col movimento', () => {
+    expect(esitoBustaAncoraDaVersare('b1', { movimentoId: 'm2' })).toBe(
+      'la busta b1 è collegata al movimento m2',
+    )
+  })
+
+  it('busta da versare → ok', () => {
+    expect(esitoBustaAncoraDaVersare('b1', { movimentoId: null })).toBeNull()
+  })
+})
+
+describe('mancanzaCollegamentoPerso (R1)', () => {
+  it('originale m1 → nomina busta, movimento e rimedio', () => {
+    const m = mancanzaCollegamentoPerso('b1', 'm1')
+    expect(m).toContain('b1')
+    expect(m).toContain('m1')
+    expect(m).toContain('db:collaudo')
+  })
+
+  it('originale null → nomina «nessuno»', () => {
+    expect(mancanzaCollegamentoPerso('b1', null)).toContain('nessuno')
   })
 })
 
