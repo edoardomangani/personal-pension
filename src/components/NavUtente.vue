@@ -39,7 +39,7 @@ watch(isDesktop, (desktop) => {
             <Avatar>
               <AvatarFallback>
                 <template v-if="iniziali">{{ iniziali }}</template>
-                <PhUser v-else class="size-4" />
+                <PhUser v-else class="size-4.5" />
               </AvatarFallback>
             </Avatar>
             <span class="flex min-w-0 flex-1 flex-col leading-tight">

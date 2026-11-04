@@ -276,6 +276,12 @@ describe('testata mobile (R5-R7)', () => {
     expect(wrapper.get('a').text()).toBe('E')
   })
 
+  it('su / senza sessione: l’icona dell’avatar è a 18px (DS-03-C1 R3)', async () => {
+    const wrapper = montaTestata(await routerSu('/'))
+    await flushPromises()
+    expect(wrapper.get('[data-slot="avatar-fallback"] svg').classes()).toContain('size-4.5')
+  })
+
   it('su /fisco: «Indietro», titolo «Fisco», nessun avatar (R7)', async () => {
     const wrapper = montaTestata(await routerSu('/fisco'))
     expect(wrapper.find('button[aria-label="Indietro"]').exists()).toBe(true)

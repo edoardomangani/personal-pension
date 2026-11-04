@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { PhCaretRight, PhCheck } from '@phosphor-icons/vue'
 import { computed, nextTick, ref, watch } from 'vue'
-import { insetControlClass } from '@/components/forms/inset'
+import { insetControlClass, insetGroupClass } from '@/components/forms/inset'
 import InsetRow from '@/components/forms/InsetRow.vue'
 import ResponsiveSheet from '@/components/ResponsiveSheet.vue'
 import { Input } from '@/components/ui/input'
@@ -93,12 +93,7 @@ function choose(option: InsetChoiceOption): void {
           />
         </div>
       </div>
-      <div
-        :id="`${id}-options`"
-        role="listbox"
-        :aria-label="label"
-        class="overflow-hidden rounded-[24px] border-[0.75px] border-border bg-card shadow-glass lg:rounded-3xl"
-      >
+      <div :id="`${id}-options`" role="listbox" :aria-label="label" :class="insetGroupClass">
         <button
           v-for="option in visibleOptions"
           :key="option.value"

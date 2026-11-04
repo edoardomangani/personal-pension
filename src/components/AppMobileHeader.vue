@@ -30,7 +30,7 @@ const giorno = computed(() => formatoGiorno(archivio.oggi))
     <!-- Secondaria: lo spazio a destra pareggia la freccia, così il titolo resta al centro della testata. -->
     <div v-if="secondaria" class="flex min-h-9 items-center gap-3">
       <Button variant="outline" size="icon" aria-label="Indietro" @click="indietro">
-        <PhCaretLeft class="size-[18px]" />
+        <PhCaretLeft class="size-4.5" />
       </Button>
       <h1 class="min-w-0 flex-1 truncate text-center text-base font-semibold">{{ titolo }}</h1>
       <span aria-hidden="true" class="size-9 shrink-0" />
@@ -48,7 +48,7 @@ const giorno = computed(() => formatoGiorno(archivio.oggi))
           <Avatar class="size-9">
             <AvatarFallback>
               <template v-if="iniziali">{{ iniziali }}</template>
-              <PhUser v-else class="size-[18px]" />
+              <PhUser v-else class="size-4.5" />
             </AvatarFallback>
           </Avatar>
         </RouterLink>

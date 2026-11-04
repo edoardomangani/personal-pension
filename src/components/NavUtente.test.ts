@@ -96,7 +96,11 @@ describe('NavUtente (R14)', () => {
 
     const trigger = wrapper.get('button[aria-haspopup="menu"]')
     expect(trigger.text()).toBe('Account')
-    expect(trigger.find('[data-slot="avatar-fallback"] svg').exists()).toBe(true)
+    // La regola [&>svg]:size-4 del pulsante vale solo sui figli diretti: l'icona nell'avatar resta a 18.
+    const icona = trigger.get('[data-slot="avatar-fallback"] svg')
+    expect(icona.classes()).toContain('size-4.5')
+    expect(icona.classes()).not.toContain('size-4')
+    expect(icona.element.parentElement).not.toBe(trigger.element)
 
     await apri(wrapper)
     const testa = menu()?.querySelector('[data-slot="dropdown-menu-label"]')

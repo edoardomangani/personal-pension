@@ -1,6 +1,8 @@
 import { mount } from '@vue/test-utils'
 import { afterEach, describe, expect, it } from 'vitest'
 import { defineComponent, h, ref } from 'vue'
+import { insetGroupClass } from './inset'
+import InsetChoiceRow from './InsetChoiceRow.vue'
 import InsetGroup from './InsetGroup.vue'
 import InsetInput from './InsetInput.vue'
 import InsetRow from './InsetRow.vue'
@@ -80,5 +82,39 @@ describe('InsetRow con InsetInput', () => {
     const wrapper = montaRiga({ label: 'Importo TFR' }, valore)
     await wrapper.get('input').setValue('180,95')
     expect(valore.value).toBe('180,95')
+  })
+})
+
+describe('insetGroupClass (R4, R5)', () => {
+  const classiGruppo = insetGroupClass.split(' ')
+
+  it('è la card di vetro dei gruppi di oggi', () => {
+    expect(insetGroupClass).toBe(
+      'overflow-hidden rounded-[24px] border-[0.75px] border-border bg-card shadow-glass lg:rounded-3xl',
+    )
+  })
+
+  it('InsetGroup la applica con gap-0 al posto del gap della base', () => {
+    const gruppo = montaRiga({ label: 'Importo TFR' }).get('[data-slot="field-group"]')
+    expect(gruppo.classes()).toEqual(expect.arrayContaining([...classiGruppo, 'gap-0']))
+    expect(gruppo.classes()).not.toContain('gap-7')
+  })
+
+  it('la lista aperta di InsetChoiceRow ha la stessa card', async () => {
+    // Il foglio vero apre un overlay in teleport: qui basta il suo contenuto quando è aperto.
+    const FoglioFinto = defineComponent({
+      props: { open: Boolean },
+      setup:
+        (props, { slots }) =>
+        () =>
+          props.open ? h('div', slots.default?.()) : null,
+    })
+    const wrapper = mount(InsetChoiceRow, {
+      props: { id: 'fondo', label: 'Fondo', options: [{ value: 'a', label: 'Amundi' }] },
+      global: { stubs: { ResponsiveSheet: FoglioFinto } },
+      attachTo: document.body,
+    })
+    await wrapper.get('#fondo').trigger('click')
+    expect(wrapper.get('[role="listbox"]').classes()).toEqual(expect.arrayContaining(classiGruppo))
   })
 })

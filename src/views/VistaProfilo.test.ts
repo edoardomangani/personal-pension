@@ -4,6 +4,7 @@ import { enableAutoUnmount, flushPromises, mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import { TooltipProvider } from 'reka-ui'
 import { createMemoryHistory, createRouter, type Router } from 'vue-router'
+import { insetGroupClass } from '@/components/forms/inset'
 import { esci as esciDb } from '@/data/sessione'
 import { rotte } from '@/router'
 import { useSessioneStore } from '@/stores/sessione'
@@ -87,7 +88,34 @@ describe('VistaProfilo (R10)', () => {
 
     const testa = wrapper.get('section')
     expect(testa.findAll('p').map((p) => p.text())).toEqual(['Account'])
-    expect(testa.find('[data-slot="avatar-fallback"] svg').exists()).toBe(true)
+    const icona = testa.get('[data-slot="avatar-fallback"] svg')
+    expect(icona.classes()).toContain('size-4.5')
+    expect(icona.classes()).not.toContain('size-8')
+  })
+})
+
+describe('Gruppi di «Profilo» (DS-03-C1 R5, R6)', () => {
+  it('il nav e il contenitore di «Esci» sono la card di vetro condivisa', async () => {
+    const wrapper = await montaProfilo()
+    const classiGruppo = insetGroupClass.split(' ')
+
+    expect(wrapper.get('nav[aria-label="Profilo"]').classes()).toEqual(
+      expect.arrayContaining(classiGruppo),
+    )
+    const esci = wrapper.findAll('button').find((b) => b.text() === 'Esci')
+    expect(esci?.element.parentElement?.classList.value.split(' ')).toEqual(
+      expect.arrayContaining(classiGruppo),
+    )
+  })
+
+  it('le righe tengono il filo che parte dal testo', async () => {
+    const wrapper = await montaProfilo()
+    const righe = [
+      ...wrapper.get('nav').findAll('a'),
+      ...wrapper.findAll('button').filter((b) => b.text() === 'Esci'),
+    ]
+    expect(righe).toHaveLength(4)
+    for (const riga of righe) expect(riga.classes()).toContain('not-first:before:left-16')
   })
 })
 
