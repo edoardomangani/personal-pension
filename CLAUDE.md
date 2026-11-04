@@ -10,7 +10,7 @@ Lingua dell'interfaccia e del codice visibile: italiano, dando del tu. Formati i
 
 - **Stack**: Vue 3 + Vite + TypeScript, SPA statica su GitHub Pages; dati su Neon (Auth + Data API + RLS).
 - **Base dal prototipo: solo la logica** (modello dati e calcoli). Le sezioni "Interfaccia attuale" qui sotto e `DESIGN.md` descrivono il prototipo, non sono un riferimento.
-- **Stile: il design system di Wallet** (artefatto "Wallet Design System" su claude.ai: vetro, Bricolage Grotesque, pill, due densità, Phosphor, shadcn-vue + Tailwind) **con colori propri**: mattone `#f05a28` come accento di sfondo (bagliore, focus), salvia `#8fd4a8` per le cifre positive. Si definisce in DS-01 (canvas con `/impeccable`, poi `prova/design` e `/porta-riferimento`).
+- **Stile: il design system di Wallet** (artefatto "Wallet Design System" su claude.ai: vetro, Bricolage Grotesque, pill, due densità, Phosphor, shadcn-vue + Tailwind) **con colori propri**: mattone `#f05a28` per i testi di contesto che spiegano (come la tinta di Wallet: «al netto delle spese», «calcolato dalle buste»), il bagliore e il focus, mai sulle cifre; salvia `#8fd4a8` per le cifre positive; pulsante + e importi da versare bianchi; campi a righe come iOS. Si definisce in DS-01 (canvas con `/impeccable`, poi `prova/design` e `/porta-riferimento`).
 - **Modello dati rivisto** (supera § Modello dati attuale): buste paga con righe TFR/Datore/Personale, movimenti con righe TFR/Datore/Personale/Volontario/Spesa, estratti conto; le buste versate si collegano al movimento. Multiutente con piani separati. Dettagli nel brief di DAT-01.
 - **Lavoro col ciclo kit** (`ciclo/`, profilo in `ciclo/PROFILO.md`): dati e design si rivedono come voci, con brief e specifiche.
 
