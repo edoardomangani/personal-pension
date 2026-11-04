@@ -14,7 +14,9 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "typecheck": "vue-tsc --build --force",
-    "db:migra": "tsx scripts/db-migra.ts"
+    "db:migra": "tsx scripts/db-migra.ts",
+    "db:importa": "tsx scripts/db-importa.ts",
+    "db:collaudo": "tsx scripts/db-collaudo.ts"
   },
   "dependencies": {
     "pinia": "^4.1.0",
