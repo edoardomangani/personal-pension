@@ -28,11 +28,12 @@ import {
   type UtenteTrovato,
 } from './importa'
 import { centesimiInEuro } from '../../src/calc/importi'
+import { scrivi } from './output'
+
+export { scrivi }
 
 const CARTELLA = fileURLToPath(new URL('../../db/migrations/', import.meta.url))
 const PRIVILEGI = ['select', 'insert', 'update', 'delete', 'truncate', 'references', 'trigger']
-
-export const scrivi = (riga: string) => process.stdout.write(riga + '\n')
 
 function leggiMigrazioni(): (FileMigrazione & { testo: string })[] {
   return readdirSync(CARTELLA)

@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { Resvg } from '@resvg/resvg-js'
-import { scrivi } from './lib/db'
+import { scrivi } from './lib/output'
 
 const CARTELLA = join(import.meta.dirname, '..', 'icons')
 const RAGGIO_FONDO = ' rx="40"'
