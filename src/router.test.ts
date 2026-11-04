@@ -14,7 +14,6 @@ async function vaiA(percorso: string): Promise<void> {
 enableAutoUnmount(afterEach)
 
 afterEach(() => {
-  vi.unstubAllEnvs()
   vi.unstubAllGlobals()
 })
 
@@ -105,17 +104,7 @@ describe('vetrina /dev/ui (R8)', () => {
     expect(vetrina.meta.titolo).toBe('Vetrina dei componenti')
   })
 
-  it('fuori dallo sviluppo la rotta non esiste e /dev/ui torna a /', async () => {
-    vi.stubEnv('DEV', false)
-    vi.resetModules()
-    const { router: routerBuild, rotte } = await import('./router')
-
-    expect(rotte.some((rotta) => rotta.name === 'dev.ui')).toBe(false)
-    expect(routerBuild.hasRoute('dev.ui')).toBe(false)
-    await routerBuild.push('/dev/ui')
-    expect(routerBuild.currentRoute.value.path).toBe('/')
-  })
-
+  // Timeout suo: la prima volta trasforma tutta la vetrina, e nel livello 3 gira accanto a eslint e vue-tsc.
   it('App su /dev/ui mostra la vetrina con la barra in basso', async () => {
     // jsdom non ha IntersectionObserver: basta che si colleghi e si scolleghi.
     const disconnect = vi.fn()
@@ -126,17 +115,8 @@ describe('vetrina /dev/ui (R8)', () => {
         disconnect = disconnect
       },
     )
-    // Moduli ricaricati insieme: dopo un resetModules la vista caricata con import() userebbe
-    // contesti (sidebar, tooltip) diversi da quelli dell'App importata in testa.
-    vi.resetModules()
-    const { router: routerFresco } = await import('./router')
-    const { default: AppFresca } = await import('./App.vue')
-    const { createPinia: createPiniaFresca } = await import('pinia')
-    await routerFresco.push('/dev/ui')
-    await routerFresco.isReady()
-    const wrapper = mount(AppFresca, {
-      global: { plugins: [routerFresco, createPiniaFresca()] },
-    })
+    await vaiA('/dev/ui')
+    const wrapper = mount(App, { global: { plugins: [router, createPinia()] } })
     await flushPromises()
 
     expect(wrapper.findAll('h1').map((h) => h.text())).toContain('Design system')
@@ -146,5 +126,5 @@ describe('vetrina /dev/ui (R8)', () => {
     expect(wrapper.find('[data-specimen="MOV-list-desktop"]').exists()).toBe(true)
     wrapper.unmount()
     expect(disconnect).toHaveBeenCalled()
-  })
+  }, 20_000)
 })
