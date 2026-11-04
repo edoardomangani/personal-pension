@@ -76,6 +76,22 @@ export const useArchivioStore = defineStore('archivio', () => {
     if (partenza === generazione) applica()
   }
 
+  // La regola su sessione scaduta e logout concorrente sta qui sola. Restituisce `true` se ha impostato `errore`.
+  async function gestisciErroreLettura(
+    eccezione: unknown,
+    valida: () => boolean,
+  ): Promise<boolean> {
+    const e = erroreDaEccezione(eccezione)
+    // Prima di `esci()`: una chiamata superata non chiude la sessione.
+    if (!valida()) return false
+    if (e.tipo === 'sessione') {
+      await useSessioneStore().esci()
+      return false
+    }
+    errore.value = e
+    return true
+  }
+
   const archivio = computed<Archivio>(() => ({
     fondi: fondi.value,
     buste: buste.value,
@@ -120,15 +136,9 @@ export const useArchivioStore = defineStore('archivio', () => {
       stato.value = 'pronto'
       datiApplicati = true
     } catch (eccezione) {
-      const e = erroreDaEccezione(eccezione)
-      // Prima di `esci()`: una chiamata superata non chiude la sessione.
-      if (!corrente()) return
-      if (e.tipo === 'sessione') {
-        await useSessioneStore().esci()
-        return
+      if (await gestisciErroreLettura(eccezione, corrente)) {
+        stato.value = datiApplicati ? 'pronto' : 'vuoto'
       }
-      errore.value = e
-      stato.value = datiApplicati ? 'pronto' : 'vuoto'
     }
   }
 
@@ -156,13 +166,7 @@ export const useArchivioStore = defineStore('archivio', () => {
         movimenti.value = m
       })
     } catch (eccezione) {
-      const e = erroreDaEccezione(eccezione)
-      if (partenza !== generazione) return
-      if (e.tipo === 'sessione') {
-        await useSessioneStore().esci()
-        return
-      }
-      errore.value = e
+      await gestisciErroreLettura(eccezione, () => partenza === generazione)
     }
   }
 
