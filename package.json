@@ -19,6 +19,7 @@
     "db:collaudo": "tsx scripts/db-collaudo.ts"
   },
   "dependencies": {
+    "@neon/neon-js": "0.10.2",
     "pinia": "^4.1.0",
     "vue": "^3.5.44",
     "vue-router": "^5.4.0"
