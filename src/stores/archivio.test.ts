@@ -7,6 +7,7 @@ import { elencaFondi } from '../data/fondi'
 import { leggiImpostazioni } from '../data/impostazioni'
 import type { Bozza, BozzaBusta } from '../data/mappe'
 import { elencaMovimenti, eliminaMovimento, salvaMovimento } from '../data/movimenti'
+import { esci } from '../data/sessione'
 import { archivioDalSeed } from '../test/seed'
 import { IMPOSTAZIONI_PREDEFINITE, type EstrattoConto, type Movimento } from '../types/dominio'
 import { useArchivioStore } from './archivio'
@@ -108,6 +109,120 @@ describe('archivio: carica', () => {
     await s.carica()
     expect(s.stato).toBe('vuoto')
     expect(s.errore?.tipo).toBe('rete')
+  })
+})
+
+type FondiFinti = ReturnType<typeof archivioDalSeed>['fondi']
+
+const RETE = () => new ErroreDati('rete', 'Non riesco a raggiungere il server.')
+
+describe('archivio: carica concorrenti', () => {
+  it('T1: la prima che risolve dopo la seconda non sovrascrive i dati', async () => {
+    const estratti = inSospeso<EstrattoConto[]>()
+    vi.mocked(elencaEstratti).mockReturnValueOnce(estratti.promessa)
+    const s = useArchivioStore()
+    const prima = s.carica()
+    await s.carica()
+    estratti.risolvi([])
+    await expect(prima).resolves.toBeUndefined()
+    expect(s.ultimoValore).toEqual({ data: '2026-11-03', valore: 164145 })
+    expect(s.stato).toBe('pronto')
+    expect(s.errore).toBeNull()
+  })
+
+  it('T3: la prima che fallisce dopo il successo della seconda non imposta errore', async () => {
+    const fondi = inSospeso<FondiFinti>()
+    vi.mocked(elencaFondi).mockReturnValueOnce(fondi.promessa)
+    const s = useArchivioStore()
+    const prima = s.carica()
+    await s.carica()
+    fondi.rifiuta(RETE())
+    await prima
+    expect(s.errore).toBeNull()
+    expect(s.stato).toBe('pronto')
+    expect(s.versato).toBe(159191)
+  })
+
+  it('T4: la prima che riesce con la seconda in volo non cambia memoria né stato', async () => {
+    const primi = inSospeso<FondiFinti>()
+    const secondi = inSospeso<FondiFinti>()
+    vi.mocked(elencaFondi).mockReturnValueOnce(primi.promessa).mockReturnValueOnce(secondi.promessa)
+    const s = useArchivioStore()
+    const prima = s.carica()
+    const seconda = s.carica()
+    primi.risolvi(archivioDalSeed().fondi)
+    await prima
+    expect(s.stato).toBe('caricamento')
+    expect(s.fondi).toEqual([])
+    secondi.risolvi(archivioDalSeed().fondi)
+    await seconda
+    expect(s.stato).toBe('pronto')
+    expect(s.fondi).toEqual(archivioDalSeed().fondi)
+  })
+
+  it('T5: la prima che fallisce con sessione non chiama esci()', async () => {
+    const fondi = inSospeso<FondiFinti>()
+    vi.mocked(elencaFondi).mockReturnValueOnce(fondi.promessa)
+    const s = useArchivioStore()
+    const prima = s.carica()
+    await s.carica()
+    fondi.rifiuta(new ErroreDati('sessione', 'Sessione scaduta.'))
+    await prima
+    expect(esci).not.toHaveBeenCalled()
+    expect(s.stato).toBe('pronto')
+    expect(s.versato).toBe(159191)
+  })
+})
+
+describe('archivio: stato dopo errore di carica', () => {
+  it('T2: la corrente che fallisce dopo il successo della prima resta pronto con errore', async () => {
+    const s = useArchivioStore()
+    await s.carica()
+    const primi = inSospeso<FondiFinti>()
+    const secondi = inSospeso<FondiFinti>()
+    vi.mocked(elencaFondi).mockReturnValueOnce(primi.promessa).mockReturnValueOnce(secondi.promessa)
+    const prima = s.carica()
+    const seconda = s.carica()
+    primi.risolvi(archivioDalSeed().fondi)
+    await prima
+    secondi.rifiuta(RETE())
+    await seconda
+    expect(s.stato).toBe('pronto')
+    expect(s.errore?.tipo).toBe('rete')
+    expect(s.versato).toBe(159191)
+  })
+
+  it('T6: due carichi falliti dallo store vuoto lasciano lo stato vuoto', async () => {
+    vi.mocked(elencaFondi).mockRejectedValueOnce(RETE()).mockRejectedValueOnce(RETE())
+    const s = useArchivioStore()
+    const prima = s.carica()
+    await s.carica()
+    await prima
+    expect(s.stato).toBe('vuoto')
+    expect(s.errore?.tipo).toBe('rete')
+  })
+
+  it('T7: un piano caricato senza righe resta pronto dopo un errore', async () => {
+    vi.mocked(elencaFondi).mockResolvedValueOnce([])
+    vi.mocked(elencaBuste).mockResolvedValueOnce([])
+    vi.mocked(elencaMovimenti).mockResolvedValueOnce([])
+    vi.mocked(elencaEstratti).mockResolvedValueOnce([])
+    vi.mocked(leggiImpostazioni).mockResolvedValueOnce({ ...IMPOSTAZIONI_PREDEFINITE })
+    const s = useArchivioStore()
+    await s.carica()
+    vi.mocked(elencaFondi).mockRejectedValueOnce(RETE())
+    await s.carica()
+    expect(s.stato).toBe('pronto')
+    expect(s.errore?.tipo).toBe('rete')
+  })
+
+  it('T8: dopo un reset un carico fallito lascia lo stato vuoto', async () => {
+    const s = useArchivioStore()
+    await s.carica()
+    s.reset()
+    vi.mocked(elencaFondi).mockRejectedValueOnce(RETE())
+    await s.carica()
+    expect(s.stato).toBe('vuoto')
   })
 })
 
@@ -235,6 +350,20 @@ describe('archivio: scritture', () => {
     expect(s.estratti.at(-1)?.id).toBe('e-nuovo')
   })
 
+  it('T9: carica() in volo non scarta salvaEstratto', async () => {
+    const s = useArchivioStore()
+    await s.carica()
+    const risposta = inSospeso<EstrattoConto>()
+    vi.mocked(salvaEstratto).mockReturnValueOnce(risposta.promessa)
+    const scrittura = s.salvaEstratto({ fondoId: FONDO, data: '2026-11-04', valore: 1, note: '' })
+    const fondi = inSospeso<FondiFinti>()
+    vi.mocked(elencaFondi).mockReturnValueOnce(fondi.promessa)
+    void s.carica()
+    risposta.risolvi({ id: 'e-nuovo', fondoId: FONDO, data: '2026-11-04', valore: 1, note: '' })
+    await scrittura
+    expect(s.estratti.some((e) => e.id === 'e-nuovo')).toBe(true)
+  })
+
   it('una scrittura che fallisce rifiuta con ErroreDati', async () => {
     const s = useArchivioStore()
     await s.carica()
@@ -259,8 +388,6 @@ const BOZZA_BUSTA: BozzaBusta = {
   righe: [{ tipo: 'TFR', importo: 100 }],
   note: '',
 }
-
-const RETE = () => new ErroreDati('rete', 'Non riesco a raggiungere il server.')
 
 describe('archivio: rilettura fallita', () => {
   it("T1: salvaMovimento riuscito con elencaBuste in errore risolve con l'id e imposta errore", async () => {

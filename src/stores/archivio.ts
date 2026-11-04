@@ -64,8 +64,13 @@ export const useArchivioStore = defineStore('archivio', () => {
   const errore = ref<ErroreDati | null>(null)
   const oggi = ref(oggiLocale())
 
-  // `reset()` lo incrementa: una risposta arrivata dopo non tocca più la memoria.
+  // `reset()` lo incrementa: una risposta (lettura o scrittura) arrivata dopo non tocca più la memoria.
   let generazione = 0
+  // Ogni `carica()` lo incrementa: vale solo l'ultimo partito. Separato da `generazione`
+  // perché un nuovo carico non deve scartare le scritture in volo.
+  let ultimoCarica = 0
+  // Un `carica()` ha applicato i dati dall'ultimo `reset()`: decide lo stato dopo un errore.
+  let datiApplicati = false
 
   function seAncora(partenza: number, applica: () => void): void {
     if (partenza === generazione) applica()
@@ -87,10 +92,14 @@ export const useArchivioStore = defineStore('archivio', () => {
   const deducibilita = computed(() => storicoDeducibilita(archivio.value, oggi.value))
   const futuro = computed(() => proiezione(archivio.value, oggi.value))
 
-  /** Non rifiuta: l'esito è in `stato` ed `errore`. Con un errore restano i dati di prima. */
+  /**
+   * Non rifiuta: l'esito è in `stato` ed `errore`. Con un errore restano i dati di prima.
+   * Fra più chiamate sovrapposte vale solo l'ultima partita.
+   */
   async function carica(): Promise<void> {
     const partenza = generazione
-    const statoPrima = stato.value
+    const chiamata = ++ultimoCarica
+    const corrente = () => partenza === generazione && chiamata === ultimoCarica
     stato.value = 'caricamento'
     errore.value = null
     try {
@@ -101,24 +110,25 @@ export const useArchivioStore = defineStore('archivio', () => {
         elencaEstratti(),
         leggiImpostazioni(),
       ])
-      seAncora(partenza, () => {
-        fondi.value = f
-        buste.value = b
-        movimenti.value = m
-        estratti.value = e
-        impostazioni.value = i
-        oggi.value = oggiLocale()
-        stato.value = 'pronto'
-      })
+      if (!corrente()) return
+      fondi.value = f
+      buste.value = b
+      movimenti.value = m
+      estratti.value = e
+      impostazioni.value = i
+      oggi.value = oggiLocale()
+      stato.value = 'pronto'
+      datiApplicati = true
     } catch (eccezione) {
       const e = erroreDaEccezione(eccezione)
-      if (partenza !== generazione) return
+      // Prima di `esci()`: una chiamata superata non chiude la sessione.
+      if (!corrente()) return
       if (e.tipo === 'sessione') {
         await useSessioneStore().esci()
         return
       }
       errore.value = e
-      stato.value = statoPrima === 'caricamento' ? 'vuoto' : statoPrima
+      stato.value = datiApplicati ? 'pronto' : 'vuoto'
     }
   }
 
@@ -217,6 +227,7 @@ export const useArchivioStore = defineStore('archivio', () => {
 
   function reset(): void {
     generazione++
+    datiApplicati = false
     fondi.value = []
     buste.value = []
     movimenti.value = []
