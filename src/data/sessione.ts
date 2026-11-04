@@ -1,5 +1,5 @@
 import { authDati, type RispostaAuth, type UtenteAuth } from './client'
-import { ErroreDati, erroreDaEccezione } from './errori'
+import { ErroreDati, MESSAGGI, erroreDaEccezione } from './errori'
 
 export interface Utente {
   id: string
@@ -7,24 +7,43 @@ export interface Utente {
 }
 
 const MESSAGGIO_CREDENZIALI = 'Email o password non corretti.'
-const MESSAGGIO_SESSIONE = 'La sessione è scaduta. Accedi di nuovo.'
-const MESSAGGIO_RETE = 'Non riesco a raggiungere il server. Controlla la connessione e riprova.'
-const MESSAGGIO_ALTRO = 'Qualcosa è andato storto. Riprova tra poco.'
+const MESSAGGIO_EMAIL_DA_VERIFICARE =
+  "Devi ancora confermare l'email: apri il link che ti abbiamo mandato e riprova."
 
-function erroreDaStatus(status: number | undefined, credenziali: boolean): ErroreDati {
-  if (status === 0) return new ErroreDati('rete', MESSAGGIO_RETE)
-  if (status === 401 || status === 403) {
-    return new ErroreDati('sessione', credenziali ? MESSAGGIO_CREDENZIALI : MESSAGGIO_SESSIONE)
-  }
-  return new ErroreDati('altro', MESSAGGIO_ALTRO)
+interface DatiErrore {
+  status: number | undefined
+  code: string | undefined
 }
 
-function statusDi(valore: unknown): number | undefined {
-  if (typeof valore !== 'object' || valore === null) return undefined
-  // L'adapter di Neon lancia con lo status HTTP in `.error.status`, Better Fetch lo mette in `.status`.
-  const interno = 'error' in valore ? statusDi(valore.error) : undefined
-  if (interno !== undefined) return interno
-  return 'status' in valore && typeof valore.status === 'number' ? valore.status : undefined
+function erroreDaStatus({ status, code }: DatiErrore, credenziali: boolean): ErroreDati {
+  if (status === 0) return new ErroreDati('rete', MESSAGGI.rete)
+  if (credenziali) {
+    if (status === 401) return new ErroreDati('sessione', MESSAGGIO_CREDENZIALI)
+    if (status === 403 && code === 'EMAIL_NOT_VERIFIED') {
+      return new ErroreDati('sessione', MESSAGGIO_EMAIL_DA_VERIFICARE)
+    }
+  } else if (status === 401 || status === 403) {
+    return new ErroreDati('sessione', MESSAGGI.sessione)
+  }
+  return new ErroreDati('altro', MESSAGGI.altro)
+}
+
+function campiDi(valore: object): DatiErrore {
+  return {
+    status: 'status' in valore && typeof valore.status === 'number' ? valore.status : undefined,
+    code: 'code' in valore && typeof valore.code === 'string' ? valore.code : undefined,
+  }
+}
+
+function datiErroreDi(valore: unknown): DatiErrore {
+  if (typeof valore !== 'object' || valore === null) return { status: undefined, code: undefined }
+  // L'adapter di Neon lancia con status e code in `.error`, Better Fetch li mette sul valore stesso.
+  const interno = 'error' in valore ? datiErroreDi(valore.error) : undefined
+  const esterno = campiDi(valore)
+  if (interno?.status !== undefined) {
+    return { status: interno.status, code: interno.code ?? esterno.code }
+  }
+  return { status: esterno.status, code: esterno.code ?? interno?.code }
 }
 
 /** Better Auth risponde `{ data, error }` o lancia: entrambe le forme diventano `ErroreDati`. */
@@ -36,10 +55,10 @@ async function chiama<T>(
   try {
     risposta = await richiesta()
   } catch (eccezione) {
-    const status = statusDi(eccezione)
-    throw status === undefined ? erroreDaEccezione(eccezione) : erroreDaStatus(status, credenziali)
+    const dati = datiErroreDi(eccezione)
+    throw dati.status === undefined ? erroreDaEccezione(eccezione) : erroreDaStatus(dati, credenziali)
   }
-  if (risposta.error !== null) throw erroreDaStatus(risposta.error.status, credenziali)
+  if (risposta.error !== null) throw erroreDaStatus(datiErroreDi(risposta.error), credenziali)
   return risposta.data
 }
 
@@ -52,7 +71,7 @@ export async function sessioneCorrente(): Promise<Utente | null> {
 
 export async function accedi(email: string, password: string): Promise<Utente> {
   const dati = await chiama(() => authDati().signIn.email({ email, password }), true)
-  if (dati === null) throw new ErroreDati('altro', MESSAGGIO_ALTRO)
+  if (dati === null) throw new ErroreDati('altro', MESSAGGI.altro)
   return utenteDa(dati.user)
 }
 

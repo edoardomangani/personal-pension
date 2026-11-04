@@ -28,7 +28,7 @@ export type RispostaDati<T> =
   | { data: T; error: null; status: number }
   | { data: null; error: ErrorePostgrest; status: number }
 
-const MESSAGGI: Record<Exclude<TipoErroreDati, 'vincolo'>, string> = {
+export const MESSAGGI: Record<Exclude<TipoErroreDati, 'vincolo'>, string> = {
   rete: 'Non riesco a raggiungere il server. Controlla la connessione e riprova.',
   sessione: 'La sessione è scaduta. Accedi di nuovo.',
   altro: 'Qualcosa è andato storto. Riprova tra poco.',
