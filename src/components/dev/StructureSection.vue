@@ -47,10 +47,6 @@ import { Spinner } from '@/components/ui/spinner'
 
 const density = useShowcaseDensity()
 
-// Importi del seed; il totale del giorno è un valore letto, non una somma.
-const movementDay = formatoData('2026-07-09')
-const movementTotal = `+${formatoEuro(51995)}`
-
 // Un aspetto per tipo: il versamento è lime, la spesa resta bianca, la busta da versare è né l'uno né l'altro.
 const movementRows = [
   {
@@ -73,14 +69,27 @@ const movementRows = [
   },
   {
     code: 'busta',
-    label: 'TFR di settembre',
+    label: 'TFR di giugno',
     meta: 'Da versare',
-    amount: formatoEuro(17507),
+    amount: formatoEuro(17780),
     icon: PhReceipt,
     tile: 'bg-transparent text-subtle-foreground shadow-tile-outline',
     ink: 'text-subtle-foreground',
   },
 ]
+
+// Importi e date del seed; il totale del giorno è un valore letto, non una somma, e manca se ci sono solo buste.
+const movementDays = [
+  { day: formatoData('2026-07-17'), codes: ['busta'] },
+  {
+    day: formatoData('2026-07-09'),
+    codes: ['versamento', 'spesa'],
+    total: `+${formatoEuro(51995)}`,
+  },
+].map(({ codes, ...giorno }) => ({
+  ...giorno,
+  rows: movementRows.filter((row) => codes.includes(row.code)),
+}))
 </script>
 
 <template>
@@ -268,23 +277,27 @@ const movementRows = [
       <div class="flex flex-wrap items-start gap-8">
         <Specimen :code="`MOV-list-${density}`">
           <PhoneFrame v-if="density === 'mobile'" size="card">
-            <div class="p-4 pt-8">
+            <div class="flex flex-col gap-6 p-4 pt-8">
               <MovementDaySample
-                :rows="movementRows"
+                v-for="giorno in movementDays"
+                :key="giorno.day"
+                :rows="giorno.rows"
                 :density="density"
-                :day="movementDay"
-                :total="movementTotal"
+                :day="giorno.day"
+                :total="giorno.total"
               />
             </div>
           </PhoneFrame>
-          <MovementDaySample
-            v-else
-            :rows="movementRows"
-            :density="density"
-            :day="movementDay"
-            :total="movementTotal"
-            class="w-[420px] max-w-full"
-          />
+          <div v-else class="flex w-[420px] max-w-full flex-col gap-6">
+            <MovementDaySample
+              v-for="giorno in movementDays"
+              :key="giorno.day"
+              :rows="giorno.rows"
+              :density="density"
+              :day="giorno.day"
+              :total="giorno.total"
+            />
+          </div>
         </Specimen>
         <div class="flex flex-col gap-4">
           <Specimen

@@ -17,7 +17,7 @@ import PasswordInput from '@/components/PasswordInput.vue'
 const density = useShowcaseDensity()
 
 const busta = ref<string | null>('2026-09')
-const volontario = ref(true)
+const altroMovimento = ref(false)
 
 const busteOptions = [
   { value: '2026-10', label: 'Ottobre 2026' },
@@ -46,6 +46,13 @@ const busteOptions = [
                 default-value="175,07"
               />
             </InsetRow>
+            <InsetRow :for="`frm-${density}-voluntary`" label="Volontario">
+              <InsetInput
+                :id="`frm-${density}-voluntary`"
+                inputmode="decimal"
+                default-value="50,00"
+              />
+            </InsetRow>
             <InsetChoiceRow
               :id="`frm-${density}-payslip`"
               v-model="busta"
@@ -56,9 +63,9 @@ const busteOptions = [
               <InsetInput :id="`frm-${density}-date`" type="date" default-value="2026-11-03" />
             </InsetRow>
             <InsetSwitchRow
-              :id="`frm-${density}-voluntary`"
-              v-model="volontario"
-              label="Versamento volontario"
+              :id="`frm-${density}-another`"
+              v-model="altroMovimento"
+              label="Registrane un altro"
             />
           </InsetGroup>
         </DensityFrame>

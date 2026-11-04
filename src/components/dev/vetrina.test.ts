@@ -337,6 +337,42 @@ describe('mattoni della vetrina', () => {
   })
 })
 
+// Utility con valore arbitrario (`prefisso-[…]`) che contiene un colore, più `bg-white/`.
+function coloriAMano(testo: string): string[] {
+  const arbitrari = testo.matchAll(
+    /[\w:!/.-]+-\[[^\]\s]*(?:rgba?\(|#[0-9a-fA-F]{3,8}\b)[^\]\s]*\]/g,
+  )
+  const bianchi = testo.matchAll(/(?<![\w-])[\w:!-]*bg-white\/[\w.[\]]*/g)
+  return [...arbitrari, ...bianchi].map((m) => m[0])
+}
+
+describe('niente colori scritti a mano in shell e vetrina (R2)', () => {
+  it("l'estrattore prende le classi con un colore e lascia stare il resto", () => {
+    const esempio = `<div class="shadow-[0_0_0_1px_rgba(255,255,255,.2)] bg-[#0e0e0d] hover:text-[rgb(1,2,3)] bg-white/18" />
+const colorTokens = [{ value: 'rgba(255,255,255,.18)' }, { value: '#0e0e0d' }]
+<div class="rounded-[24px] tracking-[-0.02em] bg-foreground/32 ease-[cubic-bezier(.2,.8,.2,1)]" />`
+    expect(coloriAMano(esempio)).toEqual([
+      'shadow-[0_0_0_1px_rgba(255,255,255,.2)]',
+      'bg-[#0e0e0d]',
+      'hover:text-[rgb(1,2,3)]',
+      'bg-white/18',
+    ])
+  })
+
+  it('nessun .vue di src/components/, dev/, src/views/ e views/dev/ ne ha', () => {
+    const VIEWS = fileURLToPath(new URL('../../views/', import.meta.url))
+    const COMPONENTI = fileURLToPath(new URL('..', import.meta.url))
+    const file = [COMPONENTI, DEV, VIEWS, VIEWS_DEV]
+      .flatMap((c) => vueIn(c))
+      .filter((f) => f.endsWith('.vue'))
+    expect(file.length).toBeGreaterThan(0)
+    const trovati = file.flatMap((f) =>
+      coloriAMano(readFileSync(f, 'utf8')).map((c) => `${basename(f)}: ${c}`),
+    )
+    expect(trovati).toEqual([])
+  })
+})
+
 describe('token di R1', () => {
   const COMPONENTI = fileURLToPath(new URL('..', import.meta.url))
   const casi = [
