@@ -73,3 +73,20 @@ export function mancanzeSicurezza(tabelle: StatoTabella[]): string[] {
   }
   return mancanze
 }
+
+export interface StatoFunzione {
+  funzione: string
+  securityDefiner: boolean
+  /** `anonymous` ha `execute` (anche tramite `PUBLIC`). */
+  eseguibileDaAnonymous: boolean
+}
+
+/** Mancanze di sicurezza delle funzioni RPC: niente `security definer`, niente `execute` ad `anonymous`. */
+export function mancanzeFunzioni(funzioni: StatoFunzione[]): string[] {
+  const mancanze: string[] = []
+  for (const f of funzioni) {
+    if (f.securityDefiner) mancanze.push(`${f.funzione}: è security definer`)
+    if (f.eseguibileDaAnonymous) mancanze.push(`${f.funzione}: anonymous può eseguirla`)
+  }
+  return mancanze
+}

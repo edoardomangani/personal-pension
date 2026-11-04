@@ -1,6 +1,13 @@
 // @vitest-environment node
 import { describe, expect, it } from 'vitest'
-import { daApplicare, hashContenuto, mancanzeSicurezza, type StatoTabella } from './migrazioni'
+import {
+  daApplicare,
+  hashContenuto,
+  mancanzeFunzioni,
+  mancanzeSicurezza,
+  type StatoFunzione,
+  type StatoTabella,
+} from './migrazioni'
 
 const f = (nome: string, hash = 'h-' + nome) => ({ nome, hash })
 
@@ -75,5 +82,29 @@ describe('mancanzeSicurezza', () => {
       { ...sicura, policy: [{ qual: '(user_id = auth.user_id())', withCheck: null }] },
     ])
     expect(mancanze).toEqual(['fondi: manca la policy per proprietario su authenticated'])
+  })
+})
+
+describe('mancanzeFunzioni', () => {
+  const sicura: StatoFunzione = {
+    funzione: 'salva_busta',
+    securityDefiner: false,
+    eseguibileDaAnonymous: false,
+  }
+
+  it('funzione a posto → nessuna mancanza', () => {
+    expect(mancanzeFunzioni([sicura])).toEqual([])
+  })
+
+  it('anonymous con execute → mancanza', () => {
+    expect(mancanzeFunzioni([{ ...sicura, eseguibileDaAnonymous: true }])).toEqual([
+      'salva_busta: anonymous può eseguirla',
+    ])
+  })
+
+  it('security definer → mancanza', () => {
+    expect(mancanzeFunzioni([{ ...sicura, securityDefiner: true }])).toEqual([
+      'salva_busta: è security definer',
+    ])
   })
 })

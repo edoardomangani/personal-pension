@@ -1,4 +1,4 @@
-import { euroInCentesimi } from '../calc/importi'
+import { centesimiInEuro, euroInCentesimi } from '../calc/importi'
 import {
   IMPOSTAZIONI_PREDEFINITE,
   type BustaPaga,
@@ -85,10 +85,12 @@ const TIPI_MOVIMENTO: readonly TipoRigaMovimento[] = [
   'Spesa',
 ]
 
+const FORMATO_INATTESO = 'I dati ricevuti non sono nel formato atteso.'
+
 // Il `check` del DB rende impossibile un tipo diverso: se arriva, lo schema non è quello atteso.
 function tipoNoto<T extends string>(tipi: readonly T[], tipo: string): T {
   const trovato = tipi.find((t) => t === tipo)
-  if (trovato === undefined) throw new ErroreDati('altro', 'I dati ricevuti non sono nel formato atteso.')
+  if (trovato === undefined) throw new ErroreDati('altro', FORMATO_INATTESO)
   return trovato
 }
 
@@ -150,4 +152,92 @@ export function impostazioniDaDb(i: ImpostazioniDb | null): Impostazioni {
     aliquota: i.aliquota,
     limiteDeducibile: euroInCentesimi(i.limite_deducibile),
   }
+}
+
+// Dominio → DB. Nessun payload contiene `user_id`: lo mette il default auth.user_id() (R2).
+
+/** Entità da salvare: senza `id` si crea, con `id` si aggiorna. */
+export type Bozza<T extends { id: string }> = Omit<T, 'id'> & { id?: string }
+
+/** Il collegamento al movimento lo decide solo `salvaMovimento`. */
+export type BozzaBusta = Omit<Bozza<BustaPaga>, 'movimentoId'>
+
+const euroONull = (centesimi: Centesimi | null): number | null =>
+  centesimi === null ? null : centesimiInEuro(centesimi)
+
+const righeInDb = (righe: readonly { tipo: string; importo: Centesimi }[]): RigaImportoDb[] =>
+  righe.map((r) => ({ tipo: r.tipo, importo: centesimiInEuro(r.importo) }))
+
+export function fondoInDb(f: Bozza<Fondo>): Omit<FondoDb, 'id'> {
+  return { nome: f.nome }
+}
+
+export function estrattoInDb(e: Bozza<EstrattoConto>): Omit<EstrattoDb, 'id'> {
+  return { fondo_id: e.fondoId, data: e.data, valore: centesimiInEuro(e.valore), note: e.note }
+}
+
+export function impostazioniInDb(i: Impostazioni): ImpostazioniDb {
+  return {
+    anno_nascita: i.annoNascita,
+    eta_pensione: i.etaPensione,
+    rendimento: i.rendimento,
+    inflazione: i.inflazione,
+    crescita: i.crescita,
+    tfr_mensile: euroONull(i.tfrMensile),
+    datore_mensile: euroONull(i.datoreMensile),
+    personale_mensile: euroONull(i.personaleMensile),
+    volontario_mensile: centesimiInEuro(i.volontarioMensile),
+    aliquota: i.aliquota,
+    limite_deducibile: centesimiInEuro(i.limiteDeducibile),
+  }
+}
+
+/** Payload `p` di `salva_busta`. */
+export interface BustaRpc {
+  id?: string
+  fondo_id: string
+  competenza: string
+  data: string
+  note: string
+  righe: RigaImportoDb[]
+}
+
+/** Payload `p` di `salva_movimento`. */
+export interface MovimentoRpc {
+  id?: string
+  fondo_id: string
+  data: string
+  note: string
+  righe: RigaImportoDb[]
+  buste: string[]
+}
+
+export function bustaInRpc(b: BozzaBusta): BustaRpc {
+  return {
+    ...(b.id === undefined ? {} : { id: b.id }),
+    fondo_id: b.fondoId,
+    competenza: `${b.competenza}-01`,
+    data: b.data,
+    note: b.note,
+    righe: righeInDb(b.righe),
+  }
+}
+
+export function movimentoInRpc(m: Bozza<Movimento>, busteIds: readonly string[]): MovimentoRpc {
+  return {
+    ...(m.id === undefined ? {} : { id: m.id }),
+    fondo_id: m.fondoId,
+    data: m.data,
+    note: m.note,
+    righe: righeInDb(m.righe),
+    buste: [...busteIds],
+  }
+}
+
+/** Le RPC `salva_*` restituiscono un uuid come stringa JSON; altro vuol dire schema diverso. */
+export function idRestituito(valore: unknown): string {
+  if (typeof valore !== 'string' || valore === '') {
+    throw new ErroreDati('altro', FORMATO_INATTESO)
+  }
+  return valore
 }

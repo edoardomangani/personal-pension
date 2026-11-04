@@ -6,9 +6,11 @@ import {
   daApplicare,
   eMigrazione,
   hashContenuto,
+  mancanzeFunzioni,
   mancanzeSicurezza,
   type FileMigrazione,
   type RigaRegistro,
+  type StatoFunzione,
   type StatoTabella,
 } from './migrazioni'
 import {
@@ -112,11 +114,23 @@ async function controllaSicurezza(client: pg.Client): Promise<void> {
       defaultUserId: predefinito[0]?.espressione ?? null,
     })
   }
-  const mancanze = mancanzeSicurezza(stati)
+  const { rows: funzioni } = await client.query<StatoFunzione>(
+    `select p.oid::regprocedure::text as funzione,
+            p.prosecdef as "securityDefiner",
+            has_function_privilege('anonymous', p.oid, 'execute') as "eseguibileDaAnonymous"
+       from pg_proc p
+      where p.pronamespace = 'public'::regnamespace
+        and p.prorettype <> 'trigger'::regtype
+      order by 1`,
+  )
+  const mancanze = [...mancanzeSicurezza(stati), ...mancanzeFunzioni(funzioni)]
   if (mancanze.length > 0) {
     throw new Error(`Controllo di sicurezza fallito:\n  ${mancanze.join('\n  ')}`)
   }
-  scrivi(`Controllo di sicurezza: ${stati.length} tabelle con RLS, policy e default a posto.`)
+  scrivi(
+    `Controllo di sicurezza: ${stati.length} tabelle con RLS, policy e default a posto; ` +
+      `${funzioni.length} funzioni senza execute per anonymous.`,
+  )
 }
 
 /** Registro, migration mancanti (ognuna nella sua transazione) e controllo di sicurezza. */
