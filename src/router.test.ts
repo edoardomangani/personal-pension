@@ -26,7 +26,39 @@ describe('router', () => {
     const titoli = ['/', '/movimenti', '/valori', '/futuro', '/fisco', '/impostazioni'].map(
       (percorso) => router.resolve(percorso).meta.titolo,
     )
-    expect(titoli).toEqual(['Panoramica', 'Movimenti', 'Valori', 'Futuro', 'Fisco', 'Impostazioni'])
+    expect(titoli).toEqual(['Home', 'Movimenti', 'Valori', 'Futuro', 'Fisco', 'Impostazioni'])
+  })
+
+  it('ogni rotta della shell dichiara testata, madre e Registra (R4)', () => {
+    const meta = [
+      '/',
+      '/movimenti',
+      '/valori',
+      '/futuro',
+      '/profilo',
+      '/account',
+      '/fisco',
+      '/impostazioni',
+    ].map((percorso) => {
+      const { titolo, testata, madre, registra } = router.resolve(percorso).meta
+      return [percorso, titolo, testata, madre, registra ?? false]
+    })
+    expect(meta).toEqual([
+      ['/', 'Home', 'principale', undefined, true],
+      ['/movimenti', 'Movimenti', 'principale', undefined, true],
+      ['/valori', 'Valori', 'principale', undefined, true],
+      ['/futuro', 'Futuro', 'principale', undefined, false],
+      ['/profilo', 'Profilo', 'secondaria', '/', false],
+      ['/account', 'Account', 'secondaria', '/profilo', false],
+      ['/fisco', 'Fisco', 'secondaria', '/profilo', false],
+      ['/impostazioni', 'Impostazioni', 'secondaria', '/profilo', false],
+    ])
+  })
+
+  it('/profilo e /account risolvono al segnaposto', () => {
+    for (const percorso of ['/profilo', '/account']) {
+      expect(router.resolve(percorso).matched[0]?.components?.default).toBe(VistaSegnaposto)
+    }
   })
 
   it('/futuro risolve al segnaposto con titolo «Futuro»', async () => {
@@ -46,7 +78,7 @@ describe('router', () => {
     await vaiA('/valori')
     expect(document.title).toBe('Valori · Next')
     await vaiA('/')
-    expect(document.title).toBe('Panoramica · Next')
+    expect(document.title).toBe('Home · Next')
   })
 })
 

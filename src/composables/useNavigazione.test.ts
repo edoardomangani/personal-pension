@@ -3,12 +3,12 @@ import { defineComponent } from 'vue'
 import { mount } from '@vue/test-utils'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import {
-  PhChartLineUp,
-  PhGearSix,
-  PhHouse,
-  PhListBullets,
-  PhReceipt,
-  PhTrendUp,
+  PhCalculator,
+  PhCoins,
+  PhMountains,
+  PhPiggyBank,
+  PhSlidersHorizontal,
+  PhSquaresFour,
 } from '@phosphor-icons/vue'
 import { rotte } from '@/router'
 import { useNavigazione, type UseNavigazioneReturn } from './useNavigazione'
@@ -35,25 +35,35 @@ describe('useNavigazione', () => {
     const { vociMobili, vociDesktop } = await navigazioneSu('/valori')
 
     expect(vociMobili.value.map((v) => [v.titolo, v.percorso, v.icona])).toEqual([
-      ['Panoramica', '/', PhHouse],
-      ['Movimenti', '/movimenti', PhListBullets],
-      ['Valori', '/valori', PhTrendUp],
-      ['Futuro', '/futuro', PhChartLineUp],
+      ['Home', '/', PhSquaresFour],
+      ['Movimenti', '/movimenti', PhCoins],
+      ['Valori', '/valori', PhPiggyBank],
+      ['Futuro', '/futuro', PhMountains],
     ])
     expect(vociDesktop.value.map((v) => [v.titolo, v.percorso, v.icona])).toEqual([
-      ['Panoramica', '/', PhHouse],
-      ['Movimenti', '/movimenti', PhListBullets],
-      ['Valori', '/valori', PhTrendUp],
-      ['Futuro', '/futuro', PhChartLineUp],
-      ['Fisco', '/fisco', PhReceipt],
-      ['Impostazioni', '/impostazioni', PhGearSix],
+      ['Home', '/', PhSquaresFour],
+      ['Movimenti', '/movimenti', PhCoins],
+      ['Valori', '/valori', PhPiggyBank],
+      ['Futuro', '/futuro', PhMountains],
+      ['Fisco', '/fisco', PhCalculator],
+      ['Impostazioni', '/impostazioni', PhSlidersHorizontal],
     ])
     expect(vociMobili.value.filter((v) => v.attiva).map((v) => v.chiave)).toEqual(['valori'])
     expect(vociDesktop.value.filter((v) => v.attiva).map((v) => v.chiave)).toEqual(['valori'])
   })
 
-  it('su / è attiva «Panoramica»', async () => {
+  it('su / è attiva «Home»', async () => {
     const { vociDesktop } = await navigazioneSu('/')
-    expect(vociDesktop.value.filter((v) => v.attiva).map((v) => v.titolo)).toEqual(['Panoramica'])
+    expect(vociDesktop.value.filter((v) => v.attiva).map((v) => [v.chiave, v.titolo])).toEqual([
+      ['home', 'Home'],
+    ])
+  })
+
+  it('su /profilo e /account nessuna voce è attiva', async () => {
+    for (const percorso of ['/profilo', '/account']) {
+      const { vociMobili, vociDesktop } = await navigazioneSu(percorso)
+      expect(vociMobili.value.some((v) => v.attiva)).toBe(false)
+      expect(vociDesktop.value.some((v) => v.attiva)).toBe(false)
+    }
   })
 })

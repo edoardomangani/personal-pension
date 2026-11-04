@@ -123,7 +123,7 @@ const movementDays = [
           <BreadcrumbList>
             <BreadcrumbItem>
               <BreadcrumbLink as-child>
-                <RouterLink to="/">Panoramica</RouterLink>
+                <RouterLink to="/">Home</RouterLink>
               </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />

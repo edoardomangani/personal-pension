@@ -26,15 +26,15 @@ import {
 import { Skeleton } from '@/components/ui/skeleton'
 import { useNavigazione, type VoceNavigazione } from '@/composables/useNavigazione'
 
-// La vetrina non è mai la pagina attiva: qui Panoramica è forzata attiva per mostrarne lo stato.
+// La vetrina non è mai la pagina attiva: qui Home è forzata attiva per mostrarne lo stato.
 const { vociMobili, vociDesktop } = useNavigazione()
 
-function conPanoramicaAttiva(voci: VoceNavigazione[]): VoceNavigazione[] {
-  return voci.map((voce) => ({ ...voce, attiva: voce.chiave === 'panoramica' }))
+function conHomeAttiva(voci: VoceNavigazione[]): VoceNavigazione[] {
+  return voci.map((voce) => ({ ...voce, attiva: voce.chiave === 'home' }))
 }
 
-const vociDesktopCampione = computed(() => conPanoramicaAttiva(vociDesktop.value))
-const vociMobiliCampione = computed(() => conPanoramicaAttiva(vociMobili.value))
+const vociDesktopCampione = computed(() => conHomeAttiva(vociDesktop.value))
+const vociMobiliCampione = computed(() => conHomeAttiva(vociMobili.value))
 </script>
 
 <template>
@@ -69,8 +69,7 @@ const vociMobiliCampione = computed(() => conPanoramicaAttiva(vociMobili.value))
 
     <ShowcaseBlock id="shell-sidebar">
       <p class="text-xs text-subtle-foreground">
-        Dal breakpoint lg (1024px). «Registra» resta disattivato finché non arriva il modulo dei
-        movimenti.
+        Dal breakpoint lg (1024px): il marchio e subito le sei voci.
       </p>
       <div class="flex flex-wrap gap-6">
         <Specimen code="SHL-sidebar-desktop">

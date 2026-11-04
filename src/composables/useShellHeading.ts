@@ -5,7 +5,7 @@ export type UseShellHeadingReturn = {
   titolo: ComputedRef<string>
 }
 
-// Ogni pagina mostra il titolo della propria rotta, Panoramica compresa.
+// Ogni pagina mostra il titolo della propria rotta, Home compresa.
 export function useShellHeading(): UseShellHeadingReturn {
   const route = useRoute()
 

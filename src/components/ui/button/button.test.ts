@@ -50,7 +50,7 @@ describe('Button', () => {
   it('asChild passa le classi al figlio senza aggiungere elementi', () => {
     const wrapper = mount(Button, {
       props: { asChild: true, variant: 'outline' },
-      slots: { default: () => h('a', { href: '#/' }, 'Panoramica') },
+      slots: { default: () => h('a', { href: '#/' }, 'Home') },
     })
     expect(wrapper.element.tagName).toBe('A')
     expect(wrapper.find('button').exists()).toBe(false)

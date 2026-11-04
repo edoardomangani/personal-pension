@@ -3,6 +3,7 @@ import {
   formatoData,
   formatoEuro,
   formatoEuroIntero,
+  formatoGiorno,
   formatoMese,
   formatoPercentuale,
 } from './formato'
@@ -46,6 +47,26 @@ describe('formatoData e formatoMese', () => {
     expect(formatoData(null)).toBe('—')
     expect(formatoData('2026-11')).toBe('—')
     expect(formatoMese('2026-13')).toBe('—')
+  })
+})
+
+describe('formatoGiorno', () => {
+  it('giorno della settimana, giorno e mese minuscoli, senza anno', () => {
+    expect(formatoGiorno('2026-11-04')).toBe('mercoledì 4 novembre')
+    expect(formatoGiorno('2026-01-01')).toBe('giovedì 1 gennaio')
+  })
+
+  it('tiene conto degli anni bisestili', () => {
+    expect(formatoGiorno('2028-02-29')).toBe('martedì 29 febbraio')
+    expect(formatoGiorno('2000-03-01')).toBe('mercoledì 1 marzo')
+  })
+
+  it('mese o giorno fuori calendario → —', () => {
+    expect(formatoGiorno('2026-13-01')).toBe('—')
+    expect(formatoGiorno('2026-02-30')).toBe('—')
+    expect(formatoGiorno('2026-02-29')).toBe('—')
+    expect(formatoGiorno('2026-11-00')).toBe('—')
+    expect(formatoGiorno('04/11/2026')).toBe('—')
   })
 })
 

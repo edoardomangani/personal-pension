@@ -130,7 +130,18 @@ describe('AppBottomBar (R5)', () => {
     const ordine = nav
       .findAll('a, button')
       .map((el) => (el.element.tagName === 'A' ? el.text() : el.attributes('aria-label')))
-    expect(ordine).toEqual(['Panoramica', 'Movimenti', 'Nuovo movimento', 'Valori', 'Futuro'])
+    expect(ordine).toEqual(['Home', 'Movimenti', 'Nuovo movimento', 'Valori', 'Futuro'])
+  })
+
+  it('su /profilo resta intera e nessuna voce è accesa', async () => {
+    const router = await routerSu('/profilo')
+    const wrapper = mount(conTooltip(AppBottomBar), { global: { plugins: [router] } })
+    const ordine = wrapper
+      .get('nav')
+      .findAll('a, button')
+      .map((el) => (el.element.tagName === 'A' ? el.text() : el.attributes('aria-label')))
+    expect(ordine).toEqual(['Home', 'Movimenti', 'Nuovo movimento', 'Valori', 'Futuro'])
+    expect(wrapper.findAll('[aria-current]')).toHaveLength(0)
   })
 
   it('la voce attiva ha aria-current="page" e le altre no', async () => {
@@ -142,7 +153,7 @@ describe('AppBottomBar (R5)', () => {
   })
 })
 
-describe('AppSidebar (R5, R6)', () => {
+describe('AppSidebar (R5, R13)', () => {
   function montaSidebar(router: Router) {
     const Contenitore = defineComponent({
       setup: () => () => h(SidebarProvider, null, () => h(AppSidebar)),
@@ -150,15 +161,14 @@ describe('AppSidebar (R5, R6)', () => {
     return mount(Contenitore, { global: { plugins: [router] } })
   }
 
-  it('ha «Registra» disabilitato e 6 link nella navigazione', async () => {
+  it('non ha «Registra» e ha 6 link nella navigazione (R13)', async () => {
     const wrapper = montaSidebar(await routerSu('/fisco'))
-    const registra = wrapper.get('button')
-    expect(registra.text()).toBe('Registra')
-    expect(registra.attributes('aria-disabled')).toBe('true')
+    expect(wrapper.text()).not.toContain('Registra')
+    expect(wrapper.find('button').exists()).toBe(false)
 
     const link = wrapper.get('nav').findAll('a')
     expect(link.map((a) => a.text())).toEqual([
-      'Panoramica',
+      'Home',
       'Movimenti',
       'Valori',
       'Futuro',
@@ -175,7 +185,13 @@ describe('AppSidebar (R5, R6)', () => {
     expect(wrapper.findAll('nav a[aria-current="page"]')).toHaveLength(1)
   })
 
-  it('il marchio porta a Panoramica', async () => {
+  it('su /account nessuna voce è accesa (R13)', async () => {
+    const wrapper = montaSidebar(await routerSu('/account'))
+    expect(wrapper.get('nav').findAll('a')).toHaveLength(6)
+    expect(wrapper.findAll('[aria-current]')).toHaveLength(0)
+  })
+
+  it('il marchio porta a Home', async () => {
     const wrapper = montaSidebar(await routerSu('/fisco'))
     const marchio = wrapper.findAll('a').find((a) => a.text() === 'Next')
     expect(marchio?.attributes('href')).toBe('/')

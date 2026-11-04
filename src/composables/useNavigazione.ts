@@ -1,19 +1,19 @@
 import {
-  PhChartLineUp,
-  PhGearSix,
-  PhHouse,
-  PhListBullets,
-  PhReceipt,
-  PhTrendUp,
+  PhCalculator,
+  PhCoins,
+  PhMountains,
+  PhPiggyBank,
+  PhSlidersHorizontal,
+  PhSquaresFour,
 } from '@phosphor-icons/vue'
 import { computed, type ComputedRef } from 'vue'
 import { useRoute } from 'vue-router'
 
 // Phosphor non esporta un tipo comune: ogni icona ha la stessa firma.
-export type PhosphorIcon = typeof PhHouse
+export type PhosphorIcon = typeof PhSquaresFour
 
 export type VoceNavigazione = {
-  chiave: 'panoramica' | 'movimenti' | 'valori' | 'futuro' | 'fisco' | 'impostazioni'
+  chiave: 'home' | 'movimenti' | 'valori' | 'futuro' | 'fisco' | 'impostazioni'
   titolo: string
   percorso: string
   icona: PhosphorIcon
@@ -28,15 +28,20 @@ export type UseNavigazioneReturn = {
 type VoceBase = Omit<VoceNavigazione, 'attiva'>
 
 const PRINCIPALI: VoceBase[] = [
-  { chiave: 'panoramica', titolo: 'Panoramica', percorso: '/', icona: PhHouse },
-  { chiave: 'movimenti', titolo: 'Movimenti', percorso: '/movimenti', icona: PhListBullets },
-  { chiave: 'valori', titolo: 'Valori', percorso: '/valori', icona: PhTrendUp },
-  { chiave: 'futuro', titolo: 'Futuro', percorso: '/futuro', icona: PhChartLineUp },
+  { chiave: 'home', titolo: 'Home', percorso: '/', icona: PhSquaresFour },
+  { chiave: 'movimenti', titolo: 'Movimenti', percorso: '/movimenti', icona: PhCoins },
+  { chiave: 'valori', titolo: 'Valori', percorso: '/valori', icona: PhPiggyBank },
+  { chiave: 'futuro', titolo: 'Futuro', percorso: '/futuro', icona: PhMountains },
 ]
 
 const SOLO_DESKTOP: VoceBase[] = [
-  { chiave: 'fisco', titolo: 'Fisco', percorso: '/fisco', icona: PhReceipt },
-  { chiave: 'impostazioni', titolo: 'Impostazioni', percorso: '/impostazioni', icona: PhGearSix },
+  { chiave: 'fisco', titolo: 'Fisco', percorso: '/fisco', icona: PhCalculator },
+  {
+    chiave: 'impostazioni',
+    titolo: 'Impostazioni',
+    percorso: '/impostazioni',
+    icona: PhSlidersHorizontal,
+  },
 ]
 
 // Unica fonte per barra in basso e sidebar: la sidebar aggiunge Fisco e Impostazioni.
