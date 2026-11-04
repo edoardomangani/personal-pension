@@ -1,0 +1,225 @@
+import { readdirSync, readFileSync } from 'node:fs'
+import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import pg from 'pg'
+import { caricaVariabili, leggiArgomenti, richiedi } from './lib/env'
+import {
+  daApplicare,
+  eMigrazione,
+  hashContenuto,
+  mancanzeSicurezza,
+  type FileMigrazione,
+  type RigaRegistro,
+  type StatoTabella,
+} from './lib/migrazioni'
+
+const CARTELLA = fileURLToPath(new URL('../db/migrations/', import.meta.url))
+const PRIVILEGI = ['select', 'insert', 'update', 'delete', 'truncate', 'references', 'trigger']
+
+const scrivi = (riga: string) => process.stdout.write(riga + '\n')
+
+function leggiMigrazioni(): (FileMigrazione & { testo: string })[] {
+  return readdirSync(CARTELLA)
+    .filter(eMigrazione)
+    .map((nome) => {
+      const testo = readFileSync(join(CARTELLA, nome), 'utf8')
+      return { nome, hash: hashContenuto(testo), testo }
+    })
+}
+
+async function preparaRegistro(client: pg.Client): Promise<RigaRegistro[]> {
+  await client.query('create schema if not exists migrazioni')
+  await client.query(`create table if not exists migrazioni.applicate (
+    nome text primary key,
+    hash text not null,
+    applicata_il timestamptz not null default now()
+  )`)
+  const { rows } = await client.query<RigaRegistro>(
+    'select nome, hash from migrazioni.applicate order by nome',
+  )
+  return rows
+}
+
+async function applica(client: pg.Client, registro: RigaRegistro[]): Promise<void> {
+  const file = leggiMigrazioni()
+  const lista = daApplicare(file, registro)
+  if (lista.length === 0) scrivi('Nessuna migration da applicare.')
+  for (const m of lista) {
+    const testo = file.find((f) => f.nome === m.nome)?.testo ?? ''
+    try {
+      await client.query('begin')
+      await client.query(testo)
+      await client.query('insert into migrazioni.applicate (nome, hash) values ($1, $2)', [
+        m.nome,
+        m.hash,
+      ])
+      await client.query('commit')
+      scrivi(`Applicata ${m.nome}`)
+    } catch (e) {
+      await client.query('rollback')
+      throw new Error(`${m.nome}: ${e instanceof Error ? e.message : String(e)}`)
+    }
+  }
+}
+
+async function controllaSicurezza(client: pg.Client): Promise<void> {
+  const { rows: tabelle } = await client.query<{ tabella: string; rls: boolean }>(
+    `select c.relname as tabella, c.relrowsecurity as rls
+       from pg_class c
+      where c.relnamespace = 'public'::regnamespace and c.relkind in ('r', 'p')
+      order by c.relname`,
+  )
+  const stati: StatoTabella[] = []
+  for (const { tabella, rls } of tabelle) {
+    const { rows: policy } = await client.query<{ qual: string | null; withCheck: string | null }>(
+      `select qual, with_check as "withCheck" from pg_policies
+        where schemaname = 'public' and tablename = $1 and 'authenticated' = any(roles)`,
+      [tabella],
+    )
+    const privilegiAnonymous: string[] = []
+    for (const privilegio of PRIVILEGI) {
+      const { rows } = await client.query<{ ha: boolean }>(
+        `select has_table_privilege('anonymous', format('public.%I', $1::text), $2) as ha`,
+        [tabella, privilegio],
+      )
+      if (rows[0]?.ha) privilegiAnonymous.push(privilegio)
+    }
+    const { rows: predefinito } = await client.query<{ espressione: string }>(
+      `select pg_get_expr(d.adbin, d.adrelid) as espressione
+         from pg_attrdef d
+         join pg_attribute a on a.attrelid = d.adrelid and a.attnum = d.adnum
+        where d.adrelid = format('public.%I', $1::text)::regclass and a.attname = 'user_id'`,
+      [tabella],
+    )
+    stati.push({
+      tabella,
+      rls,
+      policy,
+      privilegiAnonymous,
+      defaultUserId: predefinito[0]?.espressione ?? null,
+    })
+  }
+  const mancanze = mancanzeSicurezza(stati)
+  if (mancanze.length > 0) {
+    throw new Error(`Controllo di sicurezza fallito:\n  ${mancanze.join('\n  ')}`)
+  }
+  scrivi(`Controllo di sicurezza: ${stati.length} tabelle con RLS, policy e default a posto.`)
+}
+
+async function codiceErrore(client: pg.Client, sql: string, valori: unknown[]): Promise<string> {
+  await client.query('savepoint prova')
+  try {
+    await client.query(sql, valori)
+    await client.query('release savepoint prova')
+    return 'nessuno'
+  } catch (e) {
+    await client.query('rollback to savepoint prova')
+    return e instanceof pg.DatabaseError ? (e.code ?? 'sconosciuto') : 'sconosciuto'
+  }
+}
+
+async function primoId(client: pg.Client, sql: string, valori: unknown[]): Promise<string> {
+  const { rows } = await client.query<{ id: string }>(sql, valori)
+  const id = rows[0]?.id
+  if (id === undefined) throw new Error(`Prova: l'insert non ha restituito un id (${sql})`)
+  return id
+}
+
+// Prova dei trigger di coerenza in una transazione sempre annullata: non lascia dati.
+async function provaTrigger(client: pg.Client): Promise<void> {
+  const utente = 'prova-db-migra'
+  const fallimenti: string[] = []
+  const attendi = (cosa: string, atteso: string, ottenuto: string) => {
+    if (ottenuto !== atteso) fallimenti.push(`${cosa}: atteso ${atteso}, ottenuto ${ottenuto}`)
+  }
+
+  await client.query('begin')
+  try {
+    const fondo = 'insert into fondi (user_id, nome) values ($1, $2) returning id'
+    const fondoA = await primoId(client, fondo, [utente, 'Prova A'])
+    const fondoB = await primoId(client, fondo, [utente, 'Prova B'])
+    const movimento = await primoId(
+      client,
+      `insert into movimenti (user_id, fondo_id, data) values ($1, $2, '2026-01-31') returning id`,
+      [utente, fondoA],
+    )
+    const busta = `insert into buste_paga (user_id, fondo_id, competenza, data, movimento_id)
+                   values ($1, $2, '2026-01-01', '2026-01-27', $3) returning id`
+
+    attendi(
+      'busta di un altro fondo collegata al movimento',
+      'P0001',
+      await codiceErrore(client, busta, [utente, fondoB, movimento]),
+    )
+    attendi(
+      'movimento su un fondo di un altro utente',
+      'P0001',
+      await codiceErrore(
+        client,
+        `insert into movimenti (user_id, fondo_id, data) values ('altro-utente', $1, '2026-01-31')`,
+        [fondoA],
+      ),
+    )
+
+    const bustaId = await primoId(client, busta, [utente, fondoA, movimento])
+    attendi(
+      'riga di busta con utente diverso dalla testata',
+      'P0001',
+      await codiceErrore(
+        client,
+        `insert into busta_righe (user_id, busta_id, tipo, importo) values ('altro-utente', $1, 'TFR', 1)`,
+        [bustaId],
+      ),
+    )
+    attendi(
+      'cambio di fondo di un movimento con buste collegate',
+      'P0001',
+      await codiceErrore(client, 'update movimenti set fondo_id = $1 where id = $2', [
+        fondoB,
+        movimento,
+      ]),
+    )
+
+    await client.query('delete from movimenti where id = $1', [movimento])
+    const { rows } = await client.query<{ movimentoId: string | null }>(
+      'select movimento_id as "movimentoId" from buste_paga where id = $1',
+      [bustaId],
+    )
+    attendi(
+      'busta dopo l’eliminazione del movimento',
+      'da versare',
+      rows[0]?.movimentoId === null ? 'da versare' : 'ancora collegata',
+    )
+  } finally {
+    await client.query('rollback')
+  }
+
+  if (fallimenti.length > 0) {
+    throw new Error(`Prova dei trigger fallita:\n  ${fallimenti.join('\n  ')}`)
+  }
+  scrivi('Prova dei trigger: verde (transazione annullata).')
+}
+
+async function main(): Promise<void> {
+  const argomenti = leggiArgomenti(process.argv.slice(2))
+  const variabili = caricaVariabili(argomenti.env)
+  const client = new pg.Client({ connectionString: richiedi(variabili, 'DATABASE_URL') })
+  await client.connect()
+  try {
+    const { rows } = await client.query<{ utente: string; database: string }>(
+      'select current_user as utente, current_database() as database',
+    )
+    scrivi(`Connesso come ${rows[0]?.utente ?? '?'} a ${rows[0]?.database ?? '?'}`)
+    const registro = await preparaRegistro(client)
+    await applica(client, registro)
+    await controllaSicurezza(client)
+    if (argomenti.prova) await provaTrigger(client)
+  } finally {
+    await client.end()
+  }
+}
+
+main().catch((e: unknown) => {
+  process.stderr.write(`db:migra: ${e instanceof Error ? e.message : String(e)}\n`)
+  process.exitCode = 1
+})
