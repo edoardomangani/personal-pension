@@ -12,6 +12,7 @@ import { leggiImpostazioni, salvaImpostazioni } from '../data/impostazioni'
 import type { Bozza, BozzaBusta } from '../data/mappe'
 import { elencaMovimenti, eliminaMovimento, salvaMovimento } from '../data/movimenti'
 import { esci } from '../data/sessione'
+import { inSospeso } from '../test/promesse'
 import { archivioDalSeed } from '../test/seed'
 import {
   IMPOSTAZIONI_PREDEFINITE,
@@ -62,21 +63,6 @@ function lettureDalSeed(): void {
   vi.mocked(elencaMovimenti).mockImplementation(async () => archivioDalSeed().movimenti)
   vi.mocked(elencaEstratti).mockImplementation(async () => archivioDalSeed().estratti)
   vi.mocked(leggiImpostazioni).mockImplementation(async () => archivioDalSeed().impostazioni)
-}
-
-/** Una promessa che si risolve o rifiuta quando lo decide il test. */
-function inSospeso<T>() {
-  let risolvi: (valore: T) => void = () => {}
-  let rifiuta: (motivo: unknown) => void = () => {}
-  const promessa = new Promise<T>((r, x) => {
-    risolvi = r
-    rifiuta = x
-  })
-  return {
-    promessa,
-    risolvi: (valore: T) => risolvi(valore),
-    rifiuta: (motivo: unknown) => rifiuta(motivo),
-  }
 }
 
 beforeEach(() => {

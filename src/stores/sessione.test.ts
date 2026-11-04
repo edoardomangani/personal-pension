@@ -7,6 +7,7 @@ import { elencaFondi } from '../data/fondi'
 import { leggiImpostazioni } from '../data/impostazioni'
 import { elencaMovimenti, salvaMovimento } from '../data/movimenti'
 import { accedi, esci, sessioneCorrente } from '../data/sessione'
+import { inSospeso } from '../test/promesse'
 import { archivioDalSeed } from '../test/seed'
 import { useArchivioStore } from './archivio'
 import { useSessioneStore } from './sessione'
@@ -40,21 +41,6 @@ async function accessoConArchivio() {
   await sessione.accedi(PRIMO.email, 'segreta')
   await archivio.carica()
   return { sessione, archivio }
-}
-
-/** Una promessa che si risolve o rifiuta quando lo decide il test. */
-function inSospeso<T>() {
-  let risolvi: (valore: T) => void = () => {}
-  let rifiuta: (motivo: unknown) => void = () => {}
-  const promessa = new Promise<T>((r, x) => {
-    risolvi = r
-    rifiuta = x
-  })
-  return {
-    promessa,
-    risolvi: (valore: T) => risolvi(valore),
-    rifiuta: (motivo: unknown) => rifiuta(motivo),
-  }
 }
 
 function eVuoto(archivio: ReturnType<typeof useArchivioStore>): boolean {
