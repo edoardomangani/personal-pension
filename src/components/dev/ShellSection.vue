@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import iconaApp from '../../../icons/icon-512.png'
+import favicon from '../../../icons/icon.svg'
 import AppBottomBar from '@/components/AppBottomBar.vue'
 import AppBottomBarItem from '@/components/AppBottomBarItem.vue'
 import AppLogo from '@/components/AppLogo.vue'
@@ -49,6 +51,18 @@ const vociMobiliCampione = computed(() => conPanoramicaAttiva(vociMobili.value))
         </Specimen>
         <Specimen code="SHL-segno-40">
           <AppLogoIcon class-name="size-10 text-foreground" />
+        </Specimen>
+        <Specimen code="SHL-icona-180" note="raggio 40 · segno 120">
+          <img :src="iconaApp" alt="Icona dell’app" class="size-45" />
+        </Specimen>
+        <Specimen code="SHL-icona-60" note="Home · raggio 14 · segno 40">
+          <img :src="iconaApp" alt="Icona dell’app" class="size-15" />
+        </Specimen>
+        <Specimen code="SHL-favicon-32" note="raggio 7 · segno 24">
+          <img :src="favicon" alt="Favicon" class="size-8" />
+        </Specimen>
+        <Specimen code="SHL-favicon-16">
+          <img :src="favicon" alt="Favicon" class="size-4" />
         </Specimen>
       </div>
     </ShowcaseBlock>
