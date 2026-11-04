@@ -12,7 +12,7 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <!-- Desktop dialog: title on the left, then the action and the close button on the right. -->
+  <!-- Dialog desktop: titolo a sinistra, poi l'azione e il pulsante di chiusura a destra. -->
   <div v-if="layout === 'dialog'" class="flex h-11 items-center gap-3">
     <div class="min-w-0 flex-1">
       <slot name="title" />
@@ -23,7 +23,7 @@ const emit = defineEmits<{
     </Button>
   </div>
 
-  <!-- Equal side columns keep the title centred whatever the right action is. -->
+  <!-- Colonne laterali uguali tengono il titolo centrato qualunque sia l'azione a destra. -->
   <div v-else class="grid grid-cols-[1fr_auto_1fr] items-center gap-3 px-4 pt-3">
     <div class="flex justify-start">
       <Button

@@ -1,10 +1,10 @@
-// Borderless control that sits inside an inset row: the row draws the surface.
+// Controllo senza bordo dentro una riga inset: la superficie la disegna la riga.
 export const insetControlClass =
   'h-auto min-h-0 w-full rounded-none border-0 bg-transparent px-0 py-3 text-right text-foreground shadow-none focus-visible:outline-none aria-invalid:border-0'
 
-// PasswordInput merges its own right padding first: repeat it so the eye button keeps its room.
+// PasswordInput unisce prima il proprio padding destro: lo ripetiamo perché il pulsante dell'occhio tenga il suo spazio.
 export const insetPasswordClass = `${insetControlClass} pr-10 text-left`
 
-// Shared row surface: a focused row hides its own divider and the next row's.
+// Superficie comune delle righe: la riga col focus nasconde il proprio divisore e quello della riga dopo.
 export const insetRowClass =
   'relative gap-0 transition-colors duration-200 not-first:before:absolute not-first:before:top-0 not-first:before:right-0 not-first:before:left-4 not-first:before:h-[0.75px] not-first:before:bg-divider focus-within:bg-card focus-within:before:opacity-0 [:focus-within+&]:before:opacity-0'

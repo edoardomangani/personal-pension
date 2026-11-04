@@ -24,7 +24,7 @@ const { id, label, options, name, error, placeholder, sheetTitle } = defineProps
 const open = ref(false)
 const search = ref('')
 
-// Long lists (timezones) get a search field.
+// Gli elenchi lunghi hanno un campo di ricerca.
 const searchable = computed(() => options.length > 12)
 
 const selectedLabel = computed(() => options.find((option) => option.value === value.value)?.label)
@@ -37,7 +37,7 @@ const visibleOptions = computed(() => {
     : options.filter((option) => option.label.toLowerCase().includes(query))
 })
 
-// Every opening starts with an empty search and centred on the current value.
+// Ogni apertura parte con la ricerca vuota e centrata sul valore attuale.
 watch(open, async (isOpen) => {
   if (!isOpen) {
     return
@@ -78,7 +78,7 @@ function choose(option: InsetChoiceOption): void {
 
   <ResponsiveSheet v-model:open="open" :title="sheetTitle ?? label">
     <div class="flex flex-col gap-3 pb-2">
-      <!-- The search stays on top while the long list scrolls under it. -->
+      <!-- La ricerca resta in alto mentre l'elenco lungo scorre sotto. -->
       <div
         v-if="searchable"
         class="sticky -top-4 z-10 -mt-4 bg-popover pt-4 pb-1 backdrop-blur-popover"

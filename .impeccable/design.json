@@ -288,8 +288,8 @@
       "kind": "chip",
       "refersTo": "badge",
       "description": "Etichetta a pillola su vetro 2.",
-      "html": "<span class=\"ds-badge\">Versata</span> <span class=\"ds-badge ds-badge-warning\">Da versare</span>",
-      "css": ".ds-badge { display: inline-flex; align-items: center; height: 22px; padding: 0 9px; border-radius: 999px; background: rgba(255, 255, 255, 0.09); color: #f3f5f2; font: 600 12px 'Bricolage Grotesque', system-ui, sans-serif; } .ds-badge-warning { background: transparent; border: 0.75px solid #ffc457; color: #ffc457; }"
+      "html": "<span class=\"ds-badge\">Versata</span> <span class=\"ds-badge\">Da versare</span>",
+      "css": ".ds-badge { display: inline-flex; align-items: center; height: 22px; padding: 0 9px; border-radius: 999px; background: rgba(255, 255, 255, 0.09); color: #f3f5f2; font: 600 12px 'Bricolage Grotesque', system-ui, sans-serif; }"
     },
     {
       "name": "Glass Card",
@@ -347,7 +347,7 @@
       },
       {
         "name": "The Spending Isn't Red Rule",
-        "body": "Spese e importi da versare sono foreground, non rossi né ambra. Il corallo è per errori ed eliminazioni, non per i costi del piano.",
+        "body": "Le spese sono foreground e il TFR da versare subtle-foreground, né rossi né ambra. Il corallo è per errori ed eliminazioni, non per i costi del piano.",
         "section": "colors"
       },
       {

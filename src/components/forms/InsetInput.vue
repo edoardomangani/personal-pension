@@ -19,7 +19,7 @@ const { align = 'right', class: className } = defineProps<{
       cn(
         insetControlClass,
         align === 'left' && 'text-left',
-        // Native date fields ignore text-align: they size to their value instead.
+        // I campi data nativi ignorano text-align: si dimensionano sul loro valore.
         $attrs.type === 'date' && 'w-auto',
         className,
       )

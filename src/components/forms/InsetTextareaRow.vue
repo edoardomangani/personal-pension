@@ -14,7 +14,7 @@ const { id, label, error } = defineProps<{
 </script>
 
 <template>
-  <!-- Long text: a full-width taller row where the label becomes the placeholder. -->
+  <!-- Testo lungo: una riga più alta a tutta larghezza, dove l'etichetta diventa il segnaposto. -->
   <Field :data-invalid="error ? true : undefined" :class="insetRowClass">
     <Textarea
       :id="id"

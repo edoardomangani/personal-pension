@@ -8,7 +8,7 @@ const { title, description } = defineProps<{
 </script>
 
 <template>
-  <!-- Title above and help below sit outside the glass card, like the day labels of the movement lists. -->
+  <!-- Titolo sopra e aiuto sotto stanno fuori dalla card di vetro, come le etichette dei giorni nelle liste dei movimenti. -->
   <FieldSet class="w-full max-w-[560px] gap-2">
     <FieldLegend
       v-if="title"

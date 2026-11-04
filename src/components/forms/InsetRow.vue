@@ -11,11 +11,11 @@ const {
   label: string
   for: string
   error?: string
-  // Label-less rows (email, password) keep the label for screen readers only.
+  // Le righe senza etichetta visibile (email, password) la tengono solo per i lettori di schermo.
   hideLabel?: boolean
 }>()
 
-// A tap anywhere on the row reaches the control, as in iOS settings.
+// Un tocco in qualunque punto della riga arriva al controllo, come nelle impostazioni di iOS.
 function activateControl(event: MouseEvent): void {
   if (
     event.target instanceof Element &&

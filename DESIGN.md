@@ -236,7 +236,7 @@ components:
 
 Next segue un fondo pensione: quanto è stato versato, quanto è cresciuto, quanto TFR aspetta di arrivare sul fondo e dove può portare da qui alla pensione. Il fondo è quasi nero, i numeri stanno dietro superfici di vetro sottili e tutto è calmo: niente compete con il valore della posizione. Il colore è un segnale, non una decorazione: il lime acido si accende solo sulle cifre positive (crescita, versato, rendimento) e sugli anni della proiezione. Le azioni sono bianche: il «+», «Registra», i bottoni principali, l'anello del focus. Se il lime compare altrove, perde il suo significato.
 
-È lo stesso design system di Wallet, per intero: un solo stile per le due app. È un'interfaccia da usare, non da guardare: la precisione conta più dell'espressione. Il carattere sta nei dettagli (il valore grande che prende il disegno espressivo di Bricolage, i fili di luce sul vetro, il bagliore lime appena percepibile dietro la pagina). Gli stessi componenti e le stesse misure su desktop e su telefono, che è lo strumento di tutti i giorni; il tocco ha sempre un'area di almeno 44px.
+È lo stesso design system di Wallet, per intero: un solo stile per le due app. È un'interfaccia da usare, non da guardare: la precisione conta più dell'espressione. Il carattere sta nei dettagli (il valore grande in Bricolage, i fili di luce sul vetro, il bagliore lime appena percepibile dietro la pagina). Gli stessi componenti e le stesse misure su desktop e su telefono, che è lo strumento di tutti i giorni; il tocco ha sempre un'area di almeno 44px.
 
 Sentimento dei componenti: precisi e silenziosi. Pill da 36px, bordi da un filo, nessun effetto oltre al vetro e a una lieve pressione: si fanno notare solo quando servono.
 
@@ -244,7 +244,7 @@ Sentimento dei componenti: precisi e silenziosi. Pill da 36px, bordi da un filo,
 - Un solo tema, scuro; nessun selettore di tema.
 - Vetro a tre gradini fissi sopra un fondo quasi nero, con bagliore lime al massimo al 15%.
 - Testi in tre colori pieni, mai trasparenti.
-- Una sola famiglia (Bricolage Grotesque) con asse ottico automatico e cifre tabulari ovunque.
+- Una sola famiglia (Bricolage Grotesque) in file statici e cifre tabulari ovunque.
 - Controlli a pillola, icone Phosphor in tre pesi con un ruolo ciascuno: Regular ovunque, Fill per la voce di navigazione attiva, Bold solo per il «+».
 
 ## Colors
@@ -257,7 +257,7 @@ Un nero caldo appena verdognolo, bianchi velati per il vetro, il bianco per agir
 
 ### Neutral
 - **Nero Cassaforte** (`background`): il fondo di ogni pagina, sempre con il bagliore sopra.
-- **Bianco Gesso** (`foreground`): testo principale, spese (−15,00 €) e importi da versare.
+- **Bianco Gesso** (`foreground`): testo principale e spese (−15,00 €).
 - **Grigio Salvia** (`muted-foreground`): testo secondario, voci di sidebar a riposo.
 - **Grigio Nebbia** (`subtle-foreground`): meta, etichette, placeholder, il TFR da versare in una riga (`ACC-transfer-amount`).
 - **Vetro 1** (`card`, `muted`, 6%), **Vetro 2** (`secondary`, `accent`, 9%), **Vetro 3** (`border-strong`, 12%): gli unici tre gradini di trasparenza.
@@ -273,7 +273,7 @@ Un nero caldo appena verdognolo, bianchi velati per il vetro, il bianco per agir
 
 **The White Acts Rule.** Ciò che si preme è bianco: il «+», «Registra», i bottoni principali, l'anello del focus (2px pieno `ring`, staccato di 2px). Il bianco non indica mai una cifra positiva.
 
-**The Spending Isn't Red Rule.** Spese e importi da versare sono `foreground`, non rossi né ambra. Il corallo è per errori ed eliminazioni, non per i costi del piano.
+**The Spending Isn't Red Rule.** Le spese sono `foreground` e il TFR da versare `subtle-foreground`, né rossi né ambra. Il corallo è per errori ed eliminazioni, non per i costi del piano.
 
 **The Three Inks Rule.** I testi sono `foreground`, `muted-foreground` o `subtle-foreground`, colori pieni. Niente altri grigi, niente testo con opacità.
 
@@ -284,7 +284,7 @@ Un nero caldo appena verdognolo, bianchi velati per il vetro, il bianco per agir
 **Display Font:** Bricolage Grotesque (con system-ui, sans-serif)
 **Body Font:** Bricolage Grotesque (con system-ui, sans-serif)
 
-**Character:** una sola grottesca variabile con asse `opsz` (12–96) e `font-optical-sizing: auto`: il valore grande prende il disegno espressivo, le righe quello compatto. Cifre tabulari (`tabular-nums`) su tutto il body. Il font viaggia nel bundle, nessuna richiesta esterna.
+**Character:** una sola grottesca, Bricolage Grotesque in file statici 400/500/600 nel bundle, senza asse ottico. Cifre tabulari (`tabular-nums`) su tutto il body. Nessuna richiesta esterna.
 
 ### Hierarchy
 La scala è quella standard di Tailwind, uguale su telefono e desktop: nessuna misura cambia col breakpoint. Peso, interlinea e spaziatura si aggiungono come utility normali solo dove contano.
@@ -371,7 +371,7 @@ I controlli sono pill: bottoni, input, badge, segmenti. Il resto cresce col cont
 ### Forms (inset, come le impostazioni di iOS)
 - **Gruppo:** una card di vetro come quelle dei giorni nelle liste di movimenti (raggio 24px su telefono, 22px su desktop, larga al massimo 560px). Il titolo del gruppo sta fuori, sopra (`text-xs` 600, `muted-foreground`); l'aiuto fuori, sotto (`text-xs`, `subtle-foreground`). Componenti `InsetGroup` e `InsetRow` in `components/forms/`, sopra la famiglia Field di shadcn-vue (`FRM-rows-desktop`, `FRM-rows-mobile`).
 - **Riga:** alta almeno 48px, etichetta `text-sm` a sinistra, valore allineato a destra in un campo senza bordo; un filo da 0,75px separa le righe, rientrato di 16px. Un tocco ovunque sulla riga raggiunge il controllo; con il focus la riga si schiarisce di un gradino di vetro.
-- **Tipi:** testo e numero con il campo a destra (data sul fondo, importo TFR); scelta con valore e freccia (`PhCaretRight`) che apre il `ResponsiveSheet` con l'elenco (e una ricerca sopra i 12 elementi), come la busta paga da collegare; interruttore con lo `Switch` a destra (volontario); data con il valore a destra.
+- **Tipi:** testo e numero con il campo a destra (data sul fondo, importo TFR); scelta con valore e freccia (`PhCaretRight`) che apre il `ResponsiveSheet` con l'elenco (e una ricerca sopra i 12 elementi), come la busta paga da collegare; importo volontario come riga con importo, come l'importo TFR; interruttore con lo `Switch` a destra per un sì/no («Registrane un altro»); data con il valore a destra.
 - **Errori:** etichetta corallo e messaggio sotto la riga, dentro la card, senza spostare etichetta e valore.
 - **Eccezioni:** il testo lungo (nota) è una riga a tutta larghezza più alta con l'etichetta come segnaposto; email e password dell'accesso sono righe senza etichetta visibile con il segnaposto, nella stessa card, e il nome resta per i lettori di schermo.
 - **Invio:** la CTA in fondo al modulo è un bottone `lg` a tutta larghezza.

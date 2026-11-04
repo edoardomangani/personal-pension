@@ -20,14 +20,14 @@ defineSlots<{
 
 const isDesktop = useIsDesktop()
 
-// Closing before the branches swap avoids leaving an open overlay's scroll lock on the body.
+// Chiudere prima che i rami si scambino evita che il blocco dello scorrimento di un overlay aperto resti sul body.
 watch(isDesktop, () => {
   open.value = false
 })
 </script>
 
 <template>
-  <!-- Below lg a bottom drawer, from lg the centred glass dialog: same header, body and footer. -->
+  <!-- Sotto lg un drawer dal basso, da lg il dialog di vetro centrato: stessa testata, corpo e piede. -->
   <Dialog v-if="isDesktop" v-model:open="open">
     <DialogContent
       :show-close-button="false"
