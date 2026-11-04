@@ -1,0 +1,31 @@
+<script setup lang="ts">
+import { PhPlus } from '@phosphor-icons/vue'
+import ComingSoonTooltip from '@/components/ComingSoonTooltip.vue'
+import { Button } from '@/components/ui/button'
+
+const { variant = 'pill', testo = 'Nuovo movimento' } = defineProps<{
+  variant?: 'pill' | 'round'
+  testo?: string
+}>()
+</script>
+
+<template>
+  <!-- aria-disabled, non disabled: il pulsante resta focalizzabile perché il tooltip spieghi il motivo. -->
+  <!-- Il + tondo resta bianco pieno anche disabilitato: è il punto focale della barra. -->
+  <ComingSoonTooltip>
+    <Button
+      v-if="variant === 'round'"
+      type="button"
+      size="icon-lg"
+      aria-disabled="true"
+      aria-label="Nuovo movimento"
+      class="size-12 shrink-0 shadow-[0_8px_24px_rgba(0,0,0,0.45)] aria-disabled:opacity-100"
+    >
+      <PhPlus weight="bold" class="size-6" />
+    </Button>
+    <Button v-else type="button" aria-disabled="true">
+      <PhPlus weight="bold" />
+      {{ testo }}
+    </Button>
+  </ComingSoonTooltip>
+</template>
