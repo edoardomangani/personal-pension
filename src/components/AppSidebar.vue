@@ -12,7 +12,7 @@ const { vociDesktop } = useNavigazione()
 <template>
   <Sidebar collapsible="none" class="sticky top-0 h-svh gap-4 px-3 py-4">
     <SidebarHeader class="p-0">
-      <RouterLink to="/" class="flex h-8 items-center gap-2.5 rounded-lg px-1">
+      <RouterLink to="/" class="block rounded-lg px-1">
         <AppLogo />
       </RouterLink>
     </SidebarHeader>

@@ -4,7 +4,7 @@ import { createPinia } from 'pinia'
 import App from './App.vue'
 import VistaProfilo from './views/VistaProfilo.vue'
 import VistaSegnaposto from './views/VistaSegnaposto.vue'
-import { router } from './router'
+import { router, titoloDocumento } from './router'
 
 async function vaiA(percorso: string): Promise<void> {
   await router.push(percorso)
@@ -80,6 +80,11 @@ describe('router', () => {
     expect(document.title).toBe('Valori · Next')
     await vaiA('/')
     expect(document.title).toBe('Home · Next')
+  })
+
+  it('titoloDocumento compone il titolo della scheda', () => {
+    expect(titoloDocumento(undefined)).toBe('Next')
+    expect(titoloDocumento('Valori')).toBe('Valori · Next')
   })
 })
 

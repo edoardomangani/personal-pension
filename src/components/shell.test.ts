@@ -17,6 +17,7 @@ import AppSidebar from './AppSidebar.vue'
 import AppTopBar from './AppTopBar.vue'
 import AppLogoIcon from './AppLogoIcon.vue'
 import NewMovementButton from './NewMovementButton.vue'
+import sorgenteShellSection from './dev/ShellSection.vue?raw'
 
 enableAutoUnmount(afterEach)
 
@@ -127,6 +128,25 @@ describe('marchio (DS-02 R2-R4)', () => {
     expect(wrapper.text()).toBe('Next')
     expect(wrapper.getComponent(AppLogoIcon).classes()).toContain('size-6')
   })
+
+  it('AppLogo porta il layout nella radice', () => {
+    const wrapper = mount(AppLogo)
+    expect(wrapper.element.nodeType).toBe(Node.ELEMENT_NODE)
+    expect(wrapper.classes()).toEqual(
+      expect.arrayContaining(['flex', 'h-8', 'items-center', 'gap-2.5']),
+    )
+    expect(wrapper.text()).toBe('Next')
+    expect(wrapper.getComponent(AppLogoIcon).classes()).toContain('size-6')
+    expect(wrapper.get('span').classes()).toEqual(
+      expect.arrayContaining(['tracking-[-0.02em]', 'text-lg', 'font-semibold']),
+    )
+  })
+
+  it('SHL-logo monta AppLogo senza involucro', () => {
+    const campione = /code="SHL-logo"[^>]*>([\s\S]*?)<AppLogo \/>/.exec(sorgenteShellSection)
+    expect(campione).not.toBeNull()
+    expect(campione?.[1]).not.toMatch(/h-8|gap-2\.5/)
+  })
 })
 
 describe('AppBottomBar (R5)', () => {
@@ -214,6 +234,16 @@ describe('AppSidebar (R5, R13)', () => {
     const wrapper = montaSidebar(await routerSu('/fisco'))
     const marchio = wrapper.findAll('a').find((a) => a.text() === 'Next')
     expect(marchio?.attributes('href')).toBe('/')
+  })
+
+  it('il link del marchio non ricopia il layout del logo', async () => {
+    const wrapper = montaSidebar(await routerSu('/fisco'))
+    const marchio = wrapper.get('[data-sidebar="header"] a')
+    expect(marchio.text()).toBe('Next')
+    expect(marchio.attributes('href')).toBe('/')
+    expect(marchio.classes()).toEqual(expect.arrayContaining(['rounded-lg', 'px-1']))
+    expect(marchio.classes()).not.toContain('h-8')
+    expect(marchio.classes()).not.toContain('gap-2.5')
   })
 })
 

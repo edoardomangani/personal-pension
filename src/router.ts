@@ -79,7 +79,7 @@ export const rotte: RouteRecordRaw[] = [
   { path: '/:pathMatch(.*)*', redirect: '/' },
 ]
 
-function titoloDocumento(titolo: string | undefined): string {
+export function titoloDocumento(titolo: string | undefined): string {
   return titolo ? `${titolo} · ${NOME_APP}` : NOME_APP
 }
 

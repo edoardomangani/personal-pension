@@ -45,9 +45,7 @@ const vociMobiliCampione = computed(() => conHomeAttiva(vociMobili.value))
     <ShowcaseBlock id="shell-marchio">
       <div class="flex flex-wrap items-end gap-10">
         <Specimen code="SHL-logo" note="segno 24 · 18 / 600">
-          <div class="flex h-8 items-center gap-2.5 px-1">
-            <AppLogo />
-          </div>
+          <AppLogo />
         </Specimen>
         <Specimen code="SHL-segno-24">
           <AppLogoIcon class-name="size-6 text-foreground" />
