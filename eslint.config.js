@@ -32,5 +32,14 @@ export default defineConfigWithVueTs(
     },
   },
 
+  {
+    // Nomi di shadcn-vue (Button, Input…), copiati da Wallet così come sono.
+    name: 'app/componenti-ui',
+    files: ['src/components/ui/**/*.vue'],
+    rules: {
+      'vue/multi-word-component-names': 'off',
+    },
+  },
+
   skipFormatting,
 )

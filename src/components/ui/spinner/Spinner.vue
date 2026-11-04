@@ -1,0 +1,17 @@
+<script setup lang="ts">
+import type { HTMLAttributes } from 'vue'
+import { PhSpinnerGap } from '@phosphor-icons/vue'
+import { cn } from '@/lib/utils'
+
+const props = defineProps<{
+  class?: HTMLAttributes['class']
+}>()
+</script>
+
+<template>
+  <PhSpinnerGap
+    role="status"
+    aria-label="Caricamento"
+    :class="cn('size-4 animate-spin', props.class)"
+  />
+</template>
