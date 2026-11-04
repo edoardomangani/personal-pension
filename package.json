@@ -16,7 +16,8 @@
     "typecheck": "vue-tsc --build --force",
     "db:migra": "tsx scripts/db-migra.ts",
     "db:importa": "tsx scripts/db-importa.ts",
-    "db:collaudo": "tsx scripts/db-collaudo.ts"
+    "db:collaudo": "tsx scripts/db-collaudo.ts",
+    "db:verifica": "tsx scripts/db-verifica.ts"
   },
   "dependencies": {
     "@neon/neon-js": "0.10.2",
