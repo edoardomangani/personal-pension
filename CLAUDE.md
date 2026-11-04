@@ -10,6 +10,7 @@ Lingua dell'interfaccia e del codice visibile: italiano, dando del tu. Formati i
 
 - **Stack**: Vue 3 + Vite + TypeScript, SPA statica su GitHub Pages; dati su Neon (Auth + Data API + RLS).
 - **Base dal prototipo: solo la logica** (modello dati e calcoli). **Lo stile si rifà da zero** (direzione, palette, font, layout) con `/impeccable` nella vetrina: le sezioni "Interfaccia attuale" qui sotto e `DESIGN.md` descrivono il prototipo, non sono un riferimento.
+- **Modello dati rivisto** (supera § Modello dati attuale): buste paga con righe TFR/Datore/Personale, movimenti con righe TFR/Datore/Personale/Volontario/Spesa, estratti conto; le buste versate si collegano al movimento. Multiutente con piani separati. Dettagli nel brief di DAT-01.
 - **Lavoro col ciclo kit** (`ciclo/`, profilo in `ciclo/PROFILO.md`): dati e design si rivedono come voci, con brief e specifiche.
 
 ## Convenzioni del progetto
