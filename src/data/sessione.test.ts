@@ -148,4 +148,36 @@ describe('sessione', () => {
     await esci()
     expect(finto.signOut).toHaveBeenCalledOnce()
   })
+
+  it('esci con 401 → sessione scaduta', async () => {
+    authFinto({ signOut: async () => ({ data: null, error: { status: 401 } }) })
+    await expect(rifiuto(esci())).resolves.toEqual({
+      tipo: 'sessione',
+      messaggio: MESSAGGI.sessione,
+    })
+  })
+
+  it('esci con 403 → sessione scaduta', async () => {
+    authFinto({ signOut: async () => ({ data: null, error: { status: 403 } }) })
+    await expect(rifiuto(esci())).resolves.toEqual({
+      tipo: 'sessione',
+      messaggio: MESSAGGI.sessione,
+    })
+  })
+
+  it('sessione con status 0 → rete', async () => {
+    authFinto({ getSession: async () => ({ data: null, error: { status: 0 } }) })
+    await expect(rifiuto(sessioneCorrente())).resolves.toEqual({
+      tipo: 'rete',
+      messaggio: MESSAGGI.rete,
+    })
+  })
+
+  it('accedi senza dati né errore → altro', async () => {
+    authFinto({ signInEmail: async () => ({ data: null, error: null }) })
+    await expect(rifiuto(accedi('a@b.it', 'x'))).resolves.toEqual({
+      tipo: 'altro',
+      messaggio: MESSAGGI.altro,
+    })
+  })
 })
