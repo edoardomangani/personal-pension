@@ -4,11 +4,12 @@ import { elencaBuste, salvaBusta } from '../src/data/buste'
 import { impostaAuthDati, impostaClientDati, type ClientDati } from '../src/data/client'
 import { attendi, eErroreDati } from '../src/data/errori'
 import { elencaEstratti } from '../src/data/estratti'
-import { elencaFondi } from '../src/data/fondi'
+import { elencaFondi, eliminaFondo, salvaFondo } from '../src/data/fondi'
 import { leggiImpostazioni } from '../src/data/impostazioni'
-import { elencaMovimenti } from '../src/data/movimenti'
+import type { Bozza } from '../src/data/mappe'
+import { elencaMovimenti, eliminaMovimento, salvaMovimento } from '../src/data/movimenti'
 import { accedi, esci } from '../src/data/sessione'
-import type { BustaPaga } from '../src/types/dominio'
+import type { BustaPaga, Fondo, Movimento } from '../src/types/dominio'
 import { controllaRuoloCollaudo } from './lib/collaudo'
 import { scrivi } from './lib/db'
 import { caricaVariabili, richiedi, valoreOpzione, type Variabili } from './lib/env'
@@ -20,17 +21,26 @@ import {
   type TabellaUtente,
 } from './lib/importa'
 import {
+  MESSAGGIO_ALTRO_FONDO,
+  MESSAGGIO_BUSTA_ASSENTE,
+  MESSAGGIO_BUSTA_COLLEGATA,
   esitoLetturaAnonima,
+  esitoRifiutoAtteso,
   esitoScritturaAltrui,
   esitoScritturaAnonima,
+  esitoStatoInvariato,
   mancanzeConteggi,
   riepilogo,
   type Controllo,
   type RispostaHttp,
+  type StatoCollegamento,
   type TentativoAltrui,
 } from './lib/verifica'
 
 const ENV_COLLAUDO = '.env.collaudo.local'
+
+// R11: riconoscibile come residuo di verifica.
+const NOME_TEMPORANEO = 'verifica db — temporaneo'
 
 interface Configurazione {
   authUrl: string
@@ -99,13 +109,38 @@ async function utente1(c: Configurazione, email: string, password: string) {
       totaliDi({ fondi, buste, movimenti, estratti, impostazioni }),
       TOTALI_ATTESI,
     )
-    const controllo: Controllo = {
-      nome: 'utente 1: totali R12 da src/data/ e src/calc/',
-      mancanza: differenze.length === 0 ? null : differenze.join('; '),
-    }
-    return { controllo, busta: buste[0] ?? null }
+    // R13: i totali prima delle prove che scrivono.
+    const controlli: Controllo[] = [
+      {
+        nome: 'utente 1: totali R12 da src/data/ e src/calc/',
+        mancanza: differenze.length === 0 ? null : differenze.join('; '),
+      },
+    ]
+    const collegata = buste.find((b) => b.movimentoId !== null) ?? null
+    const daVersare = buste.find((b) => b.movimentoId === null) ?? null
+    controlli.push(...(await provaBustaCollegata(collegata)))
+    controlli.push(...(await provaAltroFondo(daVersare)))
+    return { controlli, busta: buste[0] ?? null, daVersare }
   } finally {
     await esci()
+  }
+}
+
+function descrivi(e: unknown): string {
+  if (eErroreDati(e)) return `${e.tipo}: ${e.messaggio}`
+  return e instanceof Error ? e.message : String(e)
+}
+
+function bozzaProva(fondoId: string): Bozza<Movimento> {
+  return { fondoId, data: '2026-01-15', righe: [{ tipo: 'TFR', importo: 100 }], note: 'verifica' }
+}
+
+async function statoCollegamento(bustaId: string): Promise<StatoCollegamento> {
+  const [movimenti, buste] = await Promise.all([elencaMovimenti(), elencaBuste()])
+  return {
+    movimenti: movimenti.length,
+    righe: movimenti.reduce((n, m) => n + m.righe.length, 0),
+    movimentoId: buste.find((b) => b.id === bustaId)?.movimentoId ?? null,
   }
 }
 
@@ -119,15 +154,181 @@ async function tentativo(salva: () => Promise<string>): Promise<TentativoAltrui>
   }
 }
 
+/** Come `tentativo()`, ma conserva l'id di un salvataggio riuscito per la pulizia (R9). */
+async function tentaMovimento(
+  bozza: Bozza<Movimento>,
+  bustaId: string,
+): Promise<{ esito: TentativoAltrui; creato: string | null }> {
+  try {
+    const creato = await salvaMovimento(bozza, [bustaId])
+    return { esito: { tipo: 'riuscito' }, creato }
+  } catch (e) {
+    if (eErroreDati(e)) {
+      return { esito: { tipo: 'rifiutato', errore: e.tipo, messaggio: e.messaggio }, creato: null }
+    }
+    throw e
+  }
+}
+
+/** R9: prima i movimenti creati per errore, poi il fondo; ogni residuo è nominato. */
+async function pulizia(
+  chi: string,
+  creati: readonly string[],
+  fondo: Fondo | null,
+): Promise<Controllo | null> {
+  const residui: string[] = []
+  for (const id of creati) {
+    try {
+      await eliminaMovimento(id)
+    } catch (e) {
+      residui.push(`movimento ${id} (${descrivi(e)})`)
+    }
+  }
+  if (fondo !== null) {
+    try {
+      await eliminaFondo(fondo.id)
+    } catch (e) {
+      residui.push(`fondo «${fondo.nome}» ${fondo.id} (${descrivi(e)})`)
+    }
+  }
+  if (residui.length === 0) return null
+  return { nome: `${chi}: pulizia dei dati temporanei`, mancanza: `resta ${residui.join(', ')}` }
+}
+
+/** R1-R2: sul fondo del seed, una busta già collegata in un movimento nuovo. */
+async function provaBustaCollegata(busta: BustaPaga | null): Promise<Controllo[]> {
+  if (busta === null) {
+    return [
+      {
+        nome: 'utente 1: R1 busta già collegata in un movimento nuovo',
+        mancanza: 'l’utente 1 non ha buste collegate',
+      },
+    ]
+  }
+  const creati: string[] = []
+  const controlli: Controllo[] = []
+  try {
+    const prima = await statoCollegamento(busta.id)
+    const { esito, creato } = await tentaMovimento(bozzaProva(busta.fondoId), busta.id)
+    if (creato !== null) creati.push(creato)
+    const dopo = await statoCollegamento(busta.id)
+    controlli.push(
+      {
+        nome: 'utente 1: R1 busta già collegata in un movimento nuovo',
+        mancanza: esitoRifiutoAtteso(
+          'collegare una busta già collegata in un movimento nuovo',
+          esito,
+          MESSAGGIO_BUSTA_COLLEGATA,
+        ),
+      },
+      { nome: 'utente 1: R2 stato invariato dopo R1', mancanza: esitoStatoInvariato(prima, dopo) },
+    )
+  } finally {
+    const residuo = await pulizia('utente 1', creati, null)
+    if (residuo !== null) controlli.push(residuo)
+  }
+  return controlli
+}
+
+/** R3-R4: una busta da versare del seed in un movimento sul fondo temporaneo. */
+async function provaAltroFondo(busta: BustaPaga | null): Promise<Controllo[]> {
+  if (busta === null) {
+    return [
+      {
+        nome: 'utente 1: R3 busta su un altro fondo',
+        mancanza: 'l’utente 1 non ha buste da versare',
+      },
+    ]
+  }
+  let fondo: Fondo
+  try {
+    fondo = await salvaFondo({ nome: NOME_TEMPORANEO })
+  } catch (e) {
+    return [
+      {
+        nome: 'utente 1: R3 busta su un altro fondo',
+        mancanza: `il fondo temporaneo non si crea (${descrivi(e)})`,
+      },
+    ]
+  }
+  const creati: string[] = []
+  const controlli: Controllo[] = []
+  try {
+    const prima = await statoCollegamento(busta.id)
+    const { esito, creato } = await tentaMovimento(bozzaProva(fondo.id), busta.id)
+    if (creato !== null) creati.push(creato)
+    const dopo = await statoCollegamento(busta.id)
+    controlli.push(
+      {
+        nome: 'utente 1: R3 busta su un altro fondo',
+        mancanza: esitoRifiutoAtteso(
+          'collegare una busta a un movimento di un altro fondo',
+          esito,
+          MESSAGGIO_ALTRO_FONDO,
+        ),
+      },
+      { nome: 'utente 1: R4 stato invariato dopo R3', mancanza: esitoStatoInvariato(prima, dopo) },
+    )
+  } finally {
+    const residuo = await pulizia('utente 1', creati, fondo)
+    if (residuo !== null) controlli.push(residuo)
+  }
+  return controlli
+}
+
+/** R5: l'utente 2, su un fondo temporaneo suo, prova a collegare una busta da versare dell'utente 1. */
+async function provaBustaAltrui(busta: BustaPaga | null): Promise<Controllo[]> {
+  if (busta === null) {
+    return [
+      {
+        nome: 'utente 2: R5 collegare una busta altrui',
+        mancanza: 'l’utente 1 non ha buste da versare',
+      },
+    ]
+  }
+  let fondo: Fondo
+  try {
+    fondo = await salvaFondo({ nome: NOME_TEMPORANEO })
+  } catch (e) {
+    return [
+      {
+        nome: 'utente 2: R5 collegare una busta altrui',
+        mancanza: `il fondo temporaneo non si crea (${descrivi(e)})`,
+      },
+    ]
+  }
+  const creati: string[] = []
+  const controlli: Controllo[] = []
+  try {
+    const { esito, creato } = await tentaMovimento(bozzaProva(fondo.id), busta.id)
+    if (creato !== null) creati.push(creato)
+    controlli.push({
+      nome: 'utente 2: R5 collegare una busta altrui',
+      mancanza: esitoRifiutoAtteso(
+        'collegare una busta dell’utente 1',
+        esito,
+        MESSAGGIO_BUSTA_ASSENTE,
+      ),
+    })
+  } finally {
+    const residuo = await pulizia('utente 2', creati, fondo)
+    if (residuo !== null) controlli.push(residuo)
+  }
+  return controlli
+}
+
 async function utente2(
   c: Configurazione,
   email: string,
   password: string,
   altrui: BustaPaga,
+  daVersare: BustaPaga | null,
 ): Promise<Controllo[]> {
   const client = nuovoClient(c)
   await accedi(email, password)
   try {
+    // R10: il fondo temporaneo sparisce prima del controllo «zero righe».
+    const prove = await provaBustaAltrui(daVersare)
     const { id, fondoId, competenza, data, note, righe } = altrui
     const aggiorna = await tentativo(() =>
       salvaBusta({ id, fondoId, competenza, data, note, righe }),
@@ -142,6 +343,7 @@ async function utente2(
     }
     const mancanze = mancanzeConteggi(conteggi)
     return [
+      ...prove,
       {
         nome: 'utente 2: aggiornare una busta dell’utente 1',
         mancanza: esitoScritturaAltrui('aggiornare una busta dell’utente 1', aggiorna),
@@ -153,6 +355,43 @@ async function utente2(
       {
         nome: 'utente 2: zero righe in ogni tabella',
         mancanza: mancanze.length === 0 ? null : mancanze.join('; '),
+      },
+    ]
+  } finally {
+    await esci()
+  }
+}
+
+/** R6 e residui: terza sessione, dopo che l'utente 2 è uscito. */
+async function rientroUtente1(
+  c: Configurazione,
+  email: string,
+  password: string,
+  bustaR5: BustaPaga | null,
+): Promise<Controllo[]> {
+  nuovoClient(c)
+  await accedi(email, password)
+  try {
+    const [buste, fondi] = await Promise.all([elencaBuste(), elencaFondi()])
+    let r6: string | null = null
+    if (bustaR5 === null) {
+      r6 = 'l’utente 1 non ha buste da versare'
+    } else {
+      const dopo = buste.find((b) => b.id === bustaR5.id)
+      if (dopo === undefined) r6 = `la busta ${bustaR5.id} non si trova più`
+      else if (dopo.movimentoId !== null) {
+        r6 = `la busta ${bustaR5.id} è collegata al movimento ${dopo.movimentoId}`
+      }
+    }
+    const residui = fondi.filter((f) => f.nome === NOME_TEMPORANEO)
+    return [
+      { nome: 'utente 1: R6 busta di R5 ancora da versare', mancanza: r6 },
+      {
+        nome: 'utente 1: nessun fondo temporaneo residuo',
+        mancanza:
+          residui.length === 0
+            ? null
+            : `restano ${residui.map((f) => `«${f.nome}» ${f.id}`).join(', ')}`,
       },
     ]
   } finally {
@@ -242,7 +481,7 @@ async function verifica(variabili: Variabili): Promise<Controllo[]> {
     richiedi(variabili, 'COLLAUDO_EMAIL'),
     richiedi(variabili, 'COLLAUDO_PASSWORD'),
   )
-  const controlli: Controllo[] = [uno.controllo]
+  const controlli: Controllo[] = [...uno.controlli]
   if (uno.busta === null) {
     controlli.push({ nome: 'utente 2: scritture altrui', mancanza: 'l’utente 1 non ha buste' })
   } else {
@@ -252,9 +491,18 @@ async function verifica(variabili: Variabili): Promise<Controllo[]> {
         richiedi(variabili, 'COLLAUDO2_EMAIL'),
         richiedi(variabili, 'COLLAUDO2_PASSWORD'),
         uno.busta,
+        uno.daVersare,
       )),
     )
   }
+  controlli.push(
+    ...(await rientroUtente1(
+      c,
+      richiedi(variabili, 'COLLAUDO_EMAIL'),
+      richiedi(variabili, 'COLLAUDO_PASSWORD'),
+      uno.daVersare,
+    )),
+  )
   controlli.push(...(await anonimo(c)))
   return controlli
 }
@@ -268,12 +516,7 @@ async function main(): Promise<void> {
 }
 
 main().catch((e: unknown) => {
-  const messaggio = eErroreDati(e)
-    ? `${e.tipo}: ${e.messaggio}`
-    : e instanceof Error
-      ? e.message
-      : String(e)
-  scrivi(`db:verifica: ${messaggio}`)
+  scrivi(`db:verifica: ${descrivi(e)}`)
   scrivi('DATI: ROSSO')
   process.exitCode = 1
 })
