@@ -134,12 +134,23 @@ export const useArchivioStore = defineStore('archivio', () => {
   }
 
   // Le RPC danno solo l'id e il collegamento cambia anche altre buste: si rilegge tutto il lato TFR.
+  // Non rifiuta: la scrittura è già riuscita, e rifiutare farebbe ripetere la RPC al chiamante.
   async function rileggiBusteEMovimenti(partenza: number): Promise<void> {
-    const [b, m] = await scrivi(() => Promise.all([elencaBuste(), elencaMovimenti()]))
-    seAncora(partenza, () => {
-      buste.value = b
-      movimenti.value = m
-    })
+    try {
+      const [b, m] = await Promise.all([elencaBuste(), elencaMovimenti()])
+      seAncora(partenza, () => {
+        buste.value = b
+        movimenti.value = m
+      })
+    } catch (eccezione) {
+      const e = erroreDaEccezione(eccezione)
+      if (partenza !== generazione) return
+      if (e.tipo === 'sessione') {
+        await useSessioneStore().esci()
+        return
+      }
+      errore.value = e
+    }
   }
 
   async function salvaFondo(bozza: Bozza<Fondo>): Promise<Fondo> {

@@ -1,14 +1,16 @@
 import { createPinia, setActivePinia } from 'pinia'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { elencaBuste } from '../data/buste'
+import { elencaBuste, eliminaBusta, salvaBusta } from '../data/buste'
 import { ErroreDati } from '../data/errori'
 import { elencaEstratti, salvaEstratto } from '../data/estratti'
 import { elencaFondi } from '../data/fondi'
 import { leggiImpostazioni } from '../data/impostazioni'
-import { elencaMovimenti, salvaMovimento } from '../data/movimenti'
+import type { Bozza, BozzaBusta } from '../data/mappe'
+import { elencaMovimenti, eliminaMovimento, salvaMovimento } from '../data/movimenti'
 import { archivioDalSeed } from '../test/seed'
-import { IMPOSTAZIONI_PREDEFINITE, type EstrattoConto } from '../types/dominio'
+import { IMPOSTAZIONI_PREDEFINITE, type EstrattoConto, type Movimento } from '../types/dominio'
 import { useArchivioStore } from './archivio'
+import { useSessioneStore } from './sessione'
 
 const FONDO = 'Amundi Seconda Pensione'
 
@@ -32,6 +34,12 @@ vi.mock('../data/estratti', () => ({
   salvaEstratto: vi.fn(),
   eliminaEstratto: vi.fn(),
 }))
+// `esci()` della sessione chiama il logout remoto: niente rete nei test.
+vi.mock('../data/sessione', () => ({
+  sessioneCorrente: vi.fn(),
+  accedi: vi.fn(),
+  esci: vi.fn(),
+}))
 vi.mock('../data/impostazioni', () => ({
   leggiImpostazioni: vi.fn(),
   salvaImpostazioni: vi.fn(),
@@ -46,11 +54,19 @@ function lettureDalSeed(): void {
   vi.mocked(leggiImpostazioni).mockImplementation(async () => archivioDalSeed().impostazioni)
 }
 
-/** Una promessa che si risolve quando lo decide il test. */
+/** Una promessa che si risolve o rifiuta quando lo decide il test. */
 function inSospeso<T>() {
   let risolvi: (valore: T) => void = () => {}
-  const promessa = new Promise<T>((r) => (risolvi = r))
-  return { promessa, risolvi: (valore: T) => risolvi(valore) }
+  let rifiuta: (motivo: unknown) => void = () => {}
+  const promessa = new Promise<T>((r, x) => {
+    risolvi = r
+    rifiuta = x
+  })
+  return {
+    promessa,
+    risolvi: (valore: T) => risolvi(valore),
+    rifiuta: (motivo: unknown) => rifiuta(motivo),
+  }
 }
 
 beforeEach(() => {
@@ -192,6 +208,7 @@ describe('archivio: scritture', () => {
     expect(elencaBuste).toHaveBeenCalledOnce()
     expect(elencaMovimenti).toHaveBeenCalledOnce()
     expect(s.buste.find((b) => b.id === 'tfr-2026-04')?.movimentoId).toBe('m-nuovo')
+    expect(s.errore).toBeNull()
   })
 
   it('salvaEstratto con id sostituisce, senza id aggiunge', async () => {
@@ -225,5 +242,128 @@ describe('archivio: scritture', () => {
     await expect(
       s.salvaEstratto({ fondoId: FONDO, data: '2026-11-04', valore: 1, note: '' }),
     ).rejects.toMatchObject({ tipo: 'vincolo', messaggio: 'Valore non valido' })
+  })
+})
+
+const BOZZA_MOVIMENTO: Bozza<Movimento> = {
+  fondoId: FONDO,
+  data: '2026-11-04',
+  righe: [{ tipo: 'TFR', importo: 100 }],
+  note: '',
+}
+
+const BOZZA_BUSTA: BozzaBusta = {
+  fondoId: FONDO,
+  data: '2026-11-04',
+  competenza: '2026-11',
+  righe: [{ tipo: 'TFR', importo: 100 }],
+  note: '',
+}
+
+const RETE = () => new ErroreDati('rete', 'Non riesco a raggiungere il server.')
+
+describe('archivio: rilettura fallita', () => {
+  it("T1: salvaMovimento riuscito con elencaBuste in errore risolve con l'id e imposta errore", async () => {
+    const s = useArchivioStore()
+    await s.carica()
+    const bustePrima = s.buste
+    const movimentiPrima = s.movimenti
+    vi.mocked(salvaMovimento).mockResolvedValueOnce('m-nuovo')
+    vi.mocked(elencaBuste).mockRejectedValueOnce(RETE())
+    await expect(s.salvaMovimento(BOZZA_MOVIMENTO, [])).resolves.toBe('m-nuovo')
+    expect(salvaMovimento).toHaveBeenCalledOnce()
+    expect(s.errore?.tipo).toBe('rete')
+    expect(s.buste).toBe(bustePrima)
+    expect(s.movimenti).toBe(movimentiPrima)
+    expect(s.stato).toBe('pronto')
+  })
+
+  it("T2: salvaBusta riuscito con elencaMovimenti che lancia TypeError risolve con l'id", async () => {
+    const s = useArchivioStore()
+    await s.carica()
+    vi.mocked(salvaBusta).mockResolvedValueOnce('b-nuova')
+    vi.mocked(elencaMovimenti).mockRejectedValueOnce(new TypeError('Failed to fetch'))
+    await expect(s.salvaBusta(BOZZA_BUSTA)).resolves.toBe('b-nuova')
+    expect(salvaBusta).toHaveBeenCalledOnce()
+    expect(s.errore?.tipo).toBe('rete')
+  })
+
+  it('T3: eliminaMovimento riuscito con elencaBuste in errore risolve', async () => {
+    const s = useArchivioStore()
+    await s.carica()
+    vi.mocked(eliminaMovimento).mockResolvedValueOnce(undefined)
+    vi.mocked(elencaBuste).mockRejectedValueOnce(RETE())
+    await expect(s.eliminaMovimento('m-1')).resolves.toBeUndefined()
+    expect(s.errore?.tipo).toBe('rete')
+  })
+
+  it('T4: eliminaBusta riuscito con elencaMovimenti in errore risolve', async () => {
+    const s = useArchivioStore()
+    await s.carica()
+    vi.mocked(eliminaBusta).mockResolvedValueOnce(undefined)
+    vi.mocked(elencaMovimenti).mockRejectedValueOnce(RETE())
+    await expect(s.eliminaBusta('b-1')).resolves.toBeUndefined()
+    expect(s.errore?.tipo).toBe('rete')
+  })
+
+  it('T7: una RPC che fallisce rifiuta e non rilegge', async () => {
+    const s = useArchivioStore()
+    await s.carica()
+    vi.mocked(elencaBuste).mockClear()
+    vi.mocked(elencaMovimenti).mockClear()
+    vi.mocked(salvaMovimento).mockRejectedValueOnce(new ErroreDati('vincolo', 'Righe non valide'))
+    await expect(s.salvaMovimento(BOZZA_MOVIMENTO, [])).rejects.toMatchObject({ tipo: 'vincolo' })
+    expect(elencaBuste).not.toHaveBeenCalled()
+    expect(elencaMovimenti).not.toHaveBeenCalled()
+  })
+
+  it('R7: rilettura riuscita non azzera errore', async () => {
+    const s = useArchivioStore()
+    await s.carica()
+    // Un secondo carico fallito lascia i dati del seed e imposta errore.
+    vi.mocked(elencaFondi).mockRejectedValueOnce(RETE())
+    await s.carica()
+    expect(s.errore?.tipo).toBe('rete')
+    const errorePrima = s.errore
+    vi.mocked(salvaMovimento).mockResolvedValueOnce('m-nuovo')
+    vi.mocked(elencaBuste).mockImplementationOnce(async () =>
+      archivioDalSeed().buste.map((b) =>
+        b.id === 'tfr-2026-04' ? { ...b, movimentoId: 'm-nuovo' } : b,
+      ),
+    )
+    await s.salvaMovimento(BOZZA_MOVIMENTO, ['tfr-2026-04'])
+    expect(s.buste.find((b) => b.id === 'tfr-2026-04')?.movimentoId).toBe('m-nuovo')
+    expect(s.errore).toEqual(errorePrima)
+  })
+})
+
+describe('archivio: rilettura e sessione', () => {
+  it("T5: sessione scaduta nella rilettura esce una volta e risolve con l'id", async () => {
+    const s = useArchivioStore()
+    await s.carica()
+    const esci = vi.spyOn(useSessioneStore(), 'esci')
+    vi.mocked(salvaMovimento).mockResolvedValueOnce('m-nuovo')
+    vi.mocked(elencaBuste).mockRejectedValueOnce(new ErroreDati('sessione', 'Sessione scaduta.'))
+    await expect(s.salvaMovimento(BOZZA_MOVIMENTO, [])).resolves.toBe('m-nuovo')
+    expect(esci).toHaveBeenCalledOnce()
+    expect(s.errore).toBeNull()
+    expect(s.movimenti).toEqual([])
+  })
+
+  it('T6: un reset con la rilettura in volo, poi fallita, non imposta errore', async () => {
+    const s = useArchivioStore()
+    await s.carica()
+    const buste = inSospeso<ReturnType<typeof archivioDalSeed>['buste']>()
+    vi.mocked(salvaMovimento).mockResolvedValueOnce('m-nuovo')
+    vi.mocked(elencaBuste).mockReturnValueOnce(buste.promessa)
+    const scrittura = s.salvaMovimento(BOZZA_MOVIMENTO, [])
+    // La rilettura parte dopo la RPC: si attende che elencaBuste sia stata chiamata.
+    await vi.waitFor(() => expect(elencaBuste).toHaveBeenCalledTimes(2))
+    s.reset()
+    buste.rifiuta(RETE())
+    await expect(scrittura).resolves.toBe('m-nuovo')
+    expect(s.errore).toBeNull()
+    expect(s.buste).toEqual([])
+    expect(s.movimenti).toEqual([])
   })
 })
