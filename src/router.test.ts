@@ -44,9 +44,9 @@ describe('router', () => {
 
   it('imposta il titolo del documento dopo la navigazione', async () => {
     await vaiA('/valori')
-    expect(document.title).toBe('Valori · Piano pensione')
+    expect(document.title).toBe('Valori · Next')
     await vaiA('/')
-    expect(document.title).toBe('Panoramica · Piano pensione')
+    expect(document.title).toBe('Panoramica · Next')
   })
 })
 

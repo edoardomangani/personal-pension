@@ -22,7 +22,7 @@ Monthly: payslip shows TFR → add movement (in transit). Quarterly: fund statem
 Single self-contained HTML artifact on claude.ai with its own database (owner-only read/write), CSV/JSON export. Data: 14 TFR movements, 3 valuations imported from Notion (Nov 2025 – Nov 2026). Multi-fund ready. Italian UI, euro, it-IT formats.
 
 ## Brand Commitments
-Name "Piano pensione". User asked: dark theme preferred, precise and technical character, Phosphor icons. Must not feel like a bank (institutional blue, bureaucratic), must not be playful (emoji, gamification, candy colors), must move away from the previous green palette.
+Name "Next" (the app; the pension fund and its data keep their own names). User asked: dark theme preferred, precise and technical character, Phosphor icons. Must not feel like a bank (institutional blue, bureaucratic), must not be playful (emoji, gamification, candy colors), must move away from the previous green palette.
 
 ## Evidence on Hand
 Real data only from the user's Notion. No projections presented as promises.

@@ -19,6 +19,7 @@ const BLOCCHI_ATTESI = [
   'fondamenta-spaziature',
   'fondamenta-icone',
   'fondamenta-importi',
+  'shell-marchio',
   'shell-sidebar',
   'shell-voci',
   'shell-barra-alta',

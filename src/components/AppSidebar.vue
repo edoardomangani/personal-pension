@@ -13,7 +13,7 @@ const { vociDesktop } = useNavigazione()
   <Sidebar collapsible="none" class="sticky top-0 h-svh gap-5 px-3 py-5">
     <!-- «Registra» sta qui, sotto il marchio, e non nella testata: un solo + su desktop. -->
     <SidebarHeader class="gap-5 p-0">
-      <RouterLink to="/" class="flex items-center gap-2.5 rounded-lg px-1.5 py-1">
+      <RouterLink to="/" class="flex h-8 items-center gap-2.5 rounded-lg px-1">
         <AppLogo />
       </RouterLink>
       <NewMovementButton testo="Registra" />

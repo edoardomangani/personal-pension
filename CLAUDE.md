@@ -1,4 +1,4 @@
-# Piano pensione — handoff per Claude Code
+# Next — handoff per Claude Code
 
 App personale di Edoardo per seguire il suo fondo pensione (Amundi Seconda Pensione). Nasce come artefatto su claude.ai (prototipo funzionante in `prototype/index.html`) e va portata a **PWA vera**: pagina statica su **GitHub Pages**, dati su **Neon** (Postgres + Neon Auth + Data API + RLS), senza server da mantenere.
 
@@ -87,7 +87,7 @@ Le leggono chi scrive le specifiche, chi pianifica, chi esegue e chi fa la revie
 | `DESIGN.md` | Sistema visivo attuale: colori, tipo, misure. Deriva dal design system "Wallet" di Edoardo, con colori propri. |
 | `db/schema.sql` | Bozza di schema Postgres con RLS per Neon. Da verificare sulla doc Neon (vedi sotto). |
 | `data/seed.json` | Dati reali al 4 nov 2026, da importare. |
-| `icons/` | Icona app (graphite, collina avorio, sole arancio): svg, 512, 192, 180 (apple-touch). |
+| `icons/` | Icona app col marchio Next (pillola e punto bianchi su fondo quasi nero): svg, 512, 192, 180 (apple-touch). |
 
 ## Modello dati attuale
 
@@ -137,7 +137,7 @@ Chiedile una alla volta o a gruppi piccoli, proponendo un'opzione consigliata; n
 3. **Login.** Un solo utente (Edoardo) ma con login vero: nessun dato leggibile senza token. Niente chiavi segrete nel bundle.
 4. **Livello dati.** Sostituire `claude.use("db")` con chiamate alla Data API (stile PostgREST). Tenere la stessa interfaccia interna (liste in memoria + funzioni di calcolo) per riusare viste e calcoli del prototipo. Gestire stati: caricamento, errore di rete, sessione scaduta, primo avvio vuoto.
 5. **Import** di `data/seed.json`: creare il fondo, poi versamenti, poi TFR (mappando gli id `v-…` ai nuovi uuid), poi estratti conto, poi impostazioni. Controllo finale: totale TFR 2.659,15 €; versato 1.591,91 €; da versare 1.067,24 €; spese 15,00 €; ultimo valore 1.641,45 € al 03/11/2026.
-6. **PWA.** `manifest.webmanifest` (nome "Piano pensione", short_name "Pensione", display standalone, theme/background #0e0e0d, icone di `icons/`), `apple-touch-icon`, meta `apple-mobile-web-app-*`, service worker che mette in cache la shell (dati sempre dalla rete, con messaggio chiaro se offline). Togliere dal prototipo il codice specifico dell'artefatto: `claude.use`, downloads, il controllo `isOwner`.
+6. **PWA.** `manifest.webmanifest` (name "Next", short_name "Next", display standalone, theme/background #0e0e0d, icone di `icons/`), `apple-touch-icon`, meta `apple-mobile-web-app-*`, service worker che mette in cache la shell (dati sempre dalla rete, con messaggio chiaro se offline). Togliere dal prototipo il codice specifico dell'artefatto: `claude.use`, downloads, il controllo `isOwner`.
 7. **Export** CSV/JSON come backup (download normale, ora che non c'è la sandbox).
 8. **Verifica** su iPhone (Aggiungi a Home → si apre standalone con l'icona giusta) e desktop.
 

@@ -12,15 +12,14 @@ defineProps<{
 </script>
 
 <template>
-  <span
+  <svg
     v-bind="$attrs"
+    viewBox="0 0 256 256"
+    fill="currentColor"
     aria-hidden="true"
-    :class="
-      cn(
-        'inline-flex size-8 shrink-0 items-center justify-center rounded-md border-[0.75px] border-border bg-secondary text-base leading-none font-semibold text-foreground shadow-glass select-none',
-        className,
-      )
-    "
-    >P</span
+    :class="cn('shrink-0', className)"
   >
+    <path d="M60 102 L130 102 A26 26 0 0 1 130 154 L60 154 A26 26 0 0 1 60 102 Z" />
+    <circle cx="196" cy="128" r="26" />
+  </svg>
 </template>

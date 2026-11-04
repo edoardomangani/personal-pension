@@ -7,7 +7,7 @@ declare module 'vue-router' {
   }
 }
 
-const NOME_APP = 'Piano pensione'
+const NOME_APP = 'Next'
 
 export const rotte: RouteRecordRaw[] = [
   { path: '/', name: 'panoramica', component: VistaSegnaposto, meta: { titolo: 'Panoramica' } },

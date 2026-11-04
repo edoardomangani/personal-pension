@@ -32,7 +32,7 @@ describe('index.html', () => {
       '<meta name="viewport" content="width=device-width, initial-scale=1.0" />',
     )
     expect(html).toContain('background-color: #060708;')
-    expect(html).toContain('<title>Piano pensione</title>')
+    expect(html).toContain('<title>Next</title>')
     expect(html).toContain('<div id="app"></div>')
     expect(html).toContain('src="/src/main.ts"')
   })

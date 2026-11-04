@@ -94,14 +94,28 @@ describe('NewMovementButton (R6)', () => {
   })
 })
 
-describe('marchio (R12)', () => {
-  it('AppLogoIcon mostra la lettera P', () => {
-    expect(mount(AppLogoIcon).text()).toBe('P')
+describe('marchio (DS-02 R2-R4)', () => {
+  it('AppLogoIcon è il segno in svg, senza testo', () => {
+    const svg = mount(AppLogoIcon).get('svg')
+    expect(svg.attributes('viewBox')).toBe('0 0 256 256')
+    expect(svg.attributes('aria-hidden')).toBe('true')
+    expect(svg.attributes('fill')).toBe('currentColor')
+    expect(svg.get('path').attributes('d')).toBe(
+      'M60 102 L130 102 A26 26 0 0 1 130 154 L60 154 A26 26 0 0 1 60 102 Z',
+    )
+    const punto = svg.get('circle')
+    expect([punto.attributes('cx'), punto.attributes('cy'), punto.attributes('r')]).toEqual([
+      '196',
+      '128',
+      '26',
+    ])
+    expect(svg.text()).toBe('')
   })
 
-  it('AppLogo ha la P e il nome «Piano pensione»', () => {
+  it('AppLogo ha il segno da 24 e il nome «Next»', () => {
     const wrapper = mount(AppLogo)
-    expect(wrapper.text()).toBe('PPiano pensione')
+    expect(wrapper.text()).toBe('Next')
+    expect(wrapper.getComponent(AppLogoIcon).classes()).toContain('size-6')
   })
 })
 
@@ -162,7 +176,7 @@ describe('AppSidebar (R5, R6)', () => {
 
   it('il marchio porta a Panoramica', async () => {
     const wrapper = montaSidebar(await routerSu('/fisco'))
-    const marchio = wrapper.findAll('a').find((a) => a.text() === 'PPiano pensione')
+    const marchio = wrapper.findAll('a').find((a) => a.text() === 'Next')
     expect(marchio?.attributes('href')).toBe('/')
   })
 })

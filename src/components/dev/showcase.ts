@@ -37,6 +37,7 @@ export const showcaseBlocks = {
   'fondamenta-spaziature': { section: 'fondamenta', title: 'Spaziature' },
   'fondamenta-icone': { section: 'fondamenta', title: 'Icone' },
   'fondamenta-importi': { section: 'fondamenta', title: 'Saldo e importi' },
+  'shell-marchio': { section: 'shell', title: 'Marchio' },
   'shell-sidebar': { section: 'shell', title: 'Sidebar desktop' },
   'shell-voci': { section: 'shell', title: 'Voci di navigazione' },
   'shell-barra-alta': { section: 'shell', title: 'Barra in alto desktop' },

@@ -1,5 +1,5 @@
 ---
-name: Piano pensione
+name: Next
 description: Il fondo pensione su vetro scuro e calmo, lime solo sulle cifre che crescono e sugli anni della proiezione.
 colors:
   background: "#060708"
@@ -228,13 +228,13 @@ components:
     width: "480px"
 ---
 
-# Design System: Piano pensione
+# Design System: Next
 
 ## Overview
 
 **Creative North Star: "La cassaforte di vetro"**
 
-Piano pensione segue un fondo pensione: quanto è stato versato, quanto è cresciuto, quanto TFR aspetta di arrivare sul fondo e dove può portare da qui alla pensione. Il fondo è quasi nero, i numeri stanno dietro superfici di vetro sottili e tutto è calmo: niente compete con il valore della posizione. Il colore è un segnale, non una decorazione: il lime acido si accende solo sulle cifre positive (crescita, versato, rendimento) e sugli anni della proiezione. Le azioni sono bianche: il «+», «Registra», i bottoni principali, l'anello del focus. Se il lime compare altrove, perde il suo significato.
+Next segue un fondo pensione: quanto è stato versato, quanto è cresciuto, quanto TFR aspetta di arrivare sul fondo e dove può portare da qui alla pensione. Il fondo è quasi nero, i numeri stanno dietro superfici di vetro sottili e tutto è calmo: niente compete con il valore della posizione. Il colore è un segnale, non una decorazione: il lime acido si accende solo sulle cifre positive (crescita, versato, rendimento) e sugli anni della proiezione. Le azioni sono bianche: il «+», «Registra», i bottoni principali, l'anello del focus. Se il lime compare altrove, perde il suo significato.
 
 È lo stesso design system di Wallet, per intero: un solo stile per le due app. È un'interfaccia da usare, non da guardare: la precisione conta più dell'espressione. Il carattere sta nei dettagli (il valore grande che prende il disegno espressivo di Bricolage, i fili di luce sul vetro, il bagliore lime appena percepibile dietro la pagina). Gli stessi componenti e le stesse misure su desktop e su telefono, che è lo strumento di tutti i giorni; il tocco ha sempre un'area di almeno 44px.
 
@@ -330,7 +330,7 @@ La profondità è vetro, non ombra. Le superfici sono strati di bianco velato so
 
 ## Shapes
 
-I controlli sono pill: bottoni, input, badge, segmenti. Il resto cresce col contenitore: 6px per piccoli contenitori, 8px per i tile icona e il marchio, 10px (la base `--radius`) per voci di menu e sidebar, 14px per tabelle e tooltip ricchi, 18px per i dialog, 22px per le card su desktop e lo Sheet dal basso, 24px per le card su telefono. Bordi sempre da un filo (0,75px).
+I controlli sono pill: bottoni, input, badge, segmenti. Il resto cresce col contenitore: 6px per piccoli contenitori, 8px per i tile icona, 10px (la base `--radius`) per voci di menu e sidebar, 14px per tabelle e tooltip ricchi, 18px per i dialog, 22px per le card su desktop e lo Sheet dal basso, 24px per le card su telefono. Bordi sempre da un filo (0,75px).
 
 ## Components
 
@@ -379,7 +379,7 @@ I controlli sono pill: bottoni, input, badge, segmenti. Il resto cresce col cont
 - **Scelta da un elenco lungo:** lo sheet si apre sulla voce selezionata, evidenziata e con la spunta; la ricerca resta in cima mentre l'elenco scorre.
 
 ### Navigation
-- **Sidebar (desktop):** larga 232px, `sidebar` con un filo a destra. In alto il marchio (tile «P» da 32px su vetro 2 e «Piano pensione» in `text-base` 600), sotto la pillola «Registra», poi le voci: Panoramica, Movimenti, Valori, Futuro, Fisco, Impostazioni. Voci alte 40px, raggio 10px, padding 0 12px, icona 20px, 14px in 400, Grigio Nebbia. Hover su `sidebar-hover` (5%) con testo Bianco Gesso; la voce attiva su `sidebar-accent` (8%), icona Fill, testo Bianco Gesso in 600 e una pillola bianca 3×16px centrata sul bordo sinistro (raggio 0 2px 2px 0): è l'unica barra laterale ammessa, bianca e mai colorata.
+- **Sidebar (desktop):** larga 232px, `sidebar` con un filo a destra. In alto il marchio, in una riga alta 32px con padding 0 4px: il segno di Next (pillola e punto in orizzontale, pieno, `foreground`) da 24px, 10px di spazio e «Next» in `text-lg` 600 con lettere strette di −0,02em, `foreground`; sotto la pillola «Registra», poi le voci: Panoramica, Movimenti, Valori, Futuro, Fisco, Impostazioni. Voci alte 40px, raggio 10px, padding 0 12px, icona 20px, 14px in 400, Grigio Nebbia. Hover su `sidebar-hover` (5%) con testo Bianco Gesso; la voce attiva su `sidebar-accent` (8%), icona Fill, testo Bianco Gesso in 600 e una pillola bianca 3×16px centrata sul bordo sinistro (raggio 0 2px 2px 0): è l'unica barra laterale ammessa, bianca e mai colorata.
 - **Barra in alto (desktop):** il titolo della schermata a sinistra (`text-xl` in 600). Il «+» non è qui: su desktop c'è un solo «Registra», nella sidebar.
 - **Testata (telefono):** sticky, `glass-header` (lastra al 55%, blur 20px, saturazione 140%, sfumatura di 24px verso il contenuto), padding in alto `calc(12px + env(safe-area-inset-top))`, in basso 12px, ai lati 16px. Il titolo della schermata in `text-base` 600, su una riga alta 36px.
 - **Barra in basso (telefono):** ancorata a tutta larghezza, non una pillola sospesa; `glass-bar` (dal 72% in basso al 55% in alto, blur 20px, saturazione 140%, sfumatura di 24px verso il contenuto), senza bordo. Quattro voci (Panoramica, Movimenti, Valori, Futuro) e il «+» da 48px al centro; Fisco si raggiunge dalla Panoramica. Voce: icona 24px, 6px di spazio, etichetta `tab-label`; attiva con icona Fill e testo Bianco Gesso, senza sfondo; a riposo icona Regular in Grigio Nebbia. Padding in basso `max(24px, env(safe-area-inset-bottom))`, altezza totale circa 84px.

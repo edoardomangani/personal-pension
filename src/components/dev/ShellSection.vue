@@ -2,6 +2,8 @@
 import { computed } from 'vue'
 import AppBottomBar from '@/components/AppBottomBar.vue'
 import AppBottomBarItem from '@/components/AppBottomBarItem.vue'
+import AppLogo from '@/components/AppLogo.vue'
+import AppLogoIcon from '@/components/AppLogoIcon.vue'
 import AppMobileHeader from '@/components/AppMobileHeader.vue'
 import AppSidebar from '@/components/AppSidebar.vue'
 import AppTopBar from '@/components/AppTopBar.vue'
@@ -35,6 +37,22 @@ const vociMobiliCampione = computed(() => conPanoramicaAttiva(vociMobili.value))
 
 <template>
   <ShowcaseSection id="shell">
+    <ShowcaseBlock id="shell-marchio">
+      <div class="flex flex-wrap items-end gap-10">
+        <Specimen code="SHL-logo" note="segno 24 · 18 / 600">
+          <div class="flex h-8 items-center gap-2.5 px-1">
+            <AppLogo />
+          </div>
+        </Specimen>
+        <Specimen code="SHL-segno-24">
+          <AppLogoIcon class-name="size-6 text-foreground" />
+        </Specimen>
+        <Specimen code="SHL-segno-40">
+          <AppLogoIcon class-name="size-10 text-foreground" />
+        </Specimen>
+      </div>
+    </ShowcaseBlock>
+
     <ShowcaseBlock id="shell-sidebar">
       <p class="text-xs text-subtle-foreground">
         Dal breakpoint lg (1024px). «Registra» resta disattivato finché non arriva il modulo dei
