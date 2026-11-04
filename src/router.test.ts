@@ -100,6 +100,8 @@ describe('vetrina /dev/ui (R8)', () => {
 
     expect(wrapper.find('h1').text()).toBe('Design system')
     expect(wrapper.find('[data-specimen="SHL-bottombar-mobile"]').exists()).toBe(true)
+    expect(wrapper.find('[data-specimen="BTN-new-movement-mobile"]').exists()).toBe(true)
+    expect(wrapper.find('[data-specimen="FRM-rows-desktop"]').exists()).toBe(true)
     wrapper.unmount()
     expect(disconnect).toHaveBeenCalled()
   })

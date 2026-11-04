@@ -47,7 +47,6 @@ export const showcaseBlocks = {
   'azioni-bottoni-misure': { section: 'azioni', title: 'Bottoni: misure' },
   'azioni-bottoni-stati': { section: 'azioni', title: 'Bottoni: stati' },
   'azioni-badge': { section: 'azioni', title: 'Badge' },
-  'azioni-chip': { section: 'azioni', title: 'Chip del filtro' },
   'azioni-nuovo-movimento': { section: 'azioni', title: 'Nuovo movimento' },
   'campi-label': { section: 'campi', title: 'Etichetta' },
   'campi-testo-stati': { section: 'campi', title: 'Campo di testo: stati' },

@@ -29,7 +29,6 @@ const BLOCCHI_ATTESI = [
   'azioni-bottoni-misure',
   'azioni-bottoni-stati',
   'azioni-badge',
-  'azioni-chip',
   'azioni-nuovo-movimento',
   'campi-label',
   'campi-testo-stati',
@@ -271,6 +270,9 @@ describe('campioni e blocchi nei sorgenti della vetrina (R9)', () => {
       ),
     )
     expect(Object.keys(elenchi)).toContain('FoundationsSection.vue: colorTokens')
+    expect(Object.keys(elenchi)).toContain('ActionsSection.vue: buttonVariants')
+    expect(Object.keys(elenchi)).toContain('FieldsSection.vue: fieldStates')
+    expect(Object.keys(elenchi)).toContain('OverlaysSection.vue: sheetSamples')
     for (const [nome, valori] of Object.entries(elenchi)) {
       expect(valori, `${nome} è vuoto`).not.toEqual([])
       expect(
@@ -298,6 +300,19 @@ describe('campioni e blocchi nei sorgenti della vetrina (R9)', () => {
       expect(sezione, `${basename(file)} senza ShowcaseSection`).toBeDefined()
       expect(blocchiUsati(testo), `${basename(file)} fuori ordine`).toEqual(attesi)
     }
+  })
+
+  it("VistaVetrina monta le sezioni nell'ordine dell'indice", () => {
+    const vista = readFileSync(`${VIEWS_DEV}VistaVetrina.vue`, 'utf8')
+    const template = vista.slice(vista.indexOf('<template>'))
+    const montate = [...template.matchAll(/<(\w+Section) \/>/g)].map((m) => m[1] ?? '')
+    const sezioneDelFile = Object.fromEntries(
+      SEZIONI.map((f) => [basename(f, '.vue'), sezioneDi(readFileSync(f, 'utf8'))]),
+    )
+    expect(montate.map((nome) => sezioneDelFile[nome])).toEqual(
+      showcaseSections.map((s) => s.id).filter((id) => Object.values(sezioneDelFile).includes(id)),
+    )
+    expect(montate).toHaveLength(SEZIONI.length)
   })
 
   it('nessun file della vetrina importa dati o store (R8)', () => {

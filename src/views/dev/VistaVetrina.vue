@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, provide, ref } from 'vue'
+import ActionsSection from '@/components/dev/ActionsSection.vue'
+import FieldsSection from '@/components/dev/FieldsSection.vue'
+import FormsSection from '@/components/dev/FormsSection.vue'
 import FoundationsSection from '@/components/dev/FoundationsSection.vue'
+import OverlaysSection from '@/components/dev/OverlaysSection.vue'
 import ShellSection from '@/components/dev/ShellSection.vue'
 import {
   sectionBlocks,
@@ -147,6 +151,10 @@ onBeforeUnmount(() => observer?.disconnect())
 
       <FoundationsSection />
       <ShellSection />
+      <ActionsSection />
+      <FieldsSection />
+      <FormsSection />
+      <OverlaysSection />
     </div>
   </div>
 </template>
