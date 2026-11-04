@@ -40,11 +40,19 @@ export function daApplicare(file: FileMigrazione[], registro: RigaRegistro[]): F
     .sort((a, b) => (a.nome < b.nome ? -1 : a.nome > b.nome ? 1 : 0))
 }
 
+/** Policy per `authenticated` o `public`: espressioni come le riscrive Postgres. */
+export interface PolicyTabella {
+  nome: string
+  permissiva: boolean
+  comando: 'ALL' | 'SELECT' | 'INSERT' | 'UPDATE' | 'DELETE'
+  qual: string | null
+  withCheck: string | null
+}
+
 export interface StatoTabella {
   tabella: string
   rls: boolean
-  /** Policy per `authenticated`: espressioni `using` e `with check` come le riscrive Postgres. */
-  policy: { qual: string | null; withCheck: string | null }[]
+  policy: PolicyTabella[]
   /** Privilegi che `anonymous` ha sulla tabella. */
   privilegiAnonymous: string[]
   /** `column_default` di `user_id`, null se la colonna manca o non ha default. */
@@ -53,16 +61,37 @@ export interface StatoTabella {
 
 const UTENTE_JWT = 'auth.user_id()'
 
-/** Mancanze di sicurezza (R1, R2) per tabella, in italiano; lista vuota se è tutto a posto. */
+const filtra = (espressione: string | null): boolean => espressione?.includes(UTENTE_JWT) ?? false
+
+/** Una policy filtra per proprietario nelle espressioni che il suo comando usa. */
+function filtraPerProprietario(p: PolicyTabella): boolean {
+  switch (p.comando) {
+    case 'SELECT':
+    case 'DELETE':
+      return filtra(p.qual)
+    case 'INSERT':
+      return filtra(p.withCheck)
+    case 'UPDATE':
+    case 'ALL':
+      return filtra(p.qual) && filtra(p.withCheck)
+  }
+}
+
+/** Mancanze di sicurezza per tabella, in italiano; lista vuota se è tutto a posto. */
 export function mancanzeSicurezza(tabelle: StatoTabella[]): string[] {
   const mancanze: string[] = []
   for (const t of tabelle) {
     if (!t.rls) mancanze.push(`${t.tabella}: RLS non attiva`)
-    const proprietario = t.policy.some(
-      (p) => p.qual?.includes(UTENTE_JWT) && p.withCheck?.includes(UTENTE_JWT),
-    )
+    const permissive = t.policy.filter((p) => p.permissiva)
+    const proprietario = permissive.some((p) => filtra(p.qual) && filtra(p.withCheck))
     if (!proprietario) {
       mancanze.push(`${t.tabella}: manca la policy per proprietario su authenticated`)
+    }
+    // Le permissive si sommano in OR: ne basta una aperta per esporre tutte le righe.
+    for (const p of permissive) {
+      if (!filtraPerProprietario(p)) {
+        mancanze.push(`${t.tabella}: la policy ${p.nome} non filtra per auth.user_id()`)
+      }
     }
     if (t.privilegiAnonymous.length > 0) {
       mancanze.push(`${t.tabella}: anonymous ha ${t.privilegiAnonymous.join(', ')}`)

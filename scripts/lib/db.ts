@@ -9,6 +9,7 @@ import {
   mancanzeFunzioni,
   mancanzeSicurezza,
   type FileMigrazione,
+  type PolicyTabella,
   type RigaRegistro,
   type StatoFunzione,
   type StatoTabella,
@@ -86,9 +87,14 @@ async function controllaSicurezza(client: pg.Client): Promise<void> {
   )
   const stati: StatoTabella[] = []
   for (const { tabella, rls } of tabelle) {
-    const { rows: policy } = await client.query<{ qual: string | null; withCheck: string | null }>(
-      `select qual, with_check as "withCheck" from pg_policies
-        where schemaname = 'public' and tablename = $1 and 'authenticated' = any(roles)`,
+    // Le policy di `public` valgono anche per `authenticated`.
+    const { rows: policy } = await client.query<PolicyTabella>(
+      `select policyname as nome, permissive = 'PERMISSIVE' as permissiva, cmd as comando,
+              qual, with_check as "withCheck"
+         from pg_policies
+        where schemaname = 'public' and tablename = $1
+          and ('authenticated' = any(roles) or 'public' = any(roles))
+        order by policyname`,
       [tabella],
     )
     const privilegiAnonymous: string[] = []

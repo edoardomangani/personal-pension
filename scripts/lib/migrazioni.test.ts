@@ -5,6 +5,7 @@ import {
   hashContenuto,
   mancanzeFunzioni,
   mancanzeSicurezza,
+  type PolicyTabella,
   type StatoFunzione,
   type StatoTabella,
 } from './migrazioni'
@@ -51,19 +52,77 @@ describe('hashContenuto', () => {
 })
 
 describe('mancanzeSicurezza', () => {
+  const filtro = '(user_id = auth.user_id())'
+  const policy = (p: Partial<PolicyTabella> & Pick<PolicyTabella, 'nome'>): PolicyTabella => ({
+    permissiva: true,
+    comando: 'ALL',
+    qual: null,
+    withCheck: null,
+    ...p,
+  })
+  const proprietario = policy({ nome: 'fondi_proprietario', qual: filtro, withCheck: filtro })
   const sicura: StatoTabella = {
     tabella: 'fondi',
     rls: true,
-    policy: [{ qual: '(user_id = auth.user_id())', withCheck: '(user_id = auth.user_id())' }],
+    policy: [proprietario],
     privilegiAnonymous: [],
     defaultUserId: 'auth.user_id()',
   }
+  const conAnche = (altra: PolicyTabella) =>
+    mancanzeSicurezza([{ ...sicura, policy: [proprietario, altra] }])
 
-  it('tabella a posto → nessuna mancanza', () => {
+  it('T1: policy ALL per proprietario → nessuna mancanza', () => {
     expect(mancanzeSicurezza([sicura])).toEqual([])
   })
 
-  it('elenca RLS, policy, privilegi di anonymous e default mancanti', () => {
+  it('T2: una ALL permissiva aperta accanto a quella per proprietario → mancanza', () => {
+    expect(conAnche(policy({ nome: 'fondi_aperta', qual: 'true', withCheck: 'true' }))).toEqual([
+      'fondi: la policy fondi_aperta non filtra per auth.user_id()',
+    ])
+  })
+
+  it('T3: SELECT permissiva aperta → mancanza', () => {
+    expect(conAnche(policy({ nome: 'fondi_lettura', comando: 'SELECT', qual: 'true' }))).toEqual([
+      'fondi: la policy fondi_lettura non filtra per auth.user_id()',
+    ])
+  })
+
+  it('T4: SELECT con auth.user_id() in qual e with check null → nessuna mancanza', () => {
+    expect(conAnche(policy({ nome: 'fondi_lettura', comando: 'SELECT', qual: filtro }))).toEqual([])
+  })
+
+  it('T5: INSERT con qual null e auth.user_id() in with check → nessuna mancanza', () => {
+    expect(
+      conAnche(policy({ nome: 'fondi_inserimento', comando: 'INSERT', withCheck: filtro })),
+    ).toEqual([])
+  })
+
+  it('T6: DELETE permissiva aperta → mancanza', () => {
+    expect(conAnche(policy({ nome: 'fondi_cancella', comando: 'DELETE', qual: 'true' }))).toEqual([
+      'fondi: la policy fondi_cancella non filtra per auth.user_id()',
+    ])
+  })
+
+  it('T7: ALL restrittiva aperta → nessuna mancanza', () => {
+    expect(conAnche(policy({ nome: 'fondi_limite', permissiva: false, qual: 'true' }))).toEqual([])
+  })
+
+  it('T8: solo una restrittiva per proprietario non basta', () => {
+    const restrittiva = { ...proprietario, permissiva: false }
+    expect(mancanzeSicurezza([{ ...sicura, policy: [restrittiva] }])).toEqual([
+      'fondi: manca la policy per proprietario su authenticated',
+    ])
+  })
+
+  it('T9: ALL senza with check → mancanza della policy e del proprietario', () => {
+    const senzaCheck = { ...proprietario, withCheck: null }
+    expect(mancanzeSicurezza([{ ...sicura, policy: [senzaCheck] }])).toEqual([
+      'fondi: manca la policy per proprietario su authenticated',
+      'fondi: la policy fondi_proprietario non filtra per auth.user_id()',
+    ])
+  })
+
+  it('T10: elenca RLS, policy, privilegi di anonymous e default mancanti', () => {
     const mancanze = mancanzeSicurezza([
       {
         tabella: 'fondi',
@@ -75,13 +134,6 @@ describe('mancanzeSicurezza', () => {
     ])
     expect(mancanze).toHaveLength(4)
     expect(mancanze.every((m) => m.startsWith('fondi:'))).toBe(true)
-  })
-
-  it('una policy senza with check non basta', () => {
-    const mancanze = mancanzeSicurezza([
-      { ...sicura, policy: [{ qual: '(user_id = auth.user_id())', withCheck: null }] },
-    ])
-    expect(mancanze).toEqual(['fondi: manca la policy per proprietario su authenticated'])
   })
 })
 
