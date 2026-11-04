@@ -1,4 +1,5 @@
 import { createRouter, createWebHashHistory, type RouteRecordRaw } from 'vue-router'
+import VistaProfilo from './views/VistaProfilo.vue'
 import VistaSegnaposto from './views/VistaSegnaposto.vue'
 
 declare module 'vue-router' {
@@ -43,7 +44,7 @@ export const rotte: RouteRecordRaw[] = [
   {
     path: '/profilo',
     name: 'profilo',
-    component: VistaSegnaposto,
+    component: VistaProfilo,
     meta: { titolo: 'Profilo', testata: 'secondaria', madre: '/' },
   },
   {

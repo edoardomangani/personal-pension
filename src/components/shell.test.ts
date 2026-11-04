@@ -167,13 +167,13 @@ describe('AppSidebar (R5, R13)', () => {
     const Contenitore = defineComponent({
       setup: () => () => h(SidebarProvider, null, () => h(AppSidebar)),
     })
-    return mount(Contenitore, { global: { plugins: [router] } })
+    return mount(Contenitore, { global: { plugins: [router] }, attachTo: document.body })
   }
 
   it('non ha «Registra» e ha 6 link nella navigazione (R13)', async () => {
     const wrapper = montaSidebar(await routerSu('/fisco'))
     expect(wrapper.text()).not.toContain('Registra')
-    expect(wrapper.find('button').exists()).toBe(false)
+    expect(wrapper.get('nav').find('button').exists()).toBe(false)
 
     const link = wrapper.get('nav').findAll('a')
     expect(link.map((a) => a.text())).toEqual([
@@ -198,6 +198,16 @@ describe('AppSidebar (R5, R13)', () => {
     const wrapper = montaSidebar(await routerSu('/account'))
     expect(wrapper.get('nav').findAll('a')).toHaveLength(6)
     expect(wrapper.findAll('[aria-current]')).toHaveLength(0)
+  })
+
+  it('il piede mostra «Account» e un pulsante che apre il menu (R14)', async () => {
+    const wrapper = montaSidebar(await routerSu('/fisco'))
+    const piede = wrapper.get('[data-sidebar="footer"]')
+    const pulsante = piede.get('button[aria-haspopup="menu"]')
+    expect(pulsante.text()).toBe('Account')
+    await pulsante.trigger('keydown', { key: 'Enter' })
+    await flushPromises()
+    expect(document.body.querySelector('[role="menu"]')?.textContent).toContain('Esci')
   })
 
   it('il marchio porta a Home', async () => {

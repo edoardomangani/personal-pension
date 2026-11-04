@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { enableAutoUnmount, flushPromises, mount } from '@vue/test-utils'
 import { createPinia } from 'pinia'
 import App from './App.vue'
+import VistaProfilo from './views/VistaProfilo.vue'
 import VistaSegnaposto from './views/VistaSegnaposto.vue'
 import { router } from './router'
 
@@ -56,10 +57,9 @@ describe('router', () => {
     ])
   })
 
-  it('/profilo e /account risolvono al segnaposto', () => {
-    for (const percorso of ['/profilo', '/account']) {
-      expect(router.resolve(percorso).matched[0]?.components?.default).toBe(VistaSegnaposto)
-    }
+  it('/profilo risolve a VistaProfilo, /account al segnaposto', () => {
+    expect(router.resolve('/profilo').matched[0]?.components?.default).toBe(VistaProfilo)
+    expect(router.resolve('/account').matched[0]?.components?.default).toBe(VistaSegnaposto)
   })
 
   it('/futuro risolve al segnaposto con titolo «Futuro»', async () => {

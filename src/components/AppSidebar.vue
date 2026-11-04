@@ -2,7 +2,8 @@
 import { RouterLink } from 'vue-router'
 import AppLogo from '@/components/AppLogo.vue'
 import NavMain from '@/components/NavMain.vue'
-import { Sidebar, SidebarContent, SidebarHeader } from '@/components/ui/sidebar'
+import NavUtente from '@/components/NavUtente.vue'
+import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader } from '@/components/ui/sidebar'
 import { useNavigazione } from '@/composables/useNavigazione'
 
 const { vociDesktop } = useNavigazione()
@@ -21,5 +22,9 @@ const { vociDesktop } = useNavigazione()
         <NavMain :voci="vociDesktop" />
       </nav>
     </SidebarContent>
+
+    <SidebarFooter class="p-0">
+      <NavUtente />
+    </SidebarFooter>
   </Sidebar>
 </template>
