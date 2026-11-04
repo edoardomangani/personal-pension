@@ -6,6 +6,7 @@ import { createMemoryHistory, createRouter, type Router } from 'vue-router'
 import { rotte } from '@/router'
 import { SidebarProvider } from '@/components/ui/sidebar'
 import AppBottomBar from './AppBottomBar.vue'
+import AppLayout from './AppLayout.vue'
 import AppLogo from './AppLogo.vue'
 import AppMobileHeader from './AppMobileHeader.vue'
 import AppSidebar from './AppSidebar.vue'
@@ -186,5 +187,18 @@ describe('testate (R7)', () => {
     const router = await routerSu('/futuro')
     expect(mount(AppMobileHeader, { global: { plugins: [router] } }).text()).toBe('Futuro')
     expect(mount(AppTopBar, { global: { plugins: [router] } }).text()).toBe('Futuro')
+  })
+})
+
+describe('AppLayout (R3)', () => {
+  it('la regione delle notifiche si chiama «Notifiche»', async () => {
+    const wrapper = mount(AppLayout, {
+      global: { plugins: [await routerSu('/')] },
+      attachTo: document.body,
+    })
+    await flushPromises()
+    const etichetta = wrapper.get('section[aria-live]').attributes('aria-label')
+    expect(etichetta).toMatch(/^Notifiche/)
+    expect(etichetta).not.toContain('Notifications')
   })
 })

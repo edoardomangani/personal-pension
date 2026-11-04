@@ -19,7 +19,7 @@ const { variant = 'pill', testo = 'Nuovo movimento' } = defineProps<{
       size="icon-lg"
       aria-disabled="true"
       aria-label="Nuovo movimento"
-      class="size-12 shrink-0 shadow-[0_8px_24px_rgba(0,0,0,0.45)] aria-disabled:opacity-100"
+      class="size-12 shrink-0 shadow-fab aria-disabled:opacity-100"
     >
       <PhPlus weight="bold" class="size-6" />
     </Button>

@@ -77,7 +77,7 @@ const movementRows = [
     meta: 'Da versare',
     amount: formatoEuro(17507),
     icon: PhReceipt,
-    tile: 'bg-transparent text-subtle-foreground shadow-[inset_0_0_0_0.75px_rgba(255,255,255,0.16)]',
+    tile: 'bg-transparent text-subtle-foreground shadow-tile-outline',
     ink: 'text-subtle-foreground',
   },
 ]

@@ -25,7 +25,7 @@ const { kind, title } = defineProps<{
       :aria-label="title"
       class="absolute inset-x-0 bottom-0 flex max-h-[90%] flex-col rounded-t-[24px] sheet-surface pb-6"
     >
-      <div class="mx-auto mt-3 h-1 w-10 shrink-0 rounded-full bg-white/18" />
+      <div class="mx-auto mt-3 h-1 w-10 shrink-0 rounded-full bg-handle" />
       <ResponsiveSheetHeader>
         <template #title>
           <h2 class="truncate text-base font-semibold">

@@ -336,3 +336,21 @@ describe('mattoni della vetrina', () => {
     expect(sezione).not.toMatch(/(?<![\w-])p-\d/)
   })
 })
+
+describe('token di R1', () => {
+  const COMPONENTI = fileURLToPath(new URL('..', import.meta.url))
+  const casi = [
+    { file: `${COMPONENTI}NewMovementButton.vue`, classe: 'shadow-fab' },
+    { file: `${COMPONENTI}AppLayout.vue`, classe: 'max-w-content' },
+    { file: `${DEV}StructureSection.vue`, classe: 'shadow-tile-outline' },
+    { file: `${DEV}DrawerPreview.vue`, classe: 'bg-handle' },
+  ]
+
+  it.each(casi)('$file usa $classe al posto del valore arbitrario', ({ file, classe }) => {
+    const testo = readFileSync(file, 'utf8')
+    expect(testo).toContain(classe)
+    expect(testo).not.toContain('rgba(')
+    expect(testo).not.toContain('max-w-[1180px]')
+    expect(testo).not.toContain('bg-white/18')
+  })
+})
