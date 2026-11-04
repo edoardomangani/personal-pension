@@ -9,7 +9,8 @@ Lingua dell'interfaccia e del codice visibile: italiano, dando del tu. Formati i
 ## Decisioni prese (4 nov 2026)
 
 - **Stack**: Vue 3 + Vite + TypeScript, SPA statica su GitHub Pages; dati su Neon (Auth + Data API + RLS).
-- **Base dal prototipo: solo la logica** (modello dati e calcoli). **Lo stile si rifà da zero** (direzione, palette, font, layout) con `/impeccable` nella vetrina: le sezioni "Interfaccia attuale" qui sotto e `DESIGN.md` descrivono il prototipo, non sono un riferimento.
+- **Base dal prototipo: solo la logica** (modello dati e calcoli). Le sezioni "Interfaccia attuale" qui sotto e `DESIGN.md` descrivono il prototipo, non sono un riferimento.
+- **Stile: il design system di Wallet** (artefatto "Wallet Design System" su claude.ai: vetro, Bricolage Grotesque, pill, due densità, Phosphor, shadcn-vue + Tailwind) **con colori propri**: mattone `#f05a28` come accento di sfondo (bagliore, focus), salvia `#8fd4a8` per le cifre positive. Si definisce in DS-01 (canvas con `/impeccable`, poi `prova/design` e `/porta-riferimento`).
 - **Modello dati rivisto** (supera § Modello dati attuale): buste paga con righe TFR/Datore/Personale, movimenti con righe TFR/Datore/Personale/Volontario/Spesa, estratti conto; le buste versate si collegano al movimento. Multiutente con piani separati. Dettagli nel brief di DAT-01.
 - **Lavoro col ciclo kit** (`ciclo/`, profilo in `ciclo/PROFILO.md`): dati e design si rivedono come voci, con brief e specifiche.
 
@@ -58,7 +59,8 @@ Le leggono chi scrive le specifiche, chi pianifica, chi esegue e chi fa la revie
 - Vue 3 `<script setup lang="ts">`, `defineProps<T>()` e `defineEmits<T>()` tipizzati, props mai mutate; logica riusabile in composables; cleanup in `onUnmounted`.
 - Stato con Pinia, setup store, uno per dominio in `src/stores/` (`sessione`, `dati`, `impostazioni`…): caricano da `src/data/` e derivano con `src/calc/`. I componenti leggono dagli store, non da `src/data/`.
 - Al logout e al cambio di account ogni store si svuota (`reset()` esplicito, chiamato dallo store della sessione), con un test che lo verifica: nessun dato di un utente resta in memoria per il successivo.
-- Stili: token del design system come custom properties in `src/styles/tokens.css`; componenti con `<style scoped>` che usano solo i token per colori, raggi, spazi, tipografia e ombre.
+- Componenti: shadcn-vue (stile new-york-v4, primitive reka-ui) in `src/components/ui/`, con le varianti del design system; icone `@phosphor-icons/vue`, mai `lucide`. Componenti dell'app in `src/components/`.
+- Stili: Tailwind v4; i token del design system sono le variabili CSS di shadcn in `src/styles/app.css` (`:root` e `@theme inline`), un solo tema scuro. Classi Tailwind nei template, solo con i token (niente valori arbitrari `[#…]`, `[13px]`); niente `style=""`; `<style scoped>` solo per ciò che Tailwind non esprime.
 - Ogni componente del design system sta nella vetrina (`docs/convenzioni-vetrina.md`); chi lo cambia aggiorna la vetrina nello stesso lavoro.
 - Formattazione di importi, date e percentuali da un solo modulo (`src/calc/formato.ts`), it-IT, segno − (U+2212).
 - Accessibilità: etichette sui campi, `aria-label` sui pulsanti con sola icona, aree di tocco ≥ 44px, `prefers-reduced-motion` rispettato.
@@ -74,7 +76,7 @@ Le leggono chi scrive le specifiche, chi pianifica, chi esegue e chi fa la revie
 - `console.log` e `debugger` nel codice consegnato; `any` in TypeScript.
 - Segreti, chiavi o stringhe di connessione nel bundle o nel repo (solo `VITE_*` pubbliche).
 - `v-html` con dati; `fetch` fuori da `src/data/`.
-- Aritmetica sugli importi fuori dagli helper dei centesimi; colori e misure fuori dai token.
+- Aritmetica sugli importi fuori dagli helper dei centesimi; colori e misure fuori dai token (valori arbitrari di Tailwind compresi); icone fuori da Phosphor.
 
 ## Cosa c'è in questa cartella
 

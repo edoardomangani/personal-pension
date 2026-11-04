@@ -1,110 +1,6 @@
-import { readdirSync, readFileSync } from 'node:fs'
-import { join } from 'node:path'
-import { fileURLToPath } from 'node:url'
 import pg from 'pg'
+import { applicaMigrazioni, scrivi } from './lib/db'
 import { caricaVariabili, leggiArgomenti, richiedi } from './lib/env'
-import {
-  daApplicare,
-  eMigrazione,
-  hashContenuto,
-  mancanzeSicurezza,
-  type FileMigrazione,
-  type RigaRegistro,
-  type StatoTabella,
-} from './lib/migrazioni'
-
-const CARTELLA = fileURLToPath(new URL('../db/migrations/', import.meta.url))
-const PRIVILEGI = ['select', 'insert', 'update', 'delete', 'truncate', 'references', 'trigger']
-
-const scrivi = (riga: string) => process.stdout.write(riga + '\n')
-
-function leggiMigrazioni(): (FileMigrazione & { testo: string })[] {
-  return readdirSync(CARTELLA)
-    .filter(eMigrazione)
-    .map((nome) => {
-      const testo = readFileSync(join(CARTELLA, nome), 'utf8')
-      return { nome, hash: hashContenuto(testo), testo }
-    })
-}
-
-async function preparaRegistro(client: pg.Client): Promise<RigaRegistro[]> {
-  await client.query('create schema if not exists migrazioni')
-  await client.query(`create table if not exists migrazioni.applicate (
-    nome text primary key,
-    hash text not null,
-    applicata_il timestamptz not null default now()
-  )`)
-  const { rows } = await client.query<RigaRegistro>(
-    'select nome, hash from migrazioni.applicate order by nome',
-  )
-  return rows
-}
-
-async function applica(client: pg.Client, registro: RigaRegistro[]): Promise<void> {
-  const file = leggiMigrazioni()
-  const lista = daApplicare(file, registro)
-  if (lista.length === 0) scrivi('Nessuna migration da applicare.')
-  for (const m of lista) {
-    const testo = file.find((f) => f.nome === m.nome)?.testo ?? ''
-    try {
-      await client.query('begin')
-      await client.query(testo)
-      await client.query('insert into migrazioni.applicate (nome, hash) values ($1, $2)', [
-        m.nome,
-        m.hash,
-      ])
-      await client.query('commit')
-      scrivi(`Applicata ${m.nome}`)
-    } catch (e) {
-      await client.query('rollback')
-      throw new Error(`${m.nome}: ${e instanceof Error ? e.message : String(e)}`)
-    }
-  }
-}
-
-async function controllaSicurezza(client: pg.Client): Promise<void> {
-  const { rows: tabelle } = await client.query<{ tabella: string; rls: boolean }>(
-    `select c.relname as tabella, c.relrowsecurity as rls
-       from pg_class c
-      where c.relnamespace = 'public'::regnamespace and c.relkind in ('r', 'p')
-      order by c.relname`,
-  )
-  const stati: StatoTabella[] = []
-  for (const { tabella, rls } of tabelle) {
-    const { rows: policy } = await client.query<{ qual: string | null; withCheck: string | null }>(
-      `select qual, with_check as "withCheck" from pg_policies
-        where schemaname = 'public' and tablename = $1 and 'authenticated' = any(roles)`,
-      [tabella],
-    )
-    const privilegiAnonymous: string[] = []
-    for (const privilegio of PRIVILEGI) {
-      const { rows } = await client.query<{ ha: boolean }>(
-        `select has_table_privilege('anonymous', format('public.%I', $1::text), $2) as ha`,
-        [tabella, privilegio],
-      )
-      if (rows[0]?.ha) privilegiAnonymous.push(privilegio)
-    }
-    const { rows: predefinito } = await client.query<{ espressione: string }>(
-      `select pg_get_expr(d.adbin, d.adrelid) as espressione
-         from pg_attrdef d
-         join pg_attribute a on a.attrelid = d.adrelid and a.attnum = d.adnum
-        where d.adrelid = format('public.%I', $1::text)::regclass and a.attname = 'user_id'`,
-      [tabella],
-    )
-    stati.push({
-      tabella,
-      rls,
-      policy,
-      privilegiAnonymous,
-      defaultUserId: predefinito[0]?.espressione ?? null,
-    })
-  }
-  const mancanze = mancanzeSicurezza(stati)
-  if (mancanze.length > 0) {
-    throw new Error(`Controllo di sicurezza fallito:\n  ${mancanze.join('\n  ')}`)
-  }
-  scrivi(`Controllo di sicurezza: ${stati.length} tabelle con RLS, policy e default a posto.`)
-}
 
 async function codiceErrore(client: pg.Client, sql: string, valori: unknown[]): Promise<string> {
   await client.query('savepoint prova')
@@ -210,9 +106,7 @@ async function main(): Promise<void> {
       'select current_user as utente, current_database() as database',
     )
     scrivi(`Connesso come ${rows[0]?.utente ?? '?'} a ${rows[0]?.database ?? '?'}`)
-    const registro = await preparaRegistro(client)
-    await applica(client, registro)
-    await controllaSicurezza(client)
+    await applicaMigrazioni(client)
     if (argomenti.prova) await provaTrigger(client)
   } finally {
     await client.end()
