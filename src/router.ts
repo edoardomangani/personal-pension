@@ -26,6 +26,17 @@ export const rotte: RouteRecordRaw[] = [
     component: VistaSegnaposto,
     meta: { titolo: 'Impostazioni' },
   },
+  // Condizione scritta qui e non in una funzione: in build Vite elimina il ramo e il chunk della vetrina.
+  ...(import.meta.env.DEV
+    ? [
+        {
+          path: '/dev/ui',
+          name: 'dev.ui',
+          component: () => import('./views/dev/VistaVetrina.vue'),
+          meta: { titolo: 'Vetrina dei componenti' },
+        },
+      ]
+    : []),
   { path: '/:pathMatch(.*)*', redirect: '/' },
 ]
 

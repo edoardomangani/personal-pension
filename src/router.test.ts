@@ -1,5 +1,5 @@
-import { afterEach, describe, expect, it } from 'vitest'
-import { enableAutoUnmount, mount } from '@vue/test-utils'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import { enableAutoUnmount, flushPromises, mount } from '@vue/test-utils'
 import App from './App.vue'
 import VistaSegnaposto from './views/VistaSegnaposto.vue'
 import { router } from './router'
@@ -10,6 +10,11 @@ async function vaiA(percorso: string): Promise<void> {
 }
 
 enableAutoUnmount(afterEach)
+
+afterEach(() => {
+  vi.unstubAllEnvs()
+  vi.unstubAllGlobals()
+})
 
 describe('router', () => {
   it('usa la history hash', () => {
@@ -52,5 +57,50 @@ describe('App', () => {
     const testate = wrapper.findAll('header').map((h) => h.text())
     expect(testate).toEqual(['Valori', 'Valori'])
     expect(wrapper.find('[data-segnaposto]').exists()).toBe(true)
+  })
+})
+
+describe('vetrina /dev/ui (R8)', () => {
+  it('in sviluppo la rotta dev.ui esiste con titolo «Vetrina dei componenti»', () => {
+    const vetrina = router.resolve('/dev/ui')
+    expect(vetrina.name).toBe('dev.ui')
+    expect(vetrina.meta.titolo).toBe('Vetrina dei componenti')
+  })
+
+  it('fuori dallo sviluppo la rotta non esiste e /dev/ui torna a /', async () => {
+    vi.stubEnv('DEV', false)
+    vi.resetModules()
+    const { router: routerBuild, rotte } = await import('./router')
+
+    expect(rotte.some((rotta) => rotta.name === 'dev.ui')).toBe(false)
+    expect(routerBuild.hasRoute('dev.ui')).toBe(false)
+    await routerBuild.push('/dev/ui')
+    expect(routerBuild.currentRoute.value.path).toBe('/')
+  })
+
+  it('App su /dev/ui mostra la vetrina con la barra in basso', async () => {
+    // jsdom non ha IntersectionObserver: basta che si colleghi e si scolleghi.
+    const disconnect = vi.fn()
+    vi.stubGlobal(
+      'IntersectionObserver',
+      class {
+        observe = vi.fn()
+        disconnect = disconnect
+      },
+    )
+    // Moduli ricaricati insieme: dopo un resetModules la vista caricata con import() userebbe
+    // contesti (sidebar, tooltip) diversi da quelli dell'App importata in testa.
+    vi.resetModules()
+    const { router: routerFresco } = await import('./router')
+    const { default: AppFresca } = await import('./App.vue')
+    await routerFresco.push('/dev/ui')
+    await routerFresco.isReady()
+    const wrapper = mount(AppFresca, { global: { plugins: [routerFresco] } })
+    await flushPromises()
+
+    expect(wrapper.find('h1').text()).toBe('Design system')
+    expect(wrapper.find('[data-specimen="SHL-bottombar-mobile"]').exists()).toBe(true)
+    wrapper.unmount()
+    expect(disconnect).toHaveBeenCalled()
   })
 })

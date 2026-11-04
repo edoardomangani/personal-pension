@@ -33,9 +33,9 @@ export default defineConfigWithVueTs(
   },
 
   {
-    // Nomi di shadcn-vue (Button, Input…), copiati da Wallet così come sono.
+    // Nomi di shadcn-vue (Button, Input…) e lo Specimen della vetrina, copiati da Wallet così come sono.
     name: 'app/componenti-ui',
-    files: ['src/components/ui/**/*.vue'],
+    files: ['src/components/ui/**/*.vue', 'src/components/dev/Specimen.vue'],
     rules: {
       'vue/multi-word-component-names': 'off',
     },
