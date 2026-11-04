@@ -65,8 +65,8 @@ export const rotte: RouteRecordRaw[] = [
     component: VistaSegnaposto,
     meta: { titolo: 'Impostazioni', testata: 'secondaria', madre: '/profilo' },
   },
-  // Condizione scritta qui e non in una funzione: in build Vite elimina il ramo e il chunk della vetrina.
-  ...(import.meta.env.DEV
+  // Vetrina in sviluppo e nella copia di collaudo; condizione in linea perché in produzione Vite elimini il ramo e il chunk.
+  ...(import.meta.env.DEV || import.meta.env.MODE === 'collaudo'
     ? ([
         {
           path: '/dev/ui',
