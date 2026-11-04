@@ -18,13 +18,13 @@ Le leggono chi scrive le specifiche, chi pianifica, chi esegue e chi fa la revie
 
 ### Struttura
 
-- Codice in `src/` per responsabilità: `calc/` (funzioni pure), `data/` (Neon e auth), `composables/` (stato), `views/` (una per rotta), `components/` (UI, `dev/` per la vetrina), `types/`, `styles/`.
+- Codice in `src/` per responsabilità: `calc/` (funzioni pure), `data/` (Neon e auth), `stores/` (stato, Pinia), `composables/` (logica riusabile di interfaccia), `views/` (una per rotta), `components/` (UI, `dev/` per la vetrina), `types/`, `styles/`.
 - Test accanto al file che provano, `nome.test.ts`. Rotte e guard in `src/router.ts`, Vue Router in modalità hash.
 - Schema del DB in `db/migrations/NNN_nome.sql`; script Node (import, collaudo) in `scripts/`.
 
 ### Logica
 
-- Ogni calcolo (versato, crescita, XIRR, TFR da versare, deducibilità, proiezione) è una funzione pura in `src/calc/`, senza Vue né I/O: viste e composables non calcolano, chiamano.
+- Ogni calcolo (versato, crescita, XIRR, TFR da versare, deducibilità, proiezione) è una funzione pura in `src/calc/`, senza Vue né I/O: store, viste e composables non calcolano, chiamano.
 - In memoria gli importi sono **centesimi interi** (`number` intero, tipo `Centesimi`); conversione da/verso euro solo al bordo (`src/data/`, campi dei form, formattazione). Somme e confronti sempre sui centesimi.
 - Date come stringhe ISO `YYYY-MM-DD` (mese di competenza `YYYY-MM`), confrontate come stringhe; niente `Date` per la logica di calendario.
 
@@ -55,6 +55,8 @@ Le leggono chi scrive le specifiche, chi pianifica, chi esegue e chi fa la revie
 ### Frontend
 
 - Vue 3 `<script setup lang="ts">`, `defineProps<T>()` e `defineEmits<T>()` tipizzati, props mai mutate; logica riusabile in composables; cleanup in `onUnmounted`.
+- Stato con Pinia, setup store, uno per dominio in `src/stores/` (`sessione`, `dati`, `impostazioni`…): caricano da `src/data/` e derivano con `src/calc/`. I componenti leggono dagli store, non da `src/data/`.
+- Al logout e al cambio di account ogni store si svuota (`reset()` esplicito, chiamato dallo store della sessione), con un test che lo verifica: nessun dato di un utente resta in memoria per il successivo.
 - Stili: token del design system come custom properties in `src/styles/tokens.css`; componenti con `<style scoped>` che usano solo i token per colori, raggi, spazi, tipografia e ombre.
 - Ogni componente del design system sta nella vetrina (`docs/convenzioni-vetrina.md`); chi lo cambia aggiorna la vetrina nello stesso lavoro.
 - Formattazione di importi, date e percentuali da un solo modulo (`src/calc/formato.ts`), it-IT, segno − (U+2212).
