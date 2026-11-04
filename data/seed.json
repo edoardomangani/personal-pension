@@ -1,0 +1,37 @@
+{
+  "esportato": "2026-11-04",
+  "nota": "Dati reali dall'artefatto Piano pensione (archivio dell'artefatto, 4 nov 2026). Importi in euro. 'versamento' nel TFR accumulato = id del versamento che lo include (null = da versare).",
+  "fondi": ["Amundi Seconda Pensione"],
+  "impostazioni": {
+    "annoNascita": 1994, "etaPensione": 67, "rendimento": 3, "inflazione": 2, "crescita": 1.5,
+    "tfrMensile": null, "personaleMensile": 0, "aliquota": 35, "limite": 5164.57
+  },
+  "tfr_accumulato": [
+    {"id": "tfr-2025-08", "fondo": "Amundi Seconda Pensione", "competenza": "2025-08", "data": "2025-09-16", "importo": 175.08, "versamento": "v-2025-11-04", "note": ""},
+    {"id": "tfr-2025-09", "fondo": "Amundi Seconda Pensione", "competenza": "2025-09", "data": "2025-10-16", "importo": 175.07, "versamento": "v-2025-11-04", "note": ""},
+    {"id": "tfr-2025-10", "fondo": "Amundi Seconda Pensione", "competenza": "2025-10", "data": "2025-11-14", "importo": 174.84, "versamento": "v-2026-02-03", "note": ""},
+    {"id": "tfr-2025-11", "fondo": "Amundi Seconda Pensione", "competenza": "2025-11", "data": "2025-12-16", "importo": 181.82, "versamento": "v-2026-02-03", "note": ""},
+    {"id": "tfr-2025-12", "fondo": "Amundi Seconda Pensione", "competenza": "2025-12", "data": "2026-01-13", "importo": 350.15, "versamento": "v-2026-02-03", "note": ""},
+    {"id": "tfr-2026-01", "fondo": "Amundi Seconda Pensione", "competenza": "2026-01", "data": "2026-02-13", "importo": 175.07, "versamento": "v-2026-07-09", "note": ""},
+    {"id": "tfr-2026-02", "fondo": "Amundi Seconda Pensione", "competenza": "2026-02", "data": "2026-03-16", "importo": 177.53, "versamento": "v-2026-07-09", "note": ""},
+    {"id": "tfr-2026-03", "fondo": "Amundi Seconda Pensione", "competenza": "2026-03", "data": "2026-04-17", "importo": 182.35, "versamento": "v-2026-07-09", "note": ""},
+    {"id": "tfr-2026-04", "fondo": "Amundi Seconda Pensione", "competenza": "2026-04", "data": "2026-05-15", "importo": 178.24, "versamento": null, "note": ""},
+    {"id": "tfr-2026-05", "fondo": "Amundi Seconda Pensione", "competenza": "2026-05", "data": "2026-06-17", "importo": 177.80, "versamento": null, "note": ""},
+    {"id": "tfr-2026-06", "fondo": "Amundi Seconda Pensione", "competenza": "2026-06", "data": "2026-07-17", "importo": 177.80, "versamento": null, "note": ""},
+    {"id": "tfr-2026-07", "fondo": "Amundi Seconda Pensione", "competenza": "2026-07", "data": "2026-08-17", "importo": 177.80, "versamento": null, "note": ""},
+    {"id": "tfr-2026-08", "fondo": "Amundi Seconda Pensione", "competenza": "2026-08", "data": "2026-09-17", "importo": 177.80, "versamento": null, "note": ""},
+    {"id": "tfr-2026-09", "fondo": "Amundi Seconda Pensione", "competenza": "2026-09", "data": "2026-10-18", "importo": 177.80, "versamento": null, "note": ""}
+  ],
+  "versamenti": [
+    {"id": "v-2025-11-04", "fondo": "Amundi Seconda Pensione", "tipo": "TFR", "data": "2025-11-04", "importo": 350.15, "note": ""},
+    {"id": "v-2026-02-03", "fondo": "Amundi Seconda Pensione", "tipo": "TFR", "data": "2026-02-03", "importo": 706.81, "note": ""},
+    {"id": "v-2026-07-09", "fondo": "Amundi Seconda Pensione", "tipo": "TFR", "data": "2026-07-09", "importo": 534.95, "note": ""},
+    {"id": "spesa-2025-12-30", "fondo": "Amundi Seconda Pensione", "tipo": "Spesa", "data": "2025-12-30", "importo": 15.00, "note": ""}
+  ],
+  "estratti_conto": [
+    {"id": "val-2025-11-04", "fondo": "Amundi Seconda Pensione", "data": "2025-11-04", "valore": 347.19, "note": ""},
+    {"id": "val-2026-02-03", "fondo": "Amundi Seconda Pensione", "data": "2026-02-03", "valore": 1066.29, "note": ""},
+    {"id": "val-2026-07-09", "fondo": "Amundi Seconda Pensione", "data": "2026-07-09", "valore": 1670.20, "note": ""},
+    {"id": "val-2026-11-03", "fondo": "Amundi Seconda Pensione", "data": "2026-11-03", "valore": 1641.45, "note": ""}
+  ]
+}

@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Piano pensione</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48ZGVmcz48Y2xpcFBhdGggaWQ9ImMiPjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTEyIi8+PC9jbGlwUGF0aD48L2RlZnM+CjxnIGNsaXAtcGF0aD0idXJsKCNjKSI+PHJlY3Qgd2lkdGg9IjUxMiIgaGVpZ2h0PSI1MTIiIGZpbGw9IiMxZDFkMWIiLz4KPGNpcmNsZSBjeD0iMzUwIiBjeT0iMTUyIiByPSI0OCIgZmlsbD0iI2YwNWEyOCIvPgo8cGF0aCBkPSJNLTEwIDM4MCBDMTEwIDM3MiAxNzAgMzAwIDI1MCAyNzAgUzM4MCAyMjAgNTIyIDEyMCBMNTIyIDUyMiBMLTEwIDUyMloiIGZpbGw9IiMzYTM5MzYiLz4KPHBhdGggZD0iTS0xMCA0MzAgQzEyMCA0MjAgMTkwIDM2MCAyNjIgMzM0IFM0MDAgMjkwIDUyMiAyMTAgTDUyMiA1MjIgTC0xMCA1MjJaIiBmaWxsPSIjZWNlOGRmIi8+PC9nPjwvc3ZnPg==">
+<link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAIAAACyr5FlAAAQAElEQVR4AexdB1xUV7pnKtN7BdQk9oZiiS1gL8SyKooFe0ONLWryEo0FGypqIIIVNWry3JiXfYnJphpFbDEm6z41mxijecaSCGKjKLDA/ochQxum3pl7Z+bM73A595TvfOf//TnlO3Mv7DJPfi5fvvzJJx/v3btn/frEhQsXxMWN7du3T5s2revVCyXBKQQAGqAbNy5u0aKXN2xYv2/f3r///RPA60nrlbGDqP4UFRWdOJGxdOmSTp06Rkf3nzVr5ooVy9PSUt9///3MzBM//fTj/fv3qW7T/+UBNEAHYA8fPpyaunX58mUzZ8YD3s6dn3/jjaWZmZnFxcWUo0AZOR49egjzz5gxPTy81fjx4w4ePPD7779Tri4RWAOBO3fuHDiwf9y4sW3bhs+ZM/ujjz6EIWqUcfmWAnKA1Bgb2rWLwIj3+eefFRQUuKwNqegyArm5uUeOHJk7dw4MsXLlipycHJdFWSq6RY78/PzNmzd17doZU6AnhjWLliTiOAIwBBZ5L7zQNTn5zby8PMcr1i7pIjmwsEhP392tW5eUlGQyVNSGlfYU/N1u2bIZFMHfLYzlmj5Ok6O0tBRri+7dI1etSsCE4lqrpJZ3EICBMOP36BH1t799AMM526hz5MDEhrUP1ha3b992tiU/Ku9jXbl169aCBfMnTBj/+PFjp1R3ghw3b94cMmTQqVOnnGqAFGYIAvAjDBv2lxs3bjiuj6PkgL9l4MDoa9euOS6alGQaAlevXsWf98WLFx1UzCFyfPnlF8OHD3348KGDQkkxxiLw4MGDESOGf/bZp45oaJ8c8MdNmzb16dOnjogjZZiPAEwZHz9jx47tdlW1Qw74a5OSNtqVQgr4HAKJieuOHz9mW21b5Lh+/TpORnC0Y1sEyfVFBGDWOXNesr2IrJMc8L9OnjzRTRebL6IWODrDMTF16mQb+1vr5CguLp4+feqvv/7qHFKktK8hgMkB4wfMbVVx6+RYvnzZd999Z7UCSfQzBDIyjsPcVjtlhRwo/e6771gtTRL9EgGYG0av3bWa5CgpKVm9elXtciTFvxFYu3ZN7Q7WJMcHH3wAP1rtciTFvxG4cuXKkSMf1ehjNXIUFha++ebmGiXIbYAgsH59YmFhNVdnNXKkp+8mx60BQoXa3cThbXp6etX0SnLAsZGWllo1j8S9gQCT2gAB7t27Z9GokhybNiURl5cFl8CMgACbN2+y9L2CHD///POhQ/9tSSWRgEUANLh586a5+xXkOHfunAtfIzOLIFd/QgA0yMjIMPeoghwnThw335MrQcBCBhM5ioqKzpw5Q0AhCJgROHv2LCiBuIkcZ86cxkoENyQQBIAATmtBCURM5Pjiiy8QI4EgYEHATAnTU/ZfffWlJZU5EaIJjQgcPfpVWVkZ+8KFC1lZWTTqQZpmIAJ3794FMdg//PADA5UjKtGOAIjBzs4mwwbthmCiAo8fPwI5spmoGtGJbgSys7PZIAjdapD2mYhAdnYWOyuLjBwet01DEauXmjNUx50cypsaxhuu5/ZScZqITH4Ej7ftagOPHj3GtELWHK7iZ69eMzFr0bP8TzuIPmwvSWkhWt1UuPA5wYJnBQlNhCktRR+0F3/eUfzqs/y2UspYEkTdJzvbNK0491g+da37syTQIrm54HCEeFJYcD0hp66uhgrY48OCD7YV720tDGcYRbIxrdh4pqWuLpF0GwhgBjHToreGx2KxbJSsmtVRwX23rTithQCsqppOYxzEYJuPWGhUwp+aFrDKFj0b7BQtqnY/Ss179TmBtM6BpmpZj8dBDCbOdh7vt2caUHKD3m4jilTx3BGPIWR/uKiewNEhx5227NYl5LALkUMFWEFl65sKW0q5DpW2WaixhLO6sYDLKrNZyhuZhBzUoDz/meCuKgqYYdamvYK7pKHAHKfxSshBAfjYi06tF0yBoCoiRhr5PVU0rz4ChBxVUPdAdN4zFDPDrOPsBsHsIHomFx6Pa9DrCDnMhnD92k3BwSrS9fp112wm4QzWu7W8rVu2rRypVGLQ63k8HiGHLZgcyRsf5kH7xRo8KLx27zgctk6nUcjl5ixCDjMOLl4lnKCOMsrWobWVaC3l6Phe2taKRUIMGMH8yimSkKO2RZxI6Sjn8DkeNB6LxepB3Saoro6hFbXK9GGzq/Gh2k1dlUl6XQhgWVBXFlXpTcUeJB+UFATzDXqdSCREvEYg5KgBiHO3IdhPOFfD6dIajzXBYgUpFXKtVsvlWp8ZCTmctlbVCtrKCbpqMpVxD/EvOJhvNOglEkndugYRctgAx36W2vPbPRzu2tfDmRLlA4ZCp9VyONYHDIswQg4LFK5EcopLXanmTJ17xVT6wf4cMMSOqEDI4QhKdZbJLqwzi6oMqvhnGjCUDg0YFs0JOSxQuBKhynI22qaEf+VbEr1E7NCAYVGGkMMChSuRK/klrlRzps6lXLeaYLNZKpXSxpbEhi6EHDbAsZ916n5JUQmVa4IaTZaVlR3Lcf2/CQuFAoNeLxaJaoh18JaQw0GgrBfDX/X5x/+2nkdFKoaNey5xA75OjVqNwOG4fu5PyOG8DavXOHjLJetVF1LX3eE/XBEuMp2S6DBs1CXWwXRCDgeBqrPY6Ycl5x96ZPC4ml/y8V3nyMHlcrRajVqlcmfAsHSVkMMCheuR1Bse2dFuvl5YGuTEwYpMJjUaDIJgyry2hByuc8JS8x+PS7dRzY/37hRhTLI0YTvC5/OMBp1cJrNdzNlcQg5nEbNefvtvRYfuFFnPcz7106zitdeqvYa8LhksFkupVOp1Oi6X+q8FEXLUBbvT6YnXnn58lwJ+YAWz5MqTMgcmFJFQaMThmdjFnardHhJy2IXI0QIw55KfC1dffeqy56OktGzj9adTLj0psccMDoeNdadaTc3Cs64eEnLUhYyL6dh8xv4z/9wDp/cvP+WVjP+/goO37W9PpBKJQW8QCAQuquhwNSrJ4XCjfl7wWkHZtMtPMDVkY7fhQF8fFZdhvIm9kH8pr9R2cR6Xq9dpFQo5nOK2S1KSS8hBCYxWhHyc9e8B5/NnXS74n9+LcoqsWP1hcdmHfxTP/1dBn3O5GG8wK1mR8mcSFp4KucJg0PP5/D/TPP6bkMODEBeVBZ16UJLwS2GPc/ldz+RGn88bcyE/7p/5A8/ndTubG/lN3rKrT4/llDwts+PMEIvFcGBIpc6dqbrfMUIO9zF0SAJOYW49LbucV3oxt/S3p2UOHsjweJhHdCqlAitQh5qhtBAhB6VwUicMbFAqFThThYOLOqnOSSLkcA4vL5TG8gK+znIHhrfnkRq9I+SoAQidtyxWkEQiCTHqZTIpi0W/aejXgE5rMKBtiwrl5+x6pWmbyrEk0hsh5KAXf1PrWFXgcATn7Nw6Hi4yFfLuD5Y7S15bTMjhXdSrt4ZVp0plOjYDP6rn0HnXr1/vbVu3dO7UkZCDHjOwWCy5TBZiNIpd/YKnJ/SGPolrVs6ZNQOeFcgn5AAIXg1Yacpk0hCjAVevNmyvsZExw3ZsS27ZsrmlICGHBQqPR0ALuWm00OPKZjMI+UaNGm5NSRo/bnQNCBikYg3N/OmWzeYo5HLzHpXNJFqIxaLZM6dvSVrXoH792oATctTGhMoUbECw5AwNMUilEkbRAp3s27vXjrSUAf37IG41MJYcVrX1pUQcn2rUKjg6GbXkNCP4TIP6mzaumTsnXi639bVTQg4zXFReBYJgnVaj12mFQiGVcqmQJRSKZkyf9FZyUpPGje3KI+SwC5ETBUQiIdxZWo0mmLrnA5xo3l7R6AF9d25LHvRitL2CFfmEHBVAuPMLiwlZ+e5UrVIxyp1l6VT7dm1TUzbPip+mUFS8RtKSZSNCyGEDHPtZoIJKqQwNMcplMo4bT6Xab8nVEmFhoWtXr1ix7PX69cOclUHI4SxiFeXFIqFOp9XrdNgNViQx7Bc2z1hywhHeulUL11Qj5HAONwwPMpk0NMSgUqmCvfh1Tqe0xEZpVOzwHdtTsFl1qmKNwoQcNQCxfstmszBCYA8Ct7dcJmOzmXKqXl1d012f3j13bU+JGzNK5PZeiZDDBKiNH6FQoFarQkNCsLZg5h7EonxERJu3kjfOmzMTo5ol0Z0IIYd19DAyKxVweBs0arX7f4LW26Au9blnGyQsX4LwTIMG1Ekl7yGtjiXOxsqfJ9PBhSWRSDiM3IBUVVmn1S56eW7ylo0YNqqmUxInI0cFjBgqMHGEhRrhCeDxqH9ivaIZ6n7hsGb61Enpu1K7R71AndRqkgKdHBgqJGKxXm8aKrDkrIYNU2/ghx0zasTunamDBznq63StK4FLjuBgvnmoUCoVfF8YKmBgbJQmTojbl75tzOiRXlgJBSI5hAKBQa/VabW+MlSAFmq1On7G5D2702KGDcHhGVK8EAKDHH8CKRAIsNLUaNQ8nvceR/6zcRd/1wsLWzDvJYwWA6MH8L3rdgsUcggFwaCFVqP2Mr4uMqK8Wpvw1iuXL0nburlXz6jyBG9f/J8cgmC+DofoGo0P0SIysht2p6sT3mgX0cbbjKjSnj+TA3MHWKHVaoMZ+e2KKlaojEYP6Ld759ZXFs6DX6sylaaYf5KDw+GqVSqsOgWCYJqAda5ZoVAYM/wv+/ftnBU/Va/TOVfZY6X9jRymh4XkshCjHs4Aj4FGpeDQUOO0KROx3pw4fqxSoaBStNuy/IocErHIaNDLpFK3YfG4ABz39+nVY2Pi6u2pyUMGvygSeep1ke70xE/IwS1/k5pSqWT+aQi2prPipx3Yv3ve3FnNmjVxx3ierRvkFwdvcrkMAwbfuz4AFwzTu2f3pA1rsDWNHtAXjjgXJHi5im+PHHBqgRYMn0eaNW08c/qUv767b/682U2b2H8gwMsMsNGcr5ID8wg8WgiI2OgejVlanWZ0bMyObckb16958cX+zFxV2MbH98jBZrOwqseAgWHDdt9oyYVWfXv3Slyzcs/OtLFjYkOMRlrUoKRRHyOHVCIxGgwSCc1vUrMKfXh4q8UL5x0+tH/unPiqLzKwWtgnEn2GHFhvGvQ6hULOZjNLZ5B1XNyovbu3rUlYFhXZzSes7qCSzALaqtLwa6mUChybMeoLWjKZFJuO9esSdm5PiR0xHCe9VpX36USmk0MsFoUYDWIn/1uu50yiVMgHRvdfu3r5O/vT4a5o0byZ59qiXTJzyYFxAqOFSqlkyDyCk9JVK5fu37crfsaU1q1a0m45LyjARHKw2SyV6c3OOqwzvACB7SYaN2o4e+Z0eClwUtq2Tbjtwn6WyzhySMr3I7TPI2KxaPCg6LeSN25OWjegfx9f9FK4z1QGkSM4mG/Q65V070ci2oYvXDDn0Dv7pk+dRO0zQu5by8sSGEEOnJZp1CqdVsvjcb3cf0tzBr0ubkzsnl1pCSuW9ugeaUkP5AjN5GCx2Dg2w35E6PZTvy5bESvNdWtW7NqxdVRsjFarcVmO/1WkadQX0AAAB8VJREFUjRzwXsBVEGKk7esXWFXEDBuyZ2cqVpqtWrbwP9O63yMKyeGEMlIpvOB6ueldBjQogOFh1oypWFVMnBCn1Wmd0DvAinrVNhgtQAtMIgq5HOsM70MNV/f8ubOxsIiO7uf91n2uRS+RA1TANiQ0xEAXLUJDja8sXgBXd+9e3X3OSHQp7HFyYIOqUasxWsCBgeWn9/uJSWTBvJe2pyZHduvi/dZ9ukVPkYPFCsKKz6DHnK4VCgW0YIRRyvR86a40up4Yo6XXFDZKPTlwFGLenaqUSh6PnkdStToNTsXSd6UOjB5AIViBJooycuBABD5mjVoVGmKUSaVsNj2vVGtQvz7WFnt2puE8nc/4rxwznG3ukoPFMr1mT6NWh4aEqFVKIX2+LJyeJ6xYsjUlyafWFoymh4vk4PF42JRqNeqwUNNr9oQ0rSrM0IIWOExfvy4hoi2djx2blfGnqxPk4LDZWGOqVMrQEANOIrDcEwjoWWlaDNC8WdPVCW+AFoF2mG5BwKMRO+Tg83kSsRiEgPsoJMSINaZYJKJrPVEViAb1672x9NUNiavahLeumk7iFCJQSQ4Oh83n8YQCAdiA7YZOq60XFqrX6ZRKBQjB5dKzwKzdVSj28rzZW1M2Pd+hfe1ckkIhAmxgDQ8VeBBiNOr1Oo1GDTZguwHnFYXNUCIKA9iM6aaXK/bsSbyclCBqRwgbJOAw/lWsmNTmzZ319p4djv8jGTv9JtkOIFA5rThQmIYijRo1XPraYpyJ9OnVg4bmA7tJppIjKKhTp46Ja1duSVqHSGDbiLbeM44ccGtGD+i3PS0ZA0bLFs1pA4Y0zKj3c+BAZNzYUVhYzIqfGhpiJNahHQFGjBxRkS+sSViGA5HYkcOZ+ZA07XaiRQE6ydGw4XPlX9fbu3jh3PDwVrT0nzRqAwF2aWmpjWxPZMHvPnTooLeSN765KTE6up+YMc/BeqKzviszPz+fjY93OgBPfGRktxXLXj/w9q4pE8cH+PNC3sHcnVaysu+xsTtwR4QjdSMi2syfO/vAvl2vLJzXvl1bR6qQMq4gQGmdR49y2TKZjFKZlcKaNW0Mb/eBt3cmLF/Su1d3ESNftVmpLolVRyA/L48tl1P51lyxWNSl8/PTp03evXPrxvVr4O1WUCq/uv7kzoMIPC0qYqs1ajdbCObz20W0mTQhbnPSukPv7Hv9vxYNHjgAx7lB5OPLCGCnwjboDS50AYTASmL8uNEbEle9/97BlcuXDB82pHGjhi6IIlWYiQCXw2N36eroO860Wk2HdhGTJ8ZhvgAhsJIYGTOsebOmzOwb0cpNBMIaPMuOirL+3QiNRo3JYuiQgXPnxCdtWPPXd/ft2ZW2fNlrw4YOwUrTzYZJdYYjcPvWnc6du5o8pN27R42OjZkVP23Ja4sxKqTv3Hrkf9/bu3sbJospkyf07d2raZPGZK/BcHNSq95PV3+BQBM5OnXqNHZMbPSAvp07dcSooGPMP4OBfpQEIsRZBMQSOaqYyNGrdz/4SnFDAkEACIAMPXr2QcREDqlUdumHH3FDAkEACIAM4vIDLxM5cJ+b+wRXEggCQOBJQSGuCBXkCG/brqysDPckBDgCoEHXyIqv61aQo0WLlidPnQ1wXEj3gQBoEBISighCBTkQa92mQ1FhESIkBCwCIECbiOct3a8kR6PGTU6e+caSQSIBiAAI8FzDRuaO41pJDty8ENUb2xhESAhABAoKCqJ6VHuPXjVyYLI5ffZ8AOJCugwETp351mCodgpbjRwoMWjI0AcPHyBCQkAhcDcrC6av0eWa5JBKFee/v1SjELn1ewQuXroC09foZk1yIHtk7NiLFy8jQkKAIABzj4gdU7uzVsjB5XKbt+7w6//fqF2apPgfAjA0zA2j1+6aFXKgEBYmIqnm0aPHiJPgxwjcu5cDQ8PcVvtonRwo2qJFy19+vV1I3GLAolrwnxsYNyvnMQxdV5fqJAcq9Osfffbc96VefyQOTZPgaQRgVhg3MqqnjYZskQPVYkaOOXosExES/AwBmBXGtd0pO+RA5TFxk06c/AbuM8RJ8AMEYMrM0+dhVrt9sU8OiBg+YvTtuw/hJ0GcBJ9GICsr6/esR8OGj3SkFw6RA4I6d+4qkesvXiL+D4Dhq+Hy5X+J5frnO3VxsAOOkgPi6tdv0C2qX2bmGcRJ8DkEMk+d6RLZB0Z0XHMnyAGhfD5/2MixZ85duPHbb7glwScQgLFgsmExY2E+pxR2jhxm0YOHDAuP6Hr065M5OTnmFNOV/DAPgT/uZn2dcRrGgslc0M4VcqAZeFtHjR2vD2341dcZebl5SCGBUQjAKF9+nfFMw5axo+JgLNd0c5Ec5sbkcsXosZO4Qtmx45nFxcXmRHKlFwEY4ljGSRhlzNhJ5icMXNbHLXKYWw0NrT9y9IQSVvDR46e+Pf99wRPylIMZGK9eAfv58//46thJGGLkqPEwivvNU0AOsxLQZtTocdGDYlTa+qe/+T4j81RWVrY5i1w9h0B29r2ME6cAOGAfMGj46DHU0MKsMGXkMIvDFUPZkL/ExIwc17x1xyfFnB9+vA4H65dHMzD1fPPtd1d+/uV+zn049lGSBAcRAFwADdABQMAIMAHp5R+v5ReymrXqEBM7DoADdgelOV7sPwAAAP//2rA8MwAAAAZJREFUAwD/Eahjx+ai2wAAAABJRU5ErkJggg==">
+<meta name="theme-color" content="#151514">
+<meta name="apple-mobile-web-app-title" content="Pensione">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  color-scheme:dark;
+  /* colori Piano pensione, ruoli e misure dal design system Wallet */
+  --background:#0e0e0d; --foreground:#ece8df; --muted-foreground:#b3aea4; --subtle-foreground:#9a958b;
+  --card:rgba(255,255,255,.06); --secondary:rgba(255,255,255,.09); --strong:rgba(255,255,255,.12);
+  --border:rgba(255,255,255,.08); --divider:rgba(255,255,255,.07); --divider-row:rgba(255,255,255,.05);
+  --popover:rgba(26,25,24,.94); --overlay:rgba(0,0,0,.5);
+  --primary:#ece8df; --primary-foreground:#0e0e0d;
+  --brand:#f05a28; --brand-foreground:#1b0d06; --brand-soft:rgba(240,90,40,.16);
+  --pos:#8fd4a8; --pos-soft:rgba(143,212,168,.14); --ivory:#d6cfbd; --warning:#e3a64b; --warning-soft:rgba(227,166,75,.14); --destructive:#ff7a6b; --destructive-soft:rgba(255,122,107,.13);
+  --ambient-strong:rgba(240,90,40,.09); --ambient-soft:rgba(240,90,40,.045);
+  --hair:.75px; --shadow-glass:inset 0 -1px 2px rgba(255,255,255,.06); --shadow-popover:0 24px 60px rgba(0,0,0,.5);
+  --r-md:8px; --r:10px; --r-xl:14px; --r-2xl:18px; --r-3xl:22px; --r-card:26px; --pill:999px;
+  --font:Geist,-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+  /* alias usati dal codice dei grafici */
+  --accent:var(--pos); --accent-soft:var(--pos-soft); --muted:var(--subtle-foreground); --line:rgba(255,255,255,.07); --blue:var(--ivory); --ink:var(--foreground); --warn:var(--warning); --neg:var(--destructive);
+}
+*{box-sizing:border-box}
+html{background:var(--background)}
+body{margin:0;min-height:100vh;color:var(--foreground);font-family:var(--font);font-size:15px;line-height:1.4;font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;
+  background:radial-gradient(900px 620px at 96% -12%,var(--ambient-strong),transparent 70%),radial-gradient(760px 620px at -6% 70%,var(--ambient-soft),transparent 70%),var(--background);background-attachment:fixed}
+select,input,textarea,button{font:inherit;color:inherit}
+button{cursor:pointer;transition:background-color .2s,color .2s,transform .15s cubic-bezier(.2,.8,.2,1)}
+button:active{transform:scale(.97)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}button:active{transform:none}}
+:focus-visible{outline:2px solid rgba(240,90,40,.6);outline-offset:2px}
+::selection{background:rgba(240,90,40,.28);color:var(--foreground)}
+input{caret-color:var(--brand)}
+*{scrollbar-width:thin;scrollbar-color:var(--strong) transparent}
+.ic{width:20px;height:20px;fill:currentColor;flex:none}.ic.sm{width:16px;height:16px}
+
+/* shell telefono */
+.content{max-width:720px;margin:0 auto;padding:0 16px calc(120px + env(safe-area-inset-bottom))}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:calc(16px + env(safe-area-inset-top)) 0 18px}
+.top h1{font-size:22px;line-height:1.2;margin:0;font-weight:600;letter-spacing:-.015em}
+.iconbtn{width:40px;height:40px;border-radius:var(--pill);display:grid;place-items:center;color:var(--foreground);background:var(--card);border:var(--hair) solid var(--border);box-shadow:var(--shadow-glass)}
+.side .brand,.side .fundbox,.sidestatus,.side .sb-new{display:none}
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:4;isolation:isolate;display:flex;align-items:center;padding:4px 6px max(24px,env(safe-area-inset-bottom))}
+.tabs::before{content:"";position:absolute;left:0;right:0;top:-24px;bottom:0;z-index:-1;pointer-events:none;
+  background:linear-gradient(to top,rgba(14,14,13,.72) 55%,rgba(14,14,13,.55));backdrop-filter:blur(20px) saturate(140%);-webkit-backdrop-filter:blur(20px) saturate(140%);
+  -webkit-mask-image:linear-gradient(to top,#000 calc(100% - 24px),transparent);mask-image:linear-gradient(to top,#000 calc(100% - 24px),transparent)}
+.tabs button{flex:1;min-width:0;min-height:56px;border:0;background:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;font-size:10px;line-height:1;font-weight:600;color:var(--subtle-foreground)}
+.tabs button.on{color:var(--foreground)}
+.tabs .ic{width:24px;height:24px}
+.tabs .ic.f{display:none}.tabs button.on .ic.f{display:block}.tabs button.on .ic.r{display:none}
+.tabs .tab-plus{flex:none;width:56px;height:56px;min-height:0;margin:0 8px;border-radius:28px;display:grid;place-items:center;background:var(--primary);color:var(--primary-foreground);box-shadow:0 8px 24px rgba(0,0,0,.45)}
+.tabs .tab-plus .ic{width:24px;height:24px}
+.only-side{display:none!important}
+.fab{display:none!important}
+.mfund{margin-bottom:16px}
+
+/* saldo */
+.hero{padding:4px 2px 28px}
+.hl{font-size:13px;color:var(--subtle-foreground)}
+.balance{display:flex;align-items:baseline;font-weight:600;letter-spacing:-.04em;line-height:1;margin:8px 0 12px}
+.balance .int{font-size:56px}
+.balance .dec{font-size:26px;letter-spacing:-.02em;color:var(--muted-foreground)}
+.hs{margin:0;font-size:15px;color:var(--muted-foreground);max-width:44ch}
+.hs b{color:var(--foreground);font-weight:600}
+.delta{display:inline-flex;align-items:center;height:22px;padding:0 9px;border-radius:var(--pill);font-size:12px;font-weight:600;background:var(--pos-soft);color:var(--pos);margin-right:6px;vertical-align:1px}
+.delta.neg{background:var(--destructive-soft);color:var(--destructive)}
+.hd{font-size:13px;color:var(--subtle-foreground);margin-top:10px}.warnt{color:var(--warning)}
+
+/* card vetro e righe */
+.ghead{display:flex;justify-content:space-between;align-items:baseline;font-size:12px;font-weight:600;color:var(--subtle-foreground);padding:0 4px 8px;margin-top:32px}
+.ghead:first-child{margin-top:0}
+.dash>div+div>.ghead:first-child{margin-top:32px}
+.ghead b{font-weight:600;color:var(--muted-foreground)}
+.group,.card,.kpi,.segtabs{background:var(--card);border:var(--hair) solid var(--border);box-shadow:var(--shadow-glass)}
+.group{border-radius:var(--r-3xl);overflow:hidden}
+.group+.group{margin-top:12px}
+.card{border-radius:var(--r-3xl);padding:16px}
+.card h2{font-size:17px;margin:0 0 12px;font-weight:600}
+.gfoot{font-size:13px;color:var(--subtle-foreground);padding:0 4px;margin:10px 0 0;line-height:1.4;max-width:62ch}
+.grow{display:flex;align-items:center;gap:12px;min-height:52px;padding:8px 16px;width:100%;border:0;background:none;text-align:left;color:inherit}
+.grow+.grow{border-top:var(--hair) solid var(--divider-row)}
+.grow[role=button]{cursor:pointer;transition:background-color .2s}
+.grow[role=button]:hover,.grow[role=button]:active{background:rgba(255,255,255,.04)}
+.gicon{width:28px;height:28px;border-radius:var(--r-md);display:grid;place-items:center;flex:none;background:var(--secondary);color:var(--foreground)}
+.gicon .ic{width:16px;height:16px}
+.gicon.or{background:var(--pos-soft);color:var(--pos)}.gicon.am{background:var(--warning-soft);color:var(--warning)}.gicon.rd{background:var(--destructive-soft);color:var(--destructive)}
+.gmain{flex:1;min-width:0}
+.gt{font-size:15px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gs{font-size:13px;color:var(--subtle-foreground);line-height:1.35;overflow:hidden;text-overflow:ellipsis}
+.gv{font-size:15px;font-weight:600;white-space:nowrap;text-align:right}
+.gv small{display:block;font-size:12px;font-weight:600;margin-top:1px}
+.gv.mut{color:var(--subtle-foreground)}.gv.am{color:var(--warning)}.gv.rd{color:var(--destructive)}.gv.or{color:var(--pos)}
+.chev{width:14px;height:14px;color:var(--subtle-foreground);flex:none;margin-left:-4px}
+.pos{color:var(--pos)} .neg{color:var(--destructive)}
+.muted{color:var(--muted-foreground);font-size:13px}
+.lead{margin:0 4px 16px;color:var(--muted-foreground);font-size:15px;max-width:60ch}
+.empty{text-align:center;color:var(--muted-foreground);padding:34px 16px}.emptyic{color:var(--brand)}.emptyic .ic{width:36px;height:36px}
+
+/* grafici, tabelle, kpi */
+.chartbox{position:relative;height:210px}
+table{width:100%;border-collapse:collapse}
+th,td{padding:0 4px;height:44px;text-align:right;font-size:15px}
+td{border-top:var(--hair) solid var(--divider-row)}
+th{height:36px;font-size:12px;color:var(--subtle-foreground);font-weight:600}
+td:last-child{font-weight:600}
+th:first-child,td:first-child{text-align:left}
+.tablewrap{overflow-x:auto}
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.kpi{border-radius:var(--r-3xl);padding:16px}
+.kpi .l{font-size:12px;font-weight:600;color:var(--subtle-foreground);margin-bottom:6px}
+.kpi .v{font-size:22px;font-weight:600;letter-spacing:-.015em}
+.kpi .s{font-size:13px;color:var(--muted-foreground);margin-top:6px;line-height:1.35}
+.kpi.hero{grid-column:1/-1;border-radius:var(--r-card);padding:20px}
+.kpi.hero .v{font-size:40px;letter-spacing:-.04em;line-height:1.05}
+.bar{height:8px;border-radius:var(--pill);background:var(--secondary);overflow:hidden;margin:12px 0 8px}
+.bar>i{display:block;height:100%;background:var(--pos);border-radius:var(--pill)}
+
+/* controlli: pill */
+.segtabs{display:flex;padding:3px;border-radius:var(--pill);margin:0 0 20px;box-shadow:none}
+.segtabs button{flex:1;height:34px;padding:0 12px;border:0;border-radius:var(--pill);background:none;color:var(--muted-foreground);font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:6px}
+.segtabs button.on{background:var(--primary);color:var(--primary-foreground)}
+.segtabs em{font-style:normal;font-size:12px;font-weight:600;background:var(--warning);color:#1a1205;border-radius:var(--pill);min-width:18px;height:18px;line-height:18px;padding:0 5px}
+.segtabs button.on em{background:var(--primary-foreground);color:var(--primary)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:40px;padding:0 18px;border:0;border-radius:var(--pill);font-size:14px;font-weight:600;white-space:nowrap;background:var(--primary);color:var(--primary-foreground)}
+.btn.ghost{background:var(--card);color:var(--foreground);border:var(--hair) solid var(--border);box-shadow:var(--shadow-glass)}
+.btn.danger{background:transparent;color:var(--destructive);border:var(--hair) solid var(--destructive)}
+.btn:disabled{opacity:.4;pointer-events:none}
+.btn.block{width:100%;height:44px}
+.inline-cta{padding:12px 0 0}
+
+/* moduli */
+label.f{display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:600;color:var(--subtle-foreground);margin-bottom:14px;min-width:0}
+label.f>span{margin:0 4px}
+select,input,textarea{height:44px;width:100%;min-width:0;display:block;padding:0 16px;border-radius:var(--pill);background:var(--card);border:var(--hair) solid rgba(255,255,255,.08);box-shadow:var(--shadow-glass);-webkit-appearance:none;appearance:none;font-size:16px;font-weight:400;color:var(--foreground)}
+select{background-image:linear-gradient(45deg,transparent 50%,var(--subtle-foreground) 50%),linear-gradient(135deg,var(--subtle-foreground) 50%,transparent 50%);background-position:calc(100% - 21px) 19px,calc(100% - 16px) 19px;background-size:5px 5px;background-repeat:no-repeat;padding-right:38px}
+input[type=date],input[type=month]{line-height:44px}
+input::-webkit-date-and-time-value{text-align:left}
+input:focus,select:focus{outline:none;border-color:rgba(240,90,40,.6)}
+input::placeholder{color:var(--subtle-foreground)}
+input[type=checkbox]{width:20px;height:20px;padding:0;flex:none;border-radius:6px;-webkit-appearance:auto;appearance:auto;accent-color:var(--brand);background:none;border:0;box-shadow:none}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}.grid2>*{min-width:0}
+label.check{flex-direction:row;gap:12px;align-items:flex-start;color:var(--foreground);font-weight:400;font-size:14px;background:var(--warning-soft);padding:14px 16px;border-radius:var(--r-xl)}
+.formnote{font-size:13px;color:var(--muted-foreground);margin:-4px 4px 14px;line-height:1.4}
+.note{background:var(--warning-soft);color:var(--warning);border-radius:var(--r-xl);padding:12px 16px;font-size:14px;margin-bottom:12px}
+.pick{background:var(--card);border:var(--hair) solid var(--border);border-radius:var(--r-xl);margin-bottom:14px;overflow:hidden}
+.pickhead{display:flex;justify-content:space-between;align-items:center;height:36px;padding:0 16px;font-size:12px;font-weight:600;color:var(--subtle-foreground)}
+.pickhead b{color:var(--foreground);font-size:14px}
+.pickrow{display:flex;align-items:center;gap:12px;min-height:48px;padding:0 16px;cursor:pointer;border-top:var(--hair) solid var(--divider-row);font-size:15px}
+.pickrow span{flex:1}.pickrow b{font-weight:600}
+.choices{display:grid;gap:8px}
+.choices button{display:flex;align-items:center;gap:12px;min-height:60px;text-align:left;background:var(--card);border:var(--hair) solid var(--border);box-shadow:var(--shadow-glass);border-radius:var(--r-xl);padding:12px 16px}
+.choices button:hover{background:var(--secondary)}
+.choices b{display:block;font-size:15px;font-weight:600}.choices span{font-size:13px;color:var(--subtle-foreground)}
+
+/* dialog e sheet */
+dialog{border:var(--hair) solid var(--strong);padding:0;width:min(480px,100vw);max-width:100vw;max-height:92vh;background:var(--popover);color:var(--foreground);border-radius:var(--r-2xl);box-shadow:var(--shadow-popover);overflow:auto;backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px)}
+dialog::backdrop{background:var(--overlay)}
+dialog form{padding:20px 16px calc(16px + env(safe-area-inset-bottom));position:relative}
+dialog h3{margin:0 48px 20px 4px;font-size:17px;font-weight:600}
+.dclose{position:absolute;top:12px;right:12px;width:36px;height:36px}.dclose .ic{width:16px;height:16px}
+dialog .grid2{grid-template-columns:1fr}
+@media(min-width:520px){dialog .grid2{grid-template-columns:1fr 1fr}}
+@media(max-width:599px){
+  dialog{margin:auto 0 0;width:100vw;border-radius:var(--r-3xl) var(--r-3xl) 0 0;border-bottom:0}
+  dialog form{padding-top:26px}
+  dialog form::before{content:"";position:absolute;top:8px;left:50%;width:36px;height:5px;margin-left:-18px;border-radius:3px;background:var(--strong)}
+  dialog[open]{animation:sheet .32s cubic-bezier(.2,.8,.2,1)}
+}
+@keyframes sheet{from{transform:translateY(100%)}to{transform:none}}
+.actions{display:flex;gap:8px;margin-top:6px}
+.actions .sp{display:none}
+.actions .btn{flex:1;height:44px}.actions .btn.danger{flex:0 0 auto}
+
+.toast{position:fixed;left:50%;bottom:calc(100px + env(safe-area-inset-bottom));z-index:6;transform:translateX(-50%);background:var(--primary);color:var(--primary-foreground);padding:0 16px;height:36px;line-height:36px;border-radius:var(--pill);font-size:13px;font-weight:600;opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap}
+.toast.on{opacity:1}
+
+/* desktop: densità compatta, sidebar 240 */
+@media(min-width:900px){
+  body{font-size:14px}
+  .app{display:grid;grid-template-columns:240px 1fr;min-height:100vh}
+  .side{position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:10px;padding:12px 10px;background:rgba(14,14,13,.4);border-right:var(--hair) solid var(--divider)}
+  .side .brand{display:flex;gap:10px;align-items:center;height:44px;padding:0 6px}
+  .side .logo{width:26px;height:26px;border-radius:var(--r-md);overflow:hidden;display:block}.side .logo svg{width:100%;height:100%;display:block}
+  .side .bt{font-weight:600;font-size:14px}.side .brand .muted{font-size:12px;color:var(--subtle-foreground)}
+  .side .fundbox{display:block}.side .fundbox select{height:32px;font-size:13px}
+  .side .sb-new{display:flex;height:32px;font-size:13px;background:var(--brand);color:var(--brand-foreground)}
+  .sidestatus{display:block;margin-top:auto;font-size:12px;color:var(--subtle-foreground);padding:0 10px}
+  .tabs{position:static;flex-direction:column;align-items:stretch;gap:1px;padding:0;border:0;border-radius:0;background:none;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none}
+  .tabs button{flex:none;flex-direction:row;justify-content:flex-start;gap:10px;height:32px;min-height:0;line-height:1.4;padding:0 10px;border-radius:var(--r);font-size:13px;font-weight:500;color:var(--muted-foreground)}
+  .tabs button:hover{background:rgba(255,255,255,.08)}
+  .tabs button.on{background:rgba(255,255,255,.08);color:var(--foreground);font-weight:600}
+  .tabs .ic{width:16px;height:16px}
+  .tabs .tab-plus{display:none}
+  .tabs::before{display:none}
+  .tabs .ic.f{display:none!important}.tabs button.on .ic.r{display:block!important}
+  .only-side{display:flex!important}.only-mobile{display:none!important}
+  .content{max-width:960px;padding:0 24px 48px;width:100%}
+  .top{position:sticky;top:0;z-index:3;height:52px;padding:0;margin:0 -24px 24px;padding:0 24px;background:rgba(14,14,13,.55);border-bottom:var(--hair) solid var(--divider);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
+  .top h1{font-size:17px}
+  .mfund{display:none}
+  .group,.card,.kpi{border-radius:var(--r-xl)}
+  .kpi.hero{border-radius:var(--r-xl)}
+  .grow{min-height:40px;padding:6px 16px}
+  .gt,.gv{font-size:14px}.gs{font-size:12px}
+  .btn{height:32px;font-size:13px;padding:0 14px}.btn.block{height:36px}
+  .kpis{grid-template-columns:repeat(3,1fr)}
+  .dash{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0 24px;align-items:start}
+  .ghead{margin-top:24px}
+  .dash>div>.ghead:first-child,.dash>div+div>.ghead:first-child{margin-top:0}
+  td{height:40px;font-size:14px}
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="i-house" viewBox="0 0 256 256"><path d="M219.31,108.68l-80-80a16,16,0,0,0-22.62,0l-80,80A15.87,15.87,0,0,0,32,120v96a8,8,0,0,0,8,8h64a8,8,0,0,0,8-8V160h32v56a8,8,0,0,0,8,8h64a8,8,0,0,0,8-8V120A15.87,15.87,0,0,0,219.31,108.68ZM208,208H160V152a8,8,0,0,0-8-8H104a8,8,0,0,0-8,8v56H48V120l80-80,80,80Z"/></symbol><symbol id="i-list-bullets" viewBox="0 0 256 256"><path d="M80,64a8,8,0,0,1,8-8H216a8,8,0,0,1,0,16H88A8,8,0,0,1,80,64Zm136,56H88a8,8,0,0,0,0,16H216a8,8,0,0,0,0-16Zm0,64H88a8,8,0,0,0,0,16H216a8,8,0,0,0,0-16ZM44,52A12,12,0,1,0,56,64,12,12,0,0,0,44,52Zm0,64a12,12,0,1,0,12,12A12,12,0,0,0,44,116Zm0,64a12,12,0,1,0,12,12A12,12,0,0,0,44,180Z"/></symbol><symbol id="i-trend-up" viewBox="0 0 256 256"><path d="M240,56v64a8,8,0,0,1-16,0V75.31l-82.34,82.35a8,8,0,0,1-11.32,0L96,123.31,29.66,189.66a8,8,0,0,1-11.32-11.32l72-72a8,8,0,0,1,11.32,0L136,140.69,212.69,64H168a8,8,0,0,1,0-16h64A8,8,0,0,1,240,56Z"/></symbol><symbol id="i-receipt" viewBox="0 0 256 256"><path d="M72,104a8,8,0,0,1,8-8h96a8,8,0,0,1,0,16H80A8,8,0,0,1,72,104Zm8,40h96a8,8,0,0,0,0-16H80a8,8,0,0,0,0,16ZM232,56V208a8,8,0,0,1-11.58,7.15L192,200.94l-28.42,14.21a8,8,0,0,1-7.16,0L128,200.94,99.58,215.15a8,8,0,0,1-7.16,0L64,200.94,35.58,215.15A8,8,0,0,1,24,208V56A16,16,0,0,1,40,40H216A16,16,0,0,1,232,56Zm-16,0H40V195.06l20.42-10.22a8,8,0,0,1,7.16,0L96,199.06l28.42-14.22a8,8,0,0,1,7.16,0L160,199.06l28.42-14.22a8,8,0,0,1,7.16,0L216,195.06Z"/></symbol><symbol id="i-chart-line-up" viewBox="0 0 256 256"><path d="M232,208a8,8,0,0,1-8,8H32a8,8,0,0,1-8-8V48a8,8,0,0,1,16,0V156.69l50.34-50.35a8,8,0,0,1,11.32,0L128,132.69,180.69,80H160a8,8,0,0,1,0-16h40a8,8,0,0,1,8,8v40a8,8,0,0,1-16,0V91.31l-58.34,58.35a8,8,0,0,1-11.32,0L96,123.31l-56,56V200H224A8,8,0,0,1,232,208Z"/></symbol><symbol id="i-gear-six" viewBox="0 0 256 256"><path d="M128,80a48,48,0,1,0,48,48A48.05,48.05,0,0,0,128,80Zm0,80a32,32,0,1,1,32-32A32,32,0,0,1,128,160Zm109.94-52.79a8,8,0,0,0-3.89-5.4l-29.83-17-.12-33.62a8,8,0,0,0-2.83-6.08,111.91,111.91,0,0,0-36.72-20.67,8,8,0,0,0-6.46.59L128,41.85,97.88,25a8,8,0,0,0-6.47-.6A112.1,112.1,0,0,0,54.73,45.15a8,8,0,0,0-2.83,6.07l-.15,33.65-29.83,17a8,8,0,0,0-3.89,5.4,106.47,106.47,0,0,0,0,41.56,8,8,0,0,0,3.89,5.4l29.83,17,.12,33.62a8,8,0,0,0,2.83,6.08,111.91,111.91,0,0,0,36.72,20.67,8,8,0,0,0,6.46-.59L128,214.15,158.12,231a7.91,7.91,0,0,0,3.9,1,8.09,8.09,0,0,0,2.57-.42,112.1,112.1,0,0,0,36.68-20.73,8,8,0,0,0,2.83-6.07l.15-33.65,29.83-17a8,8,0,0,0,3.89-5.4A106.47,106.47,0,0,0,237.94,107.21Zm-15,34.91-28.57,16.25a8,8,0,0,0-3,3c-.58,1-1.19,2.06-1.81,3.06a7.94,7.94,0,0,0-1.22,4.21l-.15,32.25a95.89,95.89,0,0,1-25.37,14.3L134,199.13a8,8,0,0,0-3.91-1h-.19c-1.21,0-2.43,0-3.64,0a8.08,8.08,0,0,0-4.1,1l-28.84,16.1A96,96,0,0,1,67.88,201l-.11-32.2a8,8,0,0,0-1.22-4.22c-.62-1-1.23-2-1.8-3.06a8.09,8.09,0,0,0-3-3.06l-28.6-16.29a90.49,90.49,0,0,1,0-28.26L61.67,97.63a8,8,0,0,0,3-3c.58-1,1.19-2.06,1.81-3.06a7.94,7.94,0,0,0,1.22-4.21l.15-32.25a95.89,95.89,0,0,1,25.37-14.3L122,56.87a8,8,0,0,0,4.1,1c1.21,0,2.43,0,3.64,0a8.08,8.08,0,0,0,4.1-1l28.84-16.1A96,96,0,0,1,188.12,55l.11,32.2a8,8,0,0,0,1.22,4.22c.62,1,1.23,2,1.8,3.06a8.09,8.09,0,0,0,3,3.06l28.6,16.29A90.49,90.49,0,0,1,222.9,142.12Z"/></symbol><symbol id="i-plus" viewBox="0 0 256 256"><path d="M224,128a8,8,0,0,1-8,8H136v80a8,8,0,0,1-16,0V136H40a8,8,0,0,1,0-16h80V40a8,8,0,0,1,16,0v80h80A8,8,0,0,1,224,128Z"/></symbol><symbol id="i-x" viewBox="0 0 256 256"><path d="M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z"/></symbol><symbol id="i-download-simple" viewBox="0 0 256 256"><path d="M224,144v64a8,8,0,0,1-8,8H40a8,8,0,0,1-8-8V144a8,8,0,0,1,16,0v56H208V144a8,8,0,0,1,16,0Zm-101.66,5.66a8,8,0,0,0,11.32,0l40-40a8,8,0,0,0-11.32-11.32L136,124.69V32a8,8,0,0,0-16,0v92.69L93.66,98.34a8,8,0,0,0-11.32,11.32Z"/></symbol><symbol id="i-plant" viewBox="0 0 256 256"><path d="M247.63,47.89a8,8,0,0,0-7.52-7.52c-51.76-3-93.32,12.74-111.18,42.22-11.8,19.49-11.78,43.16-.16,65.74a71.34,71.34,0,0,0-14.17,27L98.33,159c7.82-16.33,7.52-33.35-1-47.49-13.2-21.79-43.67-33.47-81.5-31.25a8,8,0,0,0-7.52,7.52c-2.23,37.83,9.46,68.3,31.25,81.5A45.82,45.82,0,0,0,63.44,176,54.58,54.58,0,0,0,87,170.33l25,25V224a8,8,0,0,0,16,0V194.51a55.61,55.61,0,0,1,12.27-35,73.91,73.91,0,0,0,33.31,8.4,60.9,60.9,0,0,0,31.83-8.86C234.89,141.21,250.67,99.65,247.63,47.89ZM47.81,155.6C32.47,146.31,23.79,124.32,24,96c28.32-.24,50.31,8.47,59.6,23.81,4.85,8,5.64,17.33,2.46,26.94L61.65,122.34a8,8,0,0,0-11.31,11.31l24.41,24.41C65.14,161.24,55.82,160.45,47.81,155.6Zm149.31-10.22c-13.4,8.11-29.15,8.73-45.15,2l53.69-53.7a8,8,0,0,0-11.31-11.31L140.65,136c-6.76-16-6.15-31.76,2-45.15,13.94-23,47-35.82,89.33-34.83C232.94,98.34,220.14,131.44,197.12,145.38Z"/></symbol><symbol id="i-piggy-bank" viewBox="0 0 256 256"><path d="M192,116a12,12,0,1,1-12-12A12,12,0,0,1,192,116ZM152,64H112a8,8,0,0,0,0,16h40a8,8,0,0,0,0-16Zm96,48v32a24,24,0,0,1-24,24h-2.36l-16.21,45.38A16,16,0,0,1,190.36,224H177.64a16,16,0,0,1-15.07-10.62L160.65,208h-57.3l-1.92,5.38A16,16,0,0,1,86.36,224H73.64a16,16,0,0,1-15.07-10.62L46,178.22a87.69,87.69,0,0,1-21.44-48.38A16,16,0,0,0,16,144a8,8,0,0,1-16,0,32,32,0,0,1,24.28-31A88.12,88.12,0,0,1,112,32H216a8,8,0,0,1,0,16H194.61a87.93,87.93,0,0,1,30.17,37c.43,1,.85,2,1.25,3A24,24,0,0,1,248,112Zm-16,0a8,8,0,0,0-8-8h-3.66a8,8,0,0,1-7.64-5.6A71.9,71.9,0,0,0,144,48H112A72,72,0,0,0,58.91,168.64a8,8,0,0,1,1.64,2.71L73.64,208H86.36l3.82-10.69A8,8,0,0,1,97.71,192h68.58a8,8,0,0,1,7.53,5.31L177.64,208h12.72l18.11-50.69A8,8,0,0,1,216,152h8a8,8,0,0,0,8-8Z"/></symbol><symbol id="f-house" viewBox="0 0 256 256"><path d="M224,120v96a8,8,0,0,1-8,8H160a8,8,0,0,1-8-8V164a4,4,0,0,0-4-4H108a4,4,0,0,0-4,4v52a8,8,0,0,1-8,8H40a8,8,0,0,1-8-8V120a16,16,0,0,1,4.69-11.31l80-80a16,16,0,0,1,22.62,0l80,80A16,16,0,0,1,224,120Z"/></symbol><symbol id="f-list-bullets" viewBox="0 0 256 256"><path d="M208,32H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32ZM68,188a12,12,0,1,1,12-12A12,12,0,0,1,68,188Zm0-48a12,12,0,1,1,12-12A12,12,0,0,1,68,140Zm0-48A12,12,0,1,1,80,80,12,12,0,0,1,68,92Zm124,92H104a8,8,0,0,1,0-16h88a8,8,0,0,1,0,16Zm0-48H104a8,8,0,0,1,0-16h88a8,8,0,0,1,0,16Zm0-48H104a8,8,0,0,1,0-16h88a8,8,0,0,1,0,16Z"/></symbol><symbol id="f-trend-up" viewBox="0 0 256 256"><path d="M240,56v64a8,8,0,0,1-13.66,5.66L200,99.31l-58.34,58.35a8,8,0,0,1-11.32,0L96,123.31,29.66,189.66a8,8,0,0,1-11.32-11.32l72-72a8,8,0,0,1,11.32,0L136,140.69,188.69,88,162.34,61.66A8,8,0,0,1,168,48h64A8,8,0,0,1,240,56Z"/></symbol><symbol id="f-receipt" viewBox="0 0 256 256"><path d="M216,40H40A16,16,0,0,0,24,56V208a8,8,0,0,0,11.58,7.15L64,200.94l28.42,14.21a8,8,0,0,0,7.16,0L128,200.94l28.42,14.21a8,8,0,0,0,7.16,0L192,200.94l28.42,14.21A8,8,0,0,0,232,208V56A16,16,0,0,0,216,40ZM176,144H80a8,8,0,0,1,0-16h96a8,8,0,0,1,0,16Zm0-32H80a8,8,0,0,1,0-16h96a8,8,0,0,1,0,16Z"/></symbol><symbol id="f-chart-line-up" viewBox="0 0 256 256"><path d="M216,40H40A16,16,0,0,0,24,56V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40ZM200,192H56a8,8,0,0,1-8-8V72a8,8,0,0,1,16,0v76.69l34.34-34.35a8,8,0,0,1,11.32,0L128,132.69,172.69,88H144a8,8,0,0,1,0-16h48a8,8,0,0,1,8,8v48a8,8,0,0,1-16,0V99.31l-50.34,50.35a8,8,0,0,1-11.32,0L104,131.31l-40,40V176H200a8,8,0,0,1,0,16Z"/></symbol><symbol id="f-gear-six" viewBox="0 0 256 256"><path d="M237.94,107.21a8,8,0,0,0-3.89-5.4l-29.83-17-.12-33.62a8,8,0,0,0-2.83-6.08,111.91,111.91,0,0,0-36.72-20.67,8,8,0,0,0-6.46.59L128,41.85,97.88,25a8,8,0,0,0-6.47-.6A111.92,111.92,0,0,0,54.73,45.15a8,8,0,0,0-2.83,6.07l-.15,33.65-29.83,17a8,8,0,0,0-3.89,5.4,106.47,106.47,0,0,0,0,41.56,8,8,0,0,0,3.89,5.4l29.83,17,.12,33.63a8,8,0,0,0,2.83,6.08,111.91,111.91,0,0,0,36.72,20.67,8,8,0,0,0,6.46-.59L128,214.15,158.12,231a7.91,7.91,0,0,0,3.9,1,8.09,8.09,0,0,0,2.57-.42,112.1,112.1,0,0,0,36.68-20.73,8,8,0,0,0,2.83-6.07l.15-33.65,29.83-17a8,8,0,0,0,3.89-5.4A106.47,106.47,0,0,0,237.94,107.21ZM128,168a40,40,0,1,1,40-40A40,40,0,0,1,128,168Z"/></symbol><symbol id="i-briefcase" viewBox="0 0 256 256"><path d="M216,56H176V48a24,24,0,0,0-24-24H104A24,24,0,0,0,80,48v8H40A16,16,0,0,0,24,72V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V72A16,16,0,0,0,216,56ZM96,48a8,8,0,0,1,8-8h48a8,8,0,0,1,8,8v8H96ZM216,72v41.61A184,184,0,0,1,128,136a184.07,184.07,0,0,1-88-22.38V72Zm0,128H40V131.64A200.19,200.19,0,0,0,128,152a200.25,200.25,0,0,0,88-20.37V200ZM104,112a8,8,0,0,1,8-8h32a8,8,0,0,1,0,16H112A8,8,0,0,1,104,112Z"/></symbol><symbol id="i-user" viewBox="0 0 256 256"><path d="M230.92,212c-15.23-26.33-38.7-45.21-66.09-54.16a72,72,0,1,0-73.66,0C63.78,166.78,40.31,185.66,25.08,212a8,8,0,1,0,13.85,8c18.84-32.56,52.14-52,89.07-52s70.23,19.44,89.07,52a8,8,0,1,0,13.85-8ZM72,96a56,56,0,1,1,56,56A56.06,56.06,0,0,1,72,96Z"/></symbol><symbol id="i-buildings" viewBox="0 0 256 256"><path d="M240,208H224V96a16,16,0,0,0-16-16H144V32a16,16,0,0,0-24.88-13.32L39.12,72A16,16,0,0,0,32,85.34V208H16a8,8,0,0,0,0,16H240a8,8,0,0,0,0-16ZM208,96V208H144V96ZM48,85.34,128,32V208H48ZM112,112v16a8,8,0,0,1-16,0V112a8,8,0,1,1,16,0Zm-32,0v16a8,8,0,0,1-16,0V112a8,8,0,1,1,16,0Zm0,56v16a8,8,0,0,1-16,0V168a8,8,0,0,1,16,0Zm32,0v16a8,8,0,0,1-16,0V168a8,8,0,0,1,16,0Z"/></symbol><symbol id="i-receipt-x" viewBox="0 0 256 256"><path d="M216,40H40A16,16,0,0,0,24,56V208a8,8,0,0,0,11.58,7.15L64,200.94l28.42,14.21a8,8,0,0,0,7.16,0L128,200.94l28.42,14.21a8,8,0,0,0,7.16,0L192,200.94l28.42,14.21A8,8,0,0,0,232,208V56A16,16,0,0,0,216,40Zm0,155.06-20.42-10.22a8,8,0,0,0-7.16,0L160,199.06l-28.42-14.22a8,8,0,0,0-7.16,0L96,199.06,67.58,184.84a8,8,0,0,0-7.16,0L40,195.06V56H216ZM98.34,138.34,116.69,120,98.34,101.66a8,8,0,0,1,11.32-11.32L128,108.69l18.34-18.35a8,8,0,0,1,11.32,11.32L139.31,120l18.35,18.34a8,8,0,0,1-11.32,11.32L128,131.31l-18.34,18.35a8,8,0,0,1-11.32-11.32Z"/></symbol><symbol id="i-hourglass-medium" viewBox="0 0 256 256"><path d="M200,75.64V40a16,16,0,0,0-16-16H72A16,16,0,0,0,56,40V76a16.07,16.07,0,0,0,6.4,12.8L114.67,128,62.4,167.2A16.07,16.07,0,0,0,56,180v36a16,16,0,0,0,16,16H184a16,16,0,0,0,16-16V180.36a16.09,16.09,0,0,0-6.35-12.77L141.27,128l52.38-39.6A16.05,16.05,0,0,0,200,75.64ZM72,40H184V75.64L178.23,80H77.33L72,76Zm56,78L98.67,96h58.4Zm56,98H72V180l48-36v24a8,8,0,0,0,16,0V144.08l48,36.28Z"/></symbol><symbol id="i-calendar-blank" viewBox="0 0 256 256"><path d="M208,32H184V24a8,8,0,0,0-16,0v8H88V24a8,8,0,0,0-16,0v8H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32ZM72,48v8a8,8,0,0,0,16,0V48h80v8a8,8,0,0,0,16,0V48h24V80H48V48ZM208,208H48V96H208V208Z"/></symbol><symbol id="i-caret-right" viewBox="0 0 256 256"><path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"/></symbol><symbol id="i-coins" viewBox="0 0 256 256"><path d="M184,89.57V84c0-25.08-37.83-44-88-44S8,58.92,8,84v40c0,20.89,26.25,37.49,64,42.46V172c0,25.08,37.83,44,88,44s88-18.92,88-44V132C248,111.3,222.58,94.68,184,89.57ZM232,132c0,13.22-30.79,28-72,28-3.73,0-7.43-.13-11.08-.37C170.49,151.77,184,139,184,124V105.74C213.87,110.19,232,122.27,232,132ZM72,150.25V126.46A183.74,183.74,0,0,0,96,128a183.74,183.74,0,0,0,24-1.54v23.79A163,163,0,0,1,96,152,163,163,0,0,1,72,150.25Zm96-40.32V124c0,8.39-12.41,17.4-32,22.87V123.5C148.91,120.37,159.84,115.71,168,109.93ZM96,56c41.21,0,72,14.78,72,28s-30.79,28-72,28S24,97.22,24,84,54.79,56,96,56ZM24,124V109.93c8.16,5.78,19.09,10.44,32,13.57v23.37C36.41,141.4,24,132.39,24,124Zm64,48v-4.17c2.63.1,5.29.17,8,.17,3.88,0,7.67-.13,11.39-.35A121.92,121.92,0,0,0,120,171.41v23.46C100.41,189.4,88,180.39,88,172Zm48,26.25V174.4a179.48,179.48,0,0,0,24,1.6,183.74,183.74,0,0,0,24-1.54v23.79a165.45,165.45,0,0,1-48,0Zm64-3.38V171.5c12.91-3.13,23.84-7.79,32-13.57V172C232,180.39,219.59,189.4,200,194.87Z"/></symbol><symbol id="i-percent" viewBox="0 0 256 256"><path d="M205.66,61.64l-144,144a8,8,0,0,1-11.32-11.32l144-144a8,8,0,0,1,11.32,11.31ZM50.54,101.44a36,36,0,0,1,50.92-50.91h0a36,36,0,0,1-50.92,50.91ZM56,76A20,20,0,1,0,90.14,61.84h0A20,20,0,0,0,56,76ZM216,180a36,36,0,1,1-10.54-25.46h0A35.76,35.76,0,0,1,216,180Zm-16,0a20,20,0,1,0-5.86,14.14A19.87,19.87,0,0,0,200,180Z"/></symbol><symbol id="i-wallet" viewBox="0 0 256 256"><path d="M216,64H56a8,8,0,0,1,0-16H192a8,8,0,0,0,0-16H56A24,24,0,0,0,32,56V184a24,24,0,0,0,24,24H216a16,16,0,0,0,16-16V80A16,16,0,0,0,216,64Zm0,128H56a8,8,0,0,1-8-8V78.63A23.84,23.84,0,0,0,56,80H216Zm-48-60a12,12,0,1,1,12,12A12,12,0,0,1,168,132Z"/></symbol></svg>
+<div class="app">
+  <aside class="side">
+    <div class="brand"><span class="logo"><svg viewBox="0 0 512 512" aria-hidden="true"><defs><clipPath id="lc"><rect width="512" height="512" rx="112"/></clipPath></defs><g clip-path="url(#lc)"><rect width="512" height="512" fill="#1d1d1b"/><circle cx="350" cy="152" r="48" fill="#f05a28"/><path d="M-10 380 C110 372 170 300 250 270 S380 220 522 120 L522 522 L-10 522Z" fill="#3a3936"/><path d="M-10 430 C120 420 190 360 262 334 S400 290 522 210 L522 522 L-10 522Z" fill="#ece8df"/></g></svg></span><div><div class="bt">Piano pensione</div><div id="fundName" class="muted"></div></div></div>
+    <button class="btn sb-new" id="sbNew"><svg class="ic sm"><use href="#i-plus"/></svg>Registra</button>
+    <div class="fundbox"><select id="fundSel" aria-label="Fondo"></select></div>
+    <nav class="tabs" id="tabs" aria-label="Sezioni">
+      <button data-v="panoramica"><svg class="ic r"><use href="#i-house"/></svg><svg class="ic f"><use href="#f-house"/></svg><span>Panoramica</span></button>
+      <button data-v="movimenti"><svg class="ic r"><use href="#i-list-bullets"/></svg><svg class="ic f"><use href="#f-list-bullets"/></svg><span>Movimenti</span></button>
+      <button class="tab-plus only-mobile" id="tabPlus" aria-label="Aggiungi"><svg class="ic"><use href="#i-plus"/></svg></button>
+      <button data-v="valori"><svg class="ic r"><use href="#i-trend-up"/></svg><svg class="ic f"><use href="#f-trend-up"/></svg><span>Valori</span></button>
+      <button data-v="proiezione"><svg class="ic r"><use href="#i-chart-line-up"/></svg><svg class="ic f"><use href="#f-chart-line-up"/></svg><span>Futuro</span></button>
+      <button data-v="deducibilita" class="only-side"><svg class="ic r"><use href="#i-receipt"/></svg><svg class="ic f"><use href="#f-receipt"/></svg><span>Fisco</span></button>
+      <button data-v="impostazioni" class="only-side"><svg class="ic r"><use href="#i-gear-six"/></svg><svg class="ic f"><use href="#f-gear-six"/></svg><span>Impostazioni</span></button>
+    </nav>
+    <div id="status" class="sidestatus">Caricamento…</div>
+  </aside>
+  <div class="content">
+    <header class="top">
+      <h1 id="pageTitle">Panoramica</h1>
+      <button class="iconbtn only-mobile" id="gear" aria-label="Impostazioni"><svg class="ic"><use href="#i-gear-six"/></svg></button>
+    </header>
+    <main id="view"></main>
+  </div>
+</div>
+<button class="btn fab" id="fab" aria-label="Aggiungi"><svg class="ic"><use href="#i-plus"/></svg></button>
+<dialog id="dlg"><form id="dlgForm" method="dialog"></form></dialog>
+<div class="toast" id="toast"></div>
+
+<script>
+(() => {
+"use strict";
+// ---------- state ----------
+const DEFAULTS = {
+  fondi: ["Amundi Seconda Pensione"], annoNascita: null, etaPensione: 67,
+  rendimento: 3, inflazione: 2, crescita: 1.5, tfrMensile: null,
+  personaleMensile: 0, aliquota: 35, limite: 5164.57
+};
+const S = { db:null, canWrite:true, mov:[], tfr:[], val:[], cfg:{...DEFAULTS}, loaded:{mov:false,tfr:false,val:false,cfg:false},
+  view: "panoramica", sub: "versamenti", fund: "__all", charts:{} };
+const $ = s => document.querySelector(s);
+const view = $("#view");
+
+// ---------- format ----------
+const eur = new Intl.NumberFormat("it-IT",{style:"currency",currency:"EUR",useGrouping:"always"});
+const eur0 = new Intl.NumberFormat("it-IT",{style:"currency",currency:"EUR",maximumFractionDigits:0,useGrouping:"always"});
+const pct = (x,d=2) => (x==null||!isFinite(x)) ? "—" : (x>=0?"+":"") + (x*100).toLocaleString("it-IT",{minimumFractionDigits:d,maximumFractionDigits:d}) + "%";
+const fd = s => { if(!s) return "—"; const [y,m,d]=s.split("-"); return `${d}/${m}/${y}`; };
+const MESI = ["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"];
+const fc = s => { if(!s) return ""; const [y,m]=s.split("-"); return `${MESI[+m-1]} ${y}`; };
+const today = () => new Date().toISOString().slice(0,10);
+const esc = s => String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const num = v => { const n = typeof v==="number"?v:parseFloat(String(v).replace(",",".")); return isFinite(n)?n:0; };
+const sgn = x => x>=0?"pos":"neg";
+const bal = v => { const t=eur.format(v), i=t.indexOf(","); return i<0?`<span class="int">${t}</span>`:`<span class="int">${t.slice(0,i)}</span><span class="dec">${t.slice(i)}</span>`; };
+function toast(t){ const el=$("#toast"); el.textContent=t; el.classList.add("on"); clearTimeout(toast._t); toast._t=setTimeout(()=>el.classList.remove("on"),2200); }
+
+// ---------- data helpers ----------
+// Due archivi distinti: TFR accumulato (righe di busta paga) e versamenti (soldi arrivati sul fondo, o spese)
+const TIPI = {TFR:{l:"TFR",c:"tfr"}, Personale:{l:"Personale",c:"per"}, Datore:{l:"Datore",c:"dat"}, Spesa:{l:"Spesa",c:"spe"}};
+const inFund = x => S.fund==="__all" || x.fondo===S.fund;
+function movs(){ return S.mov.filter(inFund); }
+function contrib(){ return movs().filter(m=>m.tipo!=="Spesa"); }
+function spese(){ return movs().filter(m=>m.tipo==="Spesa"); }
+function tfrs(){ return S.tfr.filter(inFund); }
+function pendingTfr(fondo){ return S.tfr.filter(t=>!t.versamento && (fondo?t.fondo===fondo:inFund(t))); }
+function vals(){ return S.val.filter(inFund).sort((a,b)=>a.data.localeCompare(b.data)); }
+const sum = (a,k="importo") => a.reduce((s,x)=>s+num(x[k]),0);
+
+function lastValuation(){
+  const vs = vals(); if(!vs.length) return null;
+  if(S.fund!=="__all") return {data:vs[vs.length-1].data, valore:vs[vs.length-1].valore};
+  const byF = {}; vs.forEach(v=>byF[v.fondo]=v);
+  const arr = Object.values(byF);
+  return {data: arr.map(v=>v.data).sort().pop(), valore: arr.reduce((s,v)=>s+v.valore,0), parts:arr};
+}
+// versato sul fondo (esclude le spese) fino a una data
+function accreditatoAl(date, fondo){
+  return sum(contrib().filter(m=>m.data<=date && (!fondo||m.fondo===fondo)));
+}
+function speseAl(date, fondo){ return sum(spese().filter(m=>m.data<=date && (!fondo||m.fondo===fondo))); }
+
+function xirr(flows){
+  if(flows.length<2) return null;
+  const t0 = new Date(flows[0].d).getTime();
+  const yrs = flows.map(f => (new Date(f.d).getTime()-t0)/(365.25*864e5));
+  if(Math.max(...yrs) < 0.08) return null;
+  const f = r => flows.reduce((s,fl,i)=>s+fl.v/Math.pow(1+r,yrs[i]),0);
+  let lo=-0.99, hi=10, flo=f(lo);
+  if(flo*f(hi)>0) return null;
+  for(let i=0;i<200;i++){ const mid=(lo+hi)/2, fm=f(mid); if(Math.abs(fm)<1e-7) return mid; if(flo*fm<0){hi=mid}else{lo=mid;flo=fm} }
+  return (lo+hi)/2;
+}
+// Rendimento annuo al netto delle spese: flussi = versamenti, valore finale = estratto conto
+function computeIRR(){
+  const lv = lastValuation(); if(!lv) return null;
+  const parts = lv.parts || [{fondo:null, data:lv.data}];
+  const flows = [];
+  parts.forEach(p=>contrib().filter(m=>(!p.fondo||m.fondo===p.fondo) && m.data<=p.data).forEach(m=>flows.push({d:m.data,v:-m.importo})));
+  if(!flows.length) return null;
+  flows.push({d:lv.data, v:lv.valore});
+  flows.sort((a,b)=>a.d.localeCompare(b.d));
+  return xirr(flows);
+}
+function avgTFR(){
+  const t = tfrs().slice().sort((a,b)=>(b.competenza||b.data).localeCompare(a.competenza||a.data));
+  const last = t.slice(0,6).map(m=>m.importo).sort((a,b)=>a-b);   // mediana: ignora la tredicesima
+  return last.length ? last[Math.floor(last.length/2)] : 0;
+}
+const tfrLabel = t => t.competenza ? fc(t.competenza) : fd(t.data);
+
+// ---------- db ----------
+function setStatus(t){ $("#status").textContent = t; }
+async function initDb(){
+  let db=null;
+  try{ db = await claude.use("db"); }catch(e){ db=null; }
+  if(!db){ setStatus("Archivio non disponibile in questa vista"); render(); return; }
+  S.db = db;
+  try{ const u = await claude.use("user"); if(u && u.isOwner){ const o = await u.isOwner(); if(o===false) S.canWrite=false; } }catch(e){}
+  const timer = setTimeout(()=>{ if(!Object.values(S.loaded).every(Boolean)) setStatus("Dati non ancora raggiungibili…"); },10000);
+  const done = () => { if(Object.values(S.loaded).every(Boolean)){ clearTimeout(timer); setStatus(S.canWrite?"Salvato nel cloud":"Sola lettura"); } };
+  const err = e => { clearTimeout(timer); setStatus("Errore archivio: "+(e&&e.code||"sconosciuto")); };
+  db.collection("movimenti").onSnapshot(snap=>{
+    S.mov = snap.docs.map(d=>({id:d.id,...d.data(), importo:num(d.data().importo)}));
+    if(!snap.metadata.fromCache) S.loaded.mov=true; done(); render();
+  }, err);
+  db.collection("tfr").onSnapshot(snap=>{
+    S.tfr = snap.docs.map(d=>({id:d.id,...d.data(), importo:num(d.data().importo)}));
+    if(!snap.metadata.fromCache) S.loaded.tfr=true; done(); render();
+  }, err);
+  db.collection("valorizzazioni").onSnapshot(snap=>{
+    S.val = snap.docs.map(d=>({id:d.id,...d.data(), valore:num(d.data().valore)}));
+    if(!snap.metadata.fromCache) S.loaded.val=true; done(); render();
+  }, err);
+  db.doc("config/settings").onSnapshot(snap=>{
+    S.cfg = {...DEFAULTS, ...(snap.exists?snap.data():{})};
+    if(!snap.metadata.fromCache) S.loaded.cfg=true; done(); renderFunds(); render();
+  }, err);
+}
+async function save(coll, id, data){
+  if(!S.db) throw new Error("db");
+  if(id) await S.db.collection(coll).doc(id).set(data); else await S.db.collection(coll).add(data);
+}
+async function del(coll,id){ await S.db.collection(coll).doc(id).delete(); }
+let cfgPending=null, cfgTimer=null, cfgWriting=false;
+function saveCfg(patch){
+  S.cfg = {...S.cfg, ...patch};
+  cfgPending = {...S.cfg};
+  clearTimeout(cfgTimer);
+  cfgTimer = setTimeout(flushCfg, 600);
+}
+async function flushCfg(){
+  if(cfgWriting||!cfgPending||!S.db) return;
+  cfgWriting=true; const body=cfgPending; cfgPending=null;
+  try{ await S.db.doc("config/settings").set(body); }catch(e){ toast("Impostazioni non salvate"); }
+  cfgWriting=false; if(cfgPending) flushCfg();
+}
+function guard(){ if(!S.db){ toast("Archivio non disponibile"); return false; } if(!S.canWrite){ toast("Sola lettura"); return false; } return true; }
+
+// ---------- UI shell ----------
+function renderFunds(){
+  const sel = $("#fundSel"), f = S.cfg.fondi||[];
+  const opts = (f.length>1?[`<option value="__all">Tutti i fondi</option>`]:[]).concat(f.map(x=>`<option value="${esc(x)}">${esc(x)}</option>`));
+  sel.parentElement.style.display = f.length>1 ? "" : "none";
+  $("#fundName").textContent = f.length===1 ? f[0] : "";
+  if(f.length<=1){ S.fund = "__all"; sel.innerHTML = `<option value="__all">${esc(f[0]||"Fondo")}</option>`; }
+  else { sel.innerHTML = opts.join(""); if(S.fund!=="__all" && !f.includes(S.fund)) S.fund="__all"; sel.value=S.fund; }
+}
+$("#fundSel").addEventListener("change", e=>{ S.fund=e.target.value; render(); });
+$("#tabs").addEventListener("click", e=>{ const b=e.target.closest("button"); if(!b||!b.dataset.v) return; go(b.dataset.v); });
+const TITLES={panoramica:"Panoramica",movimenti:"Movimenti",valori:"Valori",deducibilita:"Deducibilità",proiezione:"Proiezione",impostazioni:"Impostazioni"};
+function go(v){ S.view=v; location.hash = v; document.querySelectorAll("#tabs button").forEach(b=>b.classList.toggle("on",b.dataset.v===v)); render(); window.scrollTo(0,0); }
+window.addEventListener("hashchange",()=>{ const h=location.hash.slice(1); if(h && h!==S.view && VIEWS[h]) go(h); });
+$("#gear").addEventListener("click",()=>go("impostazioni"));
+const addAction = ()=>{ if(S.view==="valori") editVal(); else if(S.view==="movimenti") (S.sub==="tfr"?editTfr():editMov()); else chooser(); };
+$("#fab").addEventListener("click", addAction); $("#tabPlus").addEventListener("click", addAction); $("#sbNew").addEventListener("click", addAction);
+
+function destroyCharts(){ Object.values(S.charts).forEach(c=>c&&c.destroy()); S.charts={}; }
+function render(){
+  destroyCharts();
+  $("#pageTitle").textContent = TITLES[S.view]||"";
+  document.querySelectorAll("#tabs button").forEach(b=>b.classList.toggle("on",b.dataset.v===S.view));
+  (VIEWS[S.view]||VIEWS.panoramica)();
+  const f=S.cfg.fondi||[];
+  if(f.length>1 && S.view!=="impostazioni" && S.view!=="deducibilita"){ const d=document.createElement("div"); d.className="mfund";
+    d.innerHTML=`<select>${["__all",...f].map(x=>`<option value="${esc(x)}" ${x===S.fund?"selected":""}>${x==="__all"?"Tutti i fondi":esc(x)}</option>`).join("")}</select>`;
+    d.querySelector("select").onchange=e=>{S.fund=e.target.value; $("#fundSel").value=S.fund; render();}; view.prepend(d); }
+  
+}
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+
+// ---------- views ----------
+const VIEWS = {
+panoramica(){
+  const lv = lastValuation(), m = contrib();
+  if(!m.length && !lv && !tfrs().length){ view.innerHTML = emptyState(); return; }
+  const pend = pendingTfr(), pendTot = sum(pend);
+  let accr = 0, diff = 0, simple = null, sp = 0;
+  if(lv){
+    const parts = lv.parts || [{data:lv.data, fondo:null}];
+    accr = parts.reduce((s,p)=>s+accreditatoAl(p.data,p.fondo),0);
+    sp = parts.reduce((s,p)=>s+speseAl(p.data,p.fondo),0);
+    diff = lv.valore - accr; simple = accr ? lv.valore/accr - 1 : null;
+  }
+  const y = String(new Date().getFullYear());
+  const thisYear = sum(m.filter(x=>x.data.startsWith(y)));
+  const first = m.map(x=>x.data).sort()[0];
+  const months = first ? (Date.now()-new Date(first).getTime())/(30.44*864e5) : 0;
+  const irr = months >= 12 ? computeIRR() : null;
+  const perAnno = sum(S.mov.filter(x=>(x.tipo==="Personale"||x.tipo==="Datore") && x.data.startsWith(y)));
+  const lim = num(S.cfg.limite)||5164.57, al = num(S.cfg.aliquota)/100;
+  const daysOld = lv ? Math.round((Date.now()-new Date(lv.data).getTime())/864e5) : 0;
+  const spTot = sum(spese());
+  view.innerHTML = `
+  <section class="hero">
+    <div class="hl">Valore della posizione</div>
+    <div class="balance">${lv?bal(lv.valore):`<span class="int">—</span>`}</div>
+    ${lv?`<p class="hs"><span class="delta ${diff<0?"neg":""}">${diff>=0?"+":"−"}${eur.format(Math.abs(diff))} · ${pct(simple,1)}</span>su <b>${eur.format(accr)}</b> versati${sp?`, al netto di ${eur.format(sp)} di spese`:""}</p>
+      <div class="hd">Estratto conto del ${fd(lv.data)}${daysOld>100?` · <span class="warnt">da aggiornare</span>`:""}</div>`
+      :`<p class="hs">Aggiungi il valore dall'estratto conto per vedere come sta andando.</p>`}
+  </section>
+  <div class="dash"><div>
+  <div class="group">
+    <div class="grow" role="button" tabindex="0" data-go="movimenti" data-sub="tfr"><span class="gicon am"><svg class="ic"><use href="#i-hourglass-medium"/></svg></span><div class="gmain"><div class="gt">TFR da versare</div><div class="gs">${pend.length?`${pend.length} mesi in busta paga, non ancora sul fondo`:"Tutto versato"}</div></div>
+      <div class="gv ${pendTot?"am":"mut"}">${eur.format(pendTot)}</div><svg class="ic chev"><use href="#i-caret-right"/></svg></div>
+    <div class="grow" role="button" tabindex="0" data-go="movimenti" data-sub="versamenti"><span class="gicon or"><svg class="ic"><use href="#i-coins"/></svg></span><div class="gmain"><div class="gt">Versato nel ${y}</div><div class="gs">Arrivato sul fondo quest'anno</div></div>
+      <div class="gv">${eur.format(thisYear)}</div><svg class="ic chev"><use href="#i-caret-right"/></svg></div>
+    <div class="grow"><span class="gicon "><svg class="ic"><use href="#i-percent"/></svg></span><div class="gmain"><div class="gt">Rendimento annuo</div><div class="gs">${irr!=null?`Al netto delle spese`:`Disponibile dopo un anno di storia`}</div></div>
+      <div class="gv ${irr==null?"mut":sgn(irr)}">${irr!=null?pct(irr,1):"—"}</div></div>
+    <div class="grow"><span class="gicon rd"><svg class="ic"><use href="#i-receipt-x"/></svg></span><div class="gmain"><div class="gt">Spese del piano</div><div class="gs">${spTot?"Commissioni e costi registrati":"Nessuna spesa registrata"}</div></div>
+      <div class="gv ${spTot?"rd":"mut"}">${spTot?"−"+eur.format(spTot):eur.format(0)}</div></div>
+    <div class="grow" role="button" tabindex="0" data-go="deducibilita"><span class="gicon "><svg class="ic"><use href="#i-wallet"/></svg></span><div class="gmain"><div class="gt">Sconto IRPEF ${y}</div><div class="gs">${perAnno?`Dai contributi personali`:`Fino a ${eur0.format(lim*al)} l'anno con contributi personali`}</div></div>
+      <div class="gv ${perAnno?"or":"mut"}">${eur.format(Math.min(perAnno,lim)*al)}</div><svg class="ic chev"><use href="#i-caret-right"/></svg></div>
+  </div></div><div>
+  <div class="ghead">Andamento</div>
+  <div class="card"><div class="chartbox"><canvas id="cHist"></canvas></div></div>
+  <div class="ghead">Anno per anno</div>
+  <div class="card" style="padding:6px 16px 4px">${yearTable()}</div>
+  </div></div>`;
+  view.querySelectorAll("[data-go]").forEach(r=>{ const f=()=>{ if(r.dataset.sub) S.sub=r.dataset.sub; go(r.dataset.go); }; r.onclick=f; r.onkeydown=e=>{ if(e.key==="Enter") f(); }; });
+  histChart();
+},
+movimenti(){
+  const sub = S.sub, multi=(S.cfg.fondi||[]).length>1;
+  const seg = `<div class="segtabs" role="tablist">
+    <button role="tab" data-s="versamenti" class="${sub==="versamenti"?"on":""}">Versamenti</button>
+    <button role="tab" data-s="tfr" class="${sub==="tfr"?"on":""}">TFR in busta paga${pendingTfr().length?` <em>${pendingTfr().length}</em>`:""}</button></div>`;
+  const TICON = {TFR:["briefcase",""], Personale:["user","or"], Datore:["buildings",""], Spesa:["receipt-x","rd"]};
+  if(sub==="tfr"){
+    const t = tfrs().slice().sort((a,b)=>(b.competenza||b.data).localeCompare(a.competenza||a.data));
+    const pend = t.filter(x=>!x.versamento), done = t.filter(x=>x.versamento);
+    const vById = Object.fromEntries(S.mov.map(m=>[m.id,m]));
+    const rowT = x => `<div class="grow" data-t="${x.id}" role="button" tabindex="0">
+      ${x.versamento?`<span class="gicon "><svg class="ic"><use href="#i-calendar-blank"/></svg></span>`:`<span class="gicon am"><svg class="ic"><use href="#i-hourglass-medium"/></svg></span>`}
+      <div class="gmain"><div class="gt">${esc(tfrLabel(x))}${x.note?` · ${esc(x.note)}`:""}</div>
+        <div class="gs">${x.versamento&&vById[x.versamento]?`Versato il ${fd(vById[x.versamento].data)}`:`Busta paga del ${fd(x.data)}`}${multi?` · ${esc(x.fondo)}`:""}</div></div>
+      <div class="gv">${eur.format(x.importo)}</div></div>`;
+    view.innerHTML = `${seg}${t.length?`
+      ${pend.length?`<div class="ghead"><span>Da versare</span><b>${eur.format(sum(pend))}</b></div>
+        <div class="group">${pend.map(rowT).join("")}</div>
+        <div class="inline-cta"><button class="btn block" id="bMake">Registra versamento di ${eur.format(sum(pend))}</button></div>`:""}
+      ${done.length?`<div class="ghead"><span>Già versato</span><b>${eur.format(sum(done))}</b></div><div class="group">${done.map(rowT).join("")}</div>`:""}`
+      :`<div class="group"><div class="empty">Nessun TFR registrato.<br>Aggiungi la quota dell'ultima busta paga con +.</div></div>`}`;
+    const bm=$("#bMake"); if(bm) bm.onclick=()=>editMov(null,"TFR");
+  } else {
+    const m = movs().slice().sort((a,b)=>(b.data||"").localeCompare(a.data||""));
+    const years = [...new Set(m.map(x=>(x.data||"").slice(0,4)))];
+    const LABEL = {TFR:"TFR versato", Personale:"Contributo personale", Datore:"Contributo datore", Spesa:"Spesa"};
+    view.innerHTML = `${seg}${m.length? years.map(yr=>{
+      const ys=m.filter(z=>(z.data||"").startsWith(yr)); const ysum=sum(ys.filter(z=>z.tipo!=="Spesa"))-sum(ys.filter(z=>z.tipo==="Spesa"));
+      return `<div class="ghead"><span>${yr}</span><b>${eur.format(ysum)}</b></div><div class="group">${ys.map(x=>{
+        const neg=x.tipo==="Spesa", ti=TICON[x.tipo]||["coins",""];
+        const nT = x.tipo==="TFR" ? S.tfr.filter(t=>t.versamento===x.id) : [];
+        const sub = x.tipo==="TFR" ? (nT.length?`${nT.length} ${nT.length===1?"mese":"mesi"} · ${esc(nT.sort((a,b)=>(a.competenza||"").localeCompare(b.competenza||"")).map(t=>tfrLabel(t).slice(0,3)).join(", "))}`:"Nessun mese collegato") : esc(x.note||"");
+        return `<div class="grow" data-id="${x.id}" role="button" tabindex="0">
+          <span class="gicon ${ti[1]}"><svg class="ic"><use href="#i-${ti[0]}"/></svg></span>
+          <div class="gmain"><div class="gt">${LABEL[x.tipo]||esc(x.tipo)}</div><div class="gs">${fd(x.data)}${sub?` · ${sub}`:""}${multi?` · ${esc(x.fondo)}`:""}</div></div>
+          <div class="gv ${neg?"rd":""}">${neg?"−":""}${eur.format(x.importo)}</div></div>`;}).join("")}</div>`;}).join("")
+      : `<div class="group"><div class="empty">Nessun versamento</div></div>`}`;
+  }
+  view.querySelectorAll(".segtabs button").forEach(b=>b.onclick=()=>{ S.sub=b.dataset.s; render(); });
+  const act = (r,fn)=>{ r.onclick=fn; r.onkeydown=e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); fn(); } }; };
+  view.querySelectorAll(".grow[data-id]").forEach(r=>act(r,()=>editMov(S.mov.find(x=>x.id===r.dataset.id))));
+  view.querySelectorAll(".grow[data-t]").forEach(r=>act(r,()=>editTfr(S.tfr.find(x=>x.id===r.dataset.t))));
+},
+valori(){
+  const v = vals().slice().reverse(), multi=(S.cfg.fondi||[]).length>1;
+  view.innerHTML = `<p class="lead">Il valore della posizione da ogni estratto conto.</p>
+  <div class="group">${v.length? v.map(x=>{
+    const a = accreditatoAl(x.data, x.fondo), d = x.valore-a;
+    return `<div class="grow" data-id="${x.id}" role="button" tabindex="0"><span class="gicon or"><svg class="ic"><use href="#i-chart-line-up"/></svg></span>
+      <div class="gmain"><div class="gt">${fd(x.data)}</div><div class="gs">Versato ${eur.format(a)}${multi?` · ${esc(x.fondo)}`:""}</div></div>
+      <div class="gv">${eur.format(x.valore)}<small class="${sgn(d)}">${d>=0?"+":""}${eur.format(d)}</small></div></div>`;}).join("") : `<div class="empty">Nessun estratto conto inserito</div>`}</div>`;
+  view.querySelectorAll(".grow[data-id]").forEach(r=>r.onclick=()=>editVal(S.val.find(x=>x.id===r.dataset.id)));
+},
+deducibilita(){
+  const y = new Date().getFullYear(), lim = num(S.cfg.limite)||5164.57;
+  // il limite è per persona, su tutti i fondi: si usano tutti i movimenti
+  const isDed = m => m.tipo==="Personale"||m.tipo==="Datore";
+  const ded = yr => sum(S.mov.filter(m=>isDed(m) && (m.data||"").startsWith(String(yr))));
+  const years = [...new Set(S.mov.filter(isDed).map(m=>+m.data.slice(0,4)))].concat([y]).filter((v,i,a)=>a.indexOf(v)===i).sort((a,b)=>b-a);
+  const used = ded(y), left = Math.max(0, lim-used), al = num(S.cfg.aliquota)/100;
+  const monthsLeft = 12 - new Date().getMonth();
+  view.innerHTML = `
+  <div class="card"><div class="hl">Dedotto nel ${y}</div>
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:4px"><div class="balance" style="margin:4px 0 0">${bal(used)}</div><div class="muted">di ${eur.format(lim)}</div></div>
+    <div class="bar"><i style="width:${Math.min(100,used/lim*100)}%"></i></div>
+    <div class="grid2" style="margin-top:12px">
+      <div class="kpi"><div class="l">Ancora deducibile</div><div class="v">${eur.format(left)}</div><div class="s">≈ ${eur0.format(left/monthsLeft)}/mese fino a dicembre</div></div>
+      <div class="kpi"><div class="l">Risparmio IRPEF stimato</div><div class="v pos">${eur.format(used*al)}</div><div class="s">con aliquota marginale ${S.cfg.aliquota}% · max ${eur0.format(lim*al)}</div></div>
+    </div>
+    <p class="gfoot" style="padding:0;margin:14px 0 0">Il limite conta i contributi personali e quelli del datore di lavoro, non il TFR, ed è unico su tutti i fondi. La deduzione si recupera nella dichiarazione dei redditi dell'anno dopo. Se versi più del limite, comunica al fondo i contributi non dedotti entro il 31 dicembre dell'anno successivo.</p>
+  </div>
+  <div class="ghead">Storico</div><div class="card" style="padding:6px 16px 4px"><table><tr><th>Anno</th><th>Versato deducibile</th><th>Residuo</th><th>Risparmio</th></tr>
+    ${years.map(yr=>{const u=ded(yr);return `<tr><td>${yr}</td><td>${eur.format(u)}</td><td>${eur.format(Math.max(0,lim-u))}</td><td>${eur.format(Math.min(u,lim)*al)}</td></tr>`}).join("")}</table>
+    </div><p class="gfoot">Aliquota e limite si cambiano in Impostazioni.</p>`;
+},
+proiezione(){
+  const c = S.cfg, lv = lastValuation();
+  const attesa = sum(pendingTfr());
+  const start = (lv?lv.valore:0) + attesa;
+  const tfrAuto = avgTFR();
+  const tfr = c.tfrMensile!=null && c.tfrMensile!=="" ? num(c.tfrMensile) : tfrAuto;
+  const y0 = new Date().getFullYear();
+  const born = num(c.annoNascita);
+  const yRet = born ? born + num(c.etaPensione) : null;
+  view.innerHTML = `
+  <div class="ghead">Ipotesi</div><div class="card">
+    <div class="grid2">
+      <label class="f"><span>Anno di nascita</span><input id="pBorn" inputmode="numeric" placeholder="es. 1995" value="${born||""}"></label>
+      <label class="f"><span>Età pensione</span><input id="pEta" inputmode="numeric" value="${c.etaPensione}"></label>
+      <label class="f"><span>TFR mensile (€)</span><input id="pTfr" inputmode="decimal" placeholder="${tfrAuto.toFixed(2)} (auto)" value="${c.tfrMensile??""}"></label>
+      <label class="f"><span>Personale mensile (€)</span><input id="pPer" inputmode="decimal" value="${c.personaleMensile||""}" placeholder="0"></label>
+      <label class="f"><span>Rendimento annuo netto %</span><input id="pRend" inputmode="decimal" value="${c.rendimento}"></label>
+      <label class="f"><span>Crescita contributi %/anno</span><input id="pCre" inputmode="decimal" value="${c.crescita}"></label>
+      <label class="f"><span>Inflazione %</span><input id="pInf" inputmode="decimal" value="${c.inflazione}"></label>
+    </div>
+    <div class="muted">Si parte da ${eur.format(start)} (ultimo estratto conto + TFR da versare).</div>
+  </div>
+  <div id="pOut"></div>`;
+  const bind = (id,key,parse=num) => $(id).addEventListener("input", e=>{ const v=e.target.value.trim(); saveCfg({[key]: v===""? (key==="tfrMensile"||key==="annoNascita"?null:0) : parse(v)}); drawProj(); });
+  bind("#pBorn","annoNascita"); bind("#pEta","etaPensione"); bind("#pTfr","tfrMensile"); bind("#pPer","personaleMensile");
+  bind("#pRend","rendimento"); bind("#pCre","crescita"); bind("#pInf","inflazione");
+  drawProj();
+  function drawProj(){
+    if(S.charts.proj){ S.charts.proj.destroy(); S.charts.proj=null; }
+    const c = S.cfg, born=num(c.annoNascita), out=$("#pOut");
+    if(!born || born<1900){ out.innerHTML = `<div class="card"><div class="empty">Inserisci l'anno di nascita per vedere la proiezione.</div></div>`; return; }
+    const tfr = c.tfrMensile!=null && c.tfrMensile!=="" ? num(c.tfrMensile) : tfrAuto;
+    const yRet = born + num(c.etaPensione), years = Math.max(0, yRet - y0);
+    if(years<=0){ out.innerHTML = `<div class="card"><div class="empty">L'anno di pensione è già passato: controlla le ipotesi.</div></div>`; return; }
+    const sims = [num(c.rendimento)-2, num(c.rendimento), num(c.rendimento)+2].map(r=>project(start, tfr, num(c.personaleMensile), r/100, num(c.crescita)/100, years));
+    const infl = Math.pow(1+num(c.inflazione)/100, years);
+    const base = sims[1], contrib = base.contrib;
+    out.innerHTML = `
+    <div class="kpis">
+      <div class="kpi hero"><div class="l">Montante stimato nel ${yRet} (tra ${years} anni)</div><div class="v">${eur0.format(base.end)}</div>
+        <div class="s">≈ ${eur0.format(base.end/infl)} in euro di oggi · versi ${eur0.format(contrib)}, rendimenti ${eur0.format(base.end-start-contrib)}</div></div>
+      <div class="kpi"><div class="l">Scenario prudente (${(num(c.rendimento)-2).toLocaleString("it-IT")}%)</div><div class="v">${eur0.format(sims[0].end)}</div></div>
+      <div class="kpi"><div class="l">Scenario favorevole (${(num(c.rendimento)+2).toLocaleString("it-IT")}%)</div><div class="v">${eur0.format(sims[2].end)}</div></div>
+    </div>
+    <div class="ghead">Andamento</div><div class="card"><div class="chartbox" style="height:260px"><canvas id="cProj"></canvas></div></div>
+    <p class="gfoot">Stima indicativa: rendimento costante, contributi che crescono ogni anno, valori lordi della tassazione finale (15% che scende fino al 9% dopo 35 anni di adesione). Non è una previsione.</p>`;
+    if(!window.Chart) return;
+    const labels = base.series.map(p=>p.y);
+    S.charts.proj = new Chart($("#cProj"),{type:"line",data:{labels,datasets:[
+      {label:"Favorevole",data:sims[2].series.map(p=>p.v),borderColor:css("--accent"),borderDash:[4,4],pointRadius:0,borderWidth:1.5,fill:false},
+      {label:"Atteso",data:base.series.map(p=>p.v),borderColor:css("--accent"),backgroundColor:css("--accent-soft"),pointRadius:0,borderWidth:2.5,fill:false},
+      {label:"Prudente",data:sims[0].series.map(p=>p.v),borderColor:css("--muted"),borderDash:[4,4],pointRadius:0,borderWidth:1.5,fill:false},
+      {label:"Versato",data:base.series.map(p=>p.c),borderColor:css("--blue"),backgroundColor:"transparent",pointRadius:0,borderWidth:1.5,fill:false}
+    ]},options:chartOpts()});
+  }
+},
+impostazioni(){
+  const c = S.cfg;
+  view.innerHTML = `
+  <div class="ghead">Fondi</div>
+  <div class="group plain">${(c.fondi||[]).map((f,i)=>`<div class="grow"><div class="gmain"><div class="gt">${esc(f)}</div></div>${(c.fondi.length>1)?`<button class="btn danger" style="height:34px;font-size:14px" data-i="${i}">Rimuovi</button>`:""}</div>`).join("")}</div>
+  <div style="display:flex;gap:8px;margin:8px 0 0"><input id="newFund" placeholder="Nome di un altro fondo"><button class="btn" id="bFund">Aggiungi</button></div>
+  <div class="ghead">Fisco</div><div class="card"><div class="grid2">
+    <label class="f"><span>Aliquota marginale IRPEF %</span><input id="sAl" inputmode="decimal" value="${c.aliquota}"></label>
+    <label class="f"><span>Limite deducibile annuo €</span><input id="sLim" inputmode="decimal" value="${c.limite}"></label></div></div>
+  <div class="ghead">Backup</div><div class="card"><p class="muted" style="margin:0 0 12px">I dati sono salvati nell'archivio di questa pagina. Ogni tanto scaricane una copia.</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn ghost" id="bCsv"><svg class="ic sm"><use href="#i-download-simple"/></svg>CSV</button><button class="btn ghost" id="bJson"><svg class="ic sm"><use href="#i-download-simple"/></svg>JSON</button></div></div>`;
+  $("#bFund").onclick=()=>{ const v=$("#newFund").value.trim(); if(!v||!guard()) return; if((c.fondi||[]).includes(v)) return; saveCfg({fondi:[...(c.fondi||[]),v]}); renderFunds(); render(); };
+  view.querySelectorAll("[data-i]").forEach(b=>b.onclick=()=>{ if(!guard()) return; const f=c.fondi[+b.dataset.i];
+    if(S.mov.some(m=>m.fondo===f)||S.tfr.some(m=>m.fondo===f)||S.val.some(v=>v.fondo===f)){ toast("Il fondo ha dei dati: spostali prima"); return; }
+    saveCfg({fondi:c.fondi.filter((_,i)=>i!==+b.dataset.i)}); renderFunds(); render(); });
+  $("#sAl").oninput=e=>saveCfg({aliquota:num(e.target.value)});
+  $("#sLim").oninput=e=>saveCfg({limite:num(e.target.value)});
+  $("#bCsv").onclick=exportCSV; $("#bJson").onclick=exportJSON;
+}
+};
+
+function emptyState(){
+  return `<div class="card"><div class="empty"><div class="emptyic"><svg class="ic"><use href="#i-plant"/></svg></div><p>Nessun dato ancora.</p>
+  <p class="muted">Inizia dal TFR dell'ultima busta paga, poi aggiungi il valore dall'estratto conto.</p></div></div>`;
+}
+function yearTable(){
+  const m = movs(), v = vals();
+  const ys = [...new Set(m.map(x=>x.data.slice(0,4)).concat(v.map(x=>x.data.slice(0,4))))].sort().reverse();
+  if(!ys.length) return `<div class="empty">—</div>`;
+  return `<div class="tablewrap"><table><tr><th>Anno</th><th>TFR</th><th>Altri</th><th>Spese</th><th>Valore</th></tr>${ys.map(y=>{
+    const my = m.filter(x=>x.data.startsWith(y)), vy=v.filter(x=>x.data.startsWith(y));
+    const lastV = vy.length? (S.fund==="__all" ? Object.values(vy.reduce((o,x)=>(o[x.fondo]=x,o),{})).reduce((s,x)=>s+x.valore,0) : vy[vy.length-1].valore) : null;
+    const spY = sum(my.filter(x=>x.tipo==="Spesa"));
+    return `<tr><td>${y}</td><td>${eur0.format(sum(my.filter(x=>x.tipo==="TFR")))}</td><td>${eur0.format(sum(my.filter(x=>x.tipo==="Personale"||x.tipo==="Datore")))}</td><td>${spY?"−"+eur0.format(spY):"—"}</td><td>${lastV==null?"—":eur0.format(lastV)}</td></tr>`;}).join("")}</table></div>`;
+}
+function chartOpts(){
+  if(window.Chart){ Chart.defaults.font.family = 'Geist, system-ui, sans-serif'; Chart.defaults.font.size = 11; }
+  return {responsive:true,maintainAspectRatio:false,interaction:{mode:"index",intersect:false},
+    plugins:{legend:{position:"bottom",labels:{boxWidth:12,usePointStyle:true,color:css("--muted")}},
+      tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${eur.format(ctx.parsed.y)}`}}},
+    scales:{x:{grid:{display:false},ticks:{color:css("--muted"),maxRotation:0,autoSkip:true}},
+      y:{grid:{color:css("--line")},ticks:{color:css("--muted"),callback:v=>eur0.format(v)}}}};
+}
+function histChart(){
+  if(!window.Chart) return;
+  const v = vals(); if(!v.length) return;
+  let pts;
+  if(S.fund==="__all" && (S.cfg.fondi||[]).length>1){
+    const dates=[...new Set(v.map(x=>x.data))].sort(), last={};
+    pts = dates.map(d=>{ v.filter(x=>x.data===d).forEach(x=>last[x.fondo]=x);
+      const parts=Object.values(last); return {d, val:parts.reduce((s,x)=>s+x.valore,0), acc:parts.reduce((s,x)=>s+accreditatoAl(x.data,x.fondo),0)}; });
+  } else pts = v.map(x=>({d:x.data,val:x.valore,acc:accreditatoAl(x.data)}));
+  S.charts.hist = new Chart($("#cHist"),{type:"line",data:{labels:pts.map(p=>fd(p.d).slice(3)),datasets:[
+    {label:"Valore",data:pts.map(p=>p.val),borderColor:css("--accent"),backgroundColor:css("--accent"),tension:.25,borderWidth:2.5,pointRadius:4},
+    {label:"Versato",data:pts.map(p=>p.acc),borderColor:css("--blue"),backgroundColor:css("--blue"),stepped:false,tension:.25,borderWidth:1.5,borderDash:[5,4],pointRadius:3}
+  ]},options:chartOpts()});
+}
+function project(start, tfr, per, r, g, years){
+  const rm = Math.pow(1+r,1/12)-1; let v=start, c=0; const series=[{y:new Date().getFullYear(),v,c}];
+  let mt=tfr, mp=per;
+  for(let y=1;y<=years;y++){
+    for(let m=0;m<12;m++){ v = v*(1+rm) + mt + mp; c += mt+mp; }
+    series.push({y:new Date().getFullYear()+y, v, c:c}); mt*=1+g; mp*=1+g;
+  }
+  series.forEach(p=>p.c+=start);
+  return {end:v, contrib:c, series};
+}
+
+// ---------- forms ----------
+const dlg = $("#dlg"), form = $("#dlgForm");
+function openForm(html, onSubmit, onDelete){
+  form.innerHTML = `<button type="button" class="iconbtn dclose" id="fX" aria-label="Chiudi"><svg class="ic"><use href="#i-x"/></svg></button>` + html + `<div class="actions">${onDelete?`<button type="button" class="btn danger" id="fDel">Elimina</button>`:""}<span class="sp"></span>
+    <button type="button" class="btn ghost" id="fCancel">Annulla</button><button type="submit" class="btn" id="fOk">Salva</button></div>`;
+  form.onsubmit = async e => { e.preventDefault(); const ok=$("#fOk"); ok.disabled=true;
+    try{ const r = await onSubmit(new FormData(form)); if(r!==false){ dlg.close(); } }catch(err){ toast("Non salvato: "+(err&&err.code||err.message||"errore")); }
+    ok.disabled=false; };
+  $("#fCancel").onclick = ()=>dlg.close(); $("#fX").onclick = ()=>dlg.close();
+  dlg.onclick = e => { if(e.target===dlg) dlg.close(); };
+  if(onDelete) $("#fDel").onclick = async ()=>{ const b=$("#fDel"); if(b.dataset.c!=="1"){ b.dataset.c="1"; b.textContent="Conferma eliminazione"; return; }
+    try{ await onDelete(); dlg.close(); toast("Eliminato"); }catch(err){ toast("Non eliminato"); } };
+  dlg.showModal();
+}
+function fundField(cur){
+  const f = S.cfg.fondi||[]; if(f.length<=1) return `<input type="hidden" name="fondo" value="${esc(cur||f[0]||"")}">`;
+  return `<label class="f"><span>Fondo</span><select name="fondo">${f.map(x=>`<option ${x===(cur||(S.fund!=="__all"?S.fund:f[0]))?"selected":""}>${esc(x)}</option>`).join("")}</select></label>`;
+}
+const dec = v => v===""||v==null ? "" : String(v).replace(".",",");
+const r2 = x => Math.round(x*100)/100;
+function chooser(){
+  if(!guard()) return;
+  form.innerHTML = `<button type="button" class="iconbtn dclose" id="fX" aria-label="Chiudi"><svg class="ic"><use href="#i-x"/></svg></button>
+    <h3>Cosa registri?</h3>
+    <div class="choices">
+      <button type="button" data-c="tfr"><span class="gicon am"><svg class="ic"><use href="#i-hourglass-medium"/></svg></span><div><b>TFR in busta paga</b><span>La quota maturata questo mese</span></div></button>
+      <button type="button" data-c="mov"><span class="gicon or"><svg class="ic"><use href="#i-coins"/></svg></span><div><b>Versamento sul fondo</b><span>TFR, contributo personale o del datore, spesa</span></div></button>
+      <button type="button" data-c="val"><span class="gicon "><svg class="ic"><use href="#i-chart-line-up"/></svg></span><div><b>Estratto conto</b><span>Il valore aggiornato della posizione</span></div></button>
+    </div>`;
+  form.onsubmit = e => e.preventDefault();
+  $("#fX").onclick = ()=>dlg.close();
+  dlg.onclick = e => { if(e.target===dlg) dlg.close(); };
+  form.querySelectorAll("[data-c]").forEach(b=>b.onclick=()=>{ dlg.close(); const c=b.dataset.c; setTimeout(()=> c==="tfr"?editTfr(): c==="mov"?editMov(): editVal(), 0); });
+  dlg.showModal();
+}
+function editTfr(t){
+  if(!guard()) return;
+  const isNew=!t; t = t || {competenza:prevMonth(), data:today(), importo:"", note:"", versamento:null};
+  const v = t.versamento ? S.mov.find(m=>m.id===t.versamento) : null;
+  openForm(`<h3>${isNew?"TFR in busta paga":"TFR "+esc(tfrLabel(t))}</h3>
+    ${fundField(t.fondo)}
+    <div class="grid2">
+      <label class="f"><span>Mese di competenza</span><input type="month" name="competenza" required value="${t.competenza||""}"></label>
+      <label class="f"><span>Importo €</span><input name="importo" inputmode="decimal" required placeholder="${avgTFR()?dec(avgTFR().toFixed(2)):""}" value="${dec(t.importo)}"></label>
+    </div>
+    <label class="f"><span>Data busta paga</span><input type="date" name="data" required value="${t.data||""}"></label>
+    <label class="f"><span>Nota</span><input name="note" placeholder="es. tredicesima" value="${esc(t.note||"")}"></label>
+    <div class="formnote">${v?`Versato sul fondo il ${fd(v.data)}. Per scollegarlo modifica quel versamento.`:`Resta "da versare" finché non lo includi in un versamento TFR.`}</div>`,
+  async fd => {
+    const imp = num(fd.get("importo")); if(!imp){ toast("Importo mancante"); return false; }
+    await save("tfr", t.id, {fondo: fd.get("fondo")||S.cfg.fondi[0], competenza: fd.get("competenza"), data: fd.get("data"), importo: r2(imp), note: fd.get("note")||"", versamento: t.versamento||null});
+    toast("Salvato");
+  }, isNew?null:async()=>{ if(t.versamento){ toast("È in un versamento: scollegalo prima"); throw new Error("linked"); } await del("tfr",t.id); });
+}
+async function linkTfr(movId, ids){
+  // collega i mesi scelti al versamento e scollega quelli tolti; una scrittura per documento
+  for(const t of S.tfr){
+    const want = ids.includes(t.id) ? movId : (t.versamento===movId ? null : t.versamento);
+    if((t.versamento||null)!==(want||null)){ const {id,...rest}=t; await S.db.collection("tfr").doc(id).set({...rest, versamento: want}); }
+  }
+}
+function editMov(m, tipoDefault){
+  if(!guard()) return;
+  const isNew = !m; m = m || {tipo: tipoDefault||"TFR", data:today(), importo:"", note:""};
+  const avail = () => S.tfr.filter(t=>(!t.versamento || t.versamento===m.id) && t.fondo===(form.elements.fondo?.value||m.fondo||S.cfg.fondi[0]))
+    .sort((a,b)=>(a.competenza||a.data).localeCompare(b.competenza||b.data));
+  openForm(`<h3>${isNew?"Nuovo versamento":"Versamento del "+fd(m.data)}</h3>
+    ${fundField(m.fondo)}
+    <label class="f"><span>Tipo</span><select name="tipo" id="mTipo">${Object.entries(TIPI).map(([k,v])=>`<option value="${k}" ${m.tipo===k?"selected":""}>${k==="Spesa"?"Spesa del piano":k==="TFR"?"TFR versato":"Contributo "+v.l.toLowerCase()}</option>`).join("")}</select></label>
+    <div id="tfrPick"></div>
+    <div class="grid2">
+      <label class="f"><span id="mDataL">Data sul fondo</span><input type="date" name="data" required value="${m.data||""}"></label>
+      <label class="f"><span>Importo €</span><input name="importo" id="mImp" inputmode="decimal" required value="${dec(m.importo)}"></label>
+    </div>
+    <label class="f"><span>Nota</span><input name="note" id="mNote" value="${esc(m.note||"")}"></label>`,
+  async fd => {
+    const imp = num(fd.get("importo")); if(!imp){ toast("Importo mancante"); return false; }
+    const tipo = fd.get("tipo");
+    const body = {fondo: fd.get("fondo")||S.cfg.fondi[0], tipo, data: fd.get("data"), importo: r2(Math.abs(imp)), note: fd.get("note")||""};
+    const ref = m.id ? S.db.collection("movimenti").doc(m.id) : S.db.collection("movimenti").doc();
+    await ref.set(body);
+    const ids = tipo==="TFR" ? fd.getAll("tfr") : [];
+    await linkTfr(ref.id, ids);
+    toast(ids.length?`Salvato · ${ids.length} mesi di TFR collegati`:"Salvato");
+  }, isNew?null:async()=>{ await del("movimenti",m.id); await linkTfr(m.id, []); });
+  const pick = $("#tfrPick"), imp = $("#mImp");
+  let touched = !isNew;
+  imp.addEventListener("input", ()=>touched=true);
+  const recalc = () => { const ids=[...form.querySelectorAll('input[name=tfr]:checked')].map(x=>x.value);
+    const tot = sum(S.tfr.filter(t=>ids.includes(t.id)));
+    $("#pickTot") && ($("#pickTot").textContent = eur.format(tot));
+    if(!touched || !imp.value) { imp.value = tot ? dec(tot.toFixed(2)) : ""; touched=false; } };
+  const sync = () => {
+    const t = $("#mTipo").value;
+    $("#mNote").placeholder = t==="Spesa" ? "es. quota associativa annua" : "";
+    if(t!=="TFR"){ pick.innerHTML=""; return; }
+    const list = avail();
+    pick.innerHTML = list.length ? `<div class="pick"><div class="pickhead"><span>Mesi di TFR inclusi</span><b id="pickTot"></b></div>
+      ${list.map(x=>`<label class="pickrow"><input type="checkbox" name="tfr" value="${x.id}" ${(x.versamento===m.id && m.id) || (isNew && !x.versamento) ? "checked":""}>
+        <span>${esc(tfrLabel(x))}</span><b>${eur.format(x.importo)}</b></label>`).join("")}</div>`
+      : `<div class="formnote">Nessun TFR da versare. Registra prima il TFR delle buste paga.</div>`;
+    pick.querySelectorAll("input").forEach(c=>c.onchange=()=>{ touched=false; recalc(); });
+    recalc();
+  };
+  $("#mTipo").onchange=sync; if(form.elements.fondo.tagName==="SELECT") form.elements.fondo.addEventListener("change",sync); sync();
+}
+function prevMonth(){ const d=new Date(); d.setDate(1); d.setMonth(d.getMonth()-1); return d.toISOString().slice(0,7); }
+function editVal(v){
+  if(!guard()) return;
+  const isNew=!v; v = v || {data:today(), valore:"", note:""};
+  openForm(`<h3>${isNew?"Estratto conto":"Estratto del "+fd(v.data)}</h3>
+    ${fundField(v.fondo)}
+    <div class="grid2">
+      <label class="f"><span>Data estratto conto</span><input type="date" name="data" required value="${v.data}"></label>
+      <label class="f"><span>Valore della posizione €</span><input name="valore" inputmode="decimal" required value="${dec(v.valore)}"></label>
+    </div>
+    <label class="f"><span>Nota</span><input name="note" value="${esc(v.note||"")}"></label>
+    ${isNew?`<label class="f check" id="mkWrap" hidden><input type="checkbox" name="mk" checked><span id="mkTxt"></span></label>`:""}`,
+  async fd => {
+    const val = num(fd.get("valore")); if(!val){ toast("Valore mancante"); return false; }
+    const body = {fondo: fd.get("fondo")||S.cfg.fondi[0], data: fd.get("data"), valore: r2(val), note: fd.get("note")||""};
+    await save("valorizzazioni", v.id, body);
+    if(isNew && fd.get("mk")){
+      const list = pendingTfr(body.fondo).filter(t=>t.data<=body.data);
+      if(list.length){ const ref=S.db.collection("movimenti").doc();
+        await ref.set({fondo:body.fondo, tipo:"TFR", data:body.data, importo:r2(sum(list)), note:""});
+        await linkTfr(ref.id, list.map(t=>t.id)); toast(`Salvato · versamento TFR di ${eur.format(sum(list))} creato`); return; }
+    }
+    toast("Salvato");
+  }, isNew?null:()=>del("valorizzazioni",v.id));
+  const w=$("#mkWrap");
+  if(w){ const upd=()=>{ const l=pendingTfr(form.elements.fondo.value).filter(t=>t.data<=form.elements.data.value);
+      w.hidden=!l.length; $("#mkTxt").textContent=`Registra anche il versamento TFR dei ${l.length} mesi da versare (${eur.format(sum(l))}), con la data dell'estratto`; };
+    form.elements.data.addEventListener("input",upd); if(form.elements.fondo.tagName==="SELECT") form.elements.fondo.addEventListener("change",upd); upd(); }
+}
+
+// ---------- export ----------
+async function offer(filename, text, mime){
+  try{ const dl = await claude.use("downloads");
+    if(dl){ await dl.save({filename, data:new Blob([text],{type:mime})}); return; } }catch(e){ if(e && e.code && /declin|cancel/i.test(e.code)) return; }
+  try{ await navigator.clipboard.writeText(text); toast("Copiato negli appunti"); }catch(e){ toast("Download non disponibile"); }
+}
+function exportCSV(){
+  const q = s => `"${String(s??"").replace(/"/g,'""')}"`;
+  const rows = [["archivio","fondo","tipo","data","competenza","importo","collegato_a","note"].join(";")];
+  S.tfr.slice().sort((a,b)=>a.data.localeCompare(b.data)).forEach(t=>rows.push(["tfr_accumulato",t.fondo,"TFR",t.data,t.competenza||"",dec(t.importo),t.versamento||"",t.note].map(q).join(";")));
+  S.mov.slice().sort((a,b)=>a.data.localeCompare(b.data)).forEach(m=>rows.push(["versamento:"+m.id,m.fondo,m.tipo,m.data,"",dec(m.importo),"",m.note].map(q).join(";")));
+  S.val.slice().sort((a,b)=>a.data.localeCompare(b.data)).forEach(v=>rows.push(["estratto_conto",v.fondo,"",v.data,"",dec(v.valore),"",v.note].map(q).join(";")));
+  offer(`piano-pensione-${today()}.csv`, "﻿"+rows.join("\n"), "text/csv");
+}
+function exportJSON(){
+  offer(`piano-pensione-${today()}.json`, JSON.stringify({esportato:today(), impostazioni:S.cfg, tfr_accumulato:S.tfr, versamenti:S.mov, estratti_conto:S.val},null,2), "application/json");
+}
+
+// ---------- boot ----------
+renderFunds();
+const h = location.hash.slice(1); if(h && VIEWS[h]) S.view = h;
+document.querySelectorAll("#tabs button").forEach(b=>b.classList.toggle("on",b.dataset.v===S.view));
+render();
+(function wait(n){ if(window.claude && window.claude.use) initDb(); else if(n>0) setTimeout(()=>wait(n-1),200); else setStatus("Archivio non disponibile in questa vista"); })(25);
+})();
+</script>
+</body>
+</html>
