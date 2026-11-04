@@ -19,9 +19,8 @@ const IMPORTO_IT = /^(\d+|[1-9]\d{0,2}(?:\.\d{3})+)(?:,(\d{1,2}))?$/
 /** Legge un importo digitato in formato it-IT; `null` se non è un importo positivo valido. */
 export function leggiImporto(testo: string): Centesimi | null {
   const pulito = testo.replace(/[\s€]/g, '')
-  if (!IMPORTO_IT.test(pulito)) return null
-  const virgola = pulito.indexOf(',')
-  const intera = virgola === -1 ? pulito : pulito.slice(0, virgola)
-  const decimali = virgola === -1 ? '' : pulito.slice(virgola + 1)
+  const trovato = IMPORTO_IT.exec(pulito)
+  if (trovato === null) return null
+  const [, intera = '', decimali = ''] = trovato
   return Number(intera.replaceAll('.', '')) * 100 + Number(decimali.padEnd(2, '0'))
 }
