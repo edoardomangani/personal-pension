@@ -114,7 +114,7 @@ async function tentativo(salva: () => Promise<string>): Promise<TentativoAltrui>
     await salva()
     return { tipo: 'riuscito' }
   } catch (e) {
-    if (eErroreDati(e)) return { tipo: 'rifiutato', errore: e.tipo }
+    if (eErroreDati(e)) return { tipo: 'rifiutato', errore: e.tipo, messaggio: e.messaggio }
     throw e
   }
 }

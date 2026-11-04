@@ -58,13 +58,59 @@ export function esitoScritturaAnonima(destinazione: string, r: RispostaHttp): Ma
   return `senza token la scrittura su ${destinazione} risponde ${r.status} (codice ${campoTesto(r.corpo, 'code') ?? 'assente'}), atteso un rifiuto`
 }
 
-export type TentativoAltrui = { tipo: 'riuscito' } | { tipo: 'rifiutato'; errore: TipoErroreDati }
+export type TentativoAltrui =
+  { tipo: 'riuscito' } | { tipo: 'rifiutato'; errore: TipoErroreDati; messaggio: string }
 
 /** R13: solo un rifiuto del DB (`vincolo`, `altro`) dimostra l'isolamento; `rete` e `sessione` no. */
 export function esitoScritturaAltrui(descrizione: string, t: TentativoAltrui): Mancanza {
   if (t.tipo === 'riuscito') return `l'utente 2 riesce a ${descrizione}`
   if (t.errore === 'vincolo' || t.errore === 'altro') return null
   return `${descrizione}: rifiuto di tipo ${t.errore}, che non dimostra l'isolamento`
+}
+
+// Testi delle `raise exception` di db/migrations/002_rpc.sql (salva_movimento).
+export const MESSAGGIO_BUSTA_ASSENTE = 'La busta paga non esiste'
+export const MESSAGGIO_BUSTA_COLLEGATA = 'La busta paga è già in un altro movimento'
+// Testo della `raise exception` di db/migrations/001_schema.sql (controlla_busta_movimento).
+export const MESSAGGIO_ALTRO_FONDO = 'Il movimento è di un altro fondo'
+
+/** R7: passa solo un rifiuto `vincolo` con esattamente il messaggio atteso. */
+export function esitoRifiutoAtteso(
+  descrizione: string,
+  t: TentativoAltrui,
+  messaggioAtteso: string,
+): Mancanza {
+  if (t.tipo === 'riuscito') return `riesce a ${descrizione}`
+  if (t.errore !== 'vincolo') {
+    return `${descrizione}: rifiuto di tipo ${t.errore} («${t.messaggio}»), atteso vincolo «${messaggioAtteso}»`
+  }
+  if (t.messaggio !== messaggioAtteso) {
+    return `${descrizione}: rifiuto con «${t.messaggio}», atteso «${messaggioAtteso}»`
+  }
+  return null
+}
+
+export interface StatoCollegamento {
+  movimenti: number
+  righe: number
+  movimentoId: string | null
+}
+
+/** R8: conteggi e collegamento della busta uguali prima e dopo il tentativo. */
+export function esitoStatoInvariato(prima: StatoCollegamento, dopo: StatoCollegamento): Mancanza {
+  const differenze: string[] = []
+  if (prima.movimenti !== dopo.movimenti) {
+    differenze.push(`movimenti da ${prima.movimenti} a ${dopo.movimenti}`)
+  }
+  if (prima.righe !== dopo.righe) {
+    differenze.push(`movimento_righe da ${prima.righe} a ${dopo.righe}`)
+  }
+  if (prima.movimentoId !== dopo.movimentoId) {
+    differenze.push(
+      `collegamento della busta da ${prima.movimentoId ?? 'nessuno'} a ${dopo.movimentoId ?? 'nessuno'}`,
+    )
+  }
+  return differenze.length === 0 ? null : differenze.join('; ')
 }
 
 /** R13: l'utente 2 deve vedere zero righe in ogni tabella. */

@@ -3,10 +3,15 @@ import { describe, expect, it } from 'vitest'
 import { TABELLE_UTENTE, type TabellaUtente } from './importa'
 import {
   esitoLetturaAnonima,
+  esitoRifiutoAtteso,
   esitoScritturaAltrui,
   esitoScritturaAnonima,
+  esitoStatoInvariato,
   mancanzeConteggi,
+  MESSAGGIO_BUSTA_ASSENTE,
+  MESSAGGIO_BUSTA_COLLEGATA,
   riepilogo,
+  type StatoCollegamento,
 } from './verifica'
 
 const SENZA_CREDENZIALI = {
@@ -80,17 +85,95 @@ describe('esitoScritturaAnonima (R1)', () => {
 
 describe('esitoScritturaAltrui (R13)', () => {
   it.each(['vincolo', 'altro'] as const)('rifiuto %s → ok', (errore) => {
-    expect(esitoScritturaAltrui('aggiornare una busta', { tipo: 'rifiutato', errore })).toBeNull()
+    expect(
+      esitoScritturaAltrui('aggiornare una busta', { tipo: 'rifiutato', errore, messaggio: 'x' }),
+    ).toBeNull()
   })
 
   it.each(['rete', 'sessione'] as const)('rifiuto %s → mancanza', (errore) => {
-    expect(esitoScritturaAltrui('aggiornare una busta', { tipo: 'rifiutato', errore })).toMatch(
-      errore,
-    )
+    expect(
+      esitoScritturaAltrui('aggiornare una busta', { tipo: 'rifiutato', errore, messaggio: 'x' }),
+    ).toMatch(errore)
   })
 
   it('salvataggio riuscito → mancanza', () => {
     expect(esitoScritturaAltrui('aggiornare una busta', { tipo: 'riuscito' })).toMatch(/riesce/)
+  })
+})
+
+describe('esitoRifiutoAtteso (R7)', () => {
+  const descrizione = 'salvare un movimento con una busta già collegata'
+
+  it('vincolo col messaggio atteso → ok', () => {
+    expect(
+      esitoRifiutoAtteso(
+        descrizione,
+        { tipo: 'rifiutato', errore: 'vincolo', messaggio: MESSAGGIO_BUSTA_COLLEGATA },
+        MESSAGGIO_BUSTA_COLLEGATA,
+      ),
+    ).toBeNull()
+  })
+
+  it('salvataggio riuscito → mancanza con «riesce» e la descrizione', () => {
+    const m = esitoRifiutoAtteso(descrizione, { tipo: 'riuscito' }, MESSAGGIO_BUSTA_COLLEGATA)
+    expect(m).toMatch(/riesce/)
+    expect(m).toContain(descrizione)
+  })
+
+  it('vincolo con un altro messaggio (R5) → mancanza col messaggio ricevuto', () => {
+    expect(
+      esitoRifiutoAtteso(
+        descrizione,
+        { tipo: 'rifiutato', errore: 'vincolo', messaggio: 'Il fondo non esiste' },
+        MESSAGGIO_BUSTA_ASSENTE,
+      ),
+    ).toContain('Il fondo non esiste')
+  })
+
+  it.each(['rete', 'sessione', 'altro'] as const)('rifiuto %s → mancanza col tipo', (errore) => {
+    expect(
+      esitoRifiutoAtteso(
+        descrizione,
+        { tipo: 'rifiutato', errore, messaggio: MESSAGGIO_BUSTA_COLLEGATA },
+        MESSAGGIO_BUSTA_COLLEGATA,
+      ),
+    ).toContain(errore)
+  })
+})
+
+describe('esitoStatoInvariato (R8)', () => {
+  const prima: StatoCollegamento = { movimenti: 4, righe: 9, movimentoId: 'm1' }
+
+  it('prima = dopo → ok', () => {
+    expect(esitoStatoInvariato(prima, { ...prima })).toBeNull()
+  })
+
+  it('movimenti 4 → 5 → mancanza con tabella e conteggi', () => {
+    const m = esitoStatoInvariato(prima, { ...prima, movimenti: 5 })
+    expect(m).toContain('movimenti da 4 a 5')
+  })
+
+  it('righe 9 → 10 → mancanza con movimento_righe', () => {
+    expect(esitoStatoInvariato(prima, { ...prima, righe: 10 })).toContain(
+      'movimento_righe da 9 a 10',
+    )
+  })
+
+  it('busta m1 → m2 → mancanza col collegamento prima e dopo', () => {
+    expect(esitoStatoInvariato(prima, { ...prima, movimentoId: 'm2' })).toMatch(
+      /collegamento.*m1.*m2/,
+    )
+  })
+
+  it('busta senza movimento → m2 → mancanza (collegamento creato)', () => {
+    expect(
+      esitoStatoInvariato({ ...prima, movimentoId: null }, { ...prima, movimentoId: 'm2' }),
+    ).toMatch(/collegamento.*nessuno.*m2/)
+  })
+
+  it('più differenze → tutte elencate', () => {
+    const m = esitoStatoInvariato(prima, { movimenti: 5, righe: 10, movimentoId: 'm2' })
+    expect(m?.split('; ')).toHaveLength(3)
   })
 })
 
