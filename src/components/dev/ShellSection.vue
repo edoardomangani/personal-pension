@@ -9,7 +9,9 @@ import AppLogoIcon from '@/components/AppLogoIcon.vue'
 import AppMobileHeader from '@/components/AppMobileHeader.vue'
 import AppSidebar from '@/components/AppSidebar.vue'
 import AppTopBar from '@/components/AppTopBar.vue'
+import MenuUtentePreview from '@/components/dev/MenuUtentePreview.vue'
 import PhoneFrame from '@/components/dev/PhoneFrame.vue'
+import RottaCampione from '@/components/dev/RottaCampione.vue'
 import ShowcaseBlock from '@/components/dev/ShowcaseBlock.vue'
 import ShowcaseSection from '@/components/dev/ShowcaseSection.vue'
 import Specimen from '@/components/dev/Specimen.vue'
@@ -25,6 +27,7 @@ import {
 } from '@/components/ui/navigation-menu'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useNavigazione, type VoceNavigazione } from '@/composables/useNavigazione'
+import VistaProfilo from '@/views/VistaProfilo.vue'
 
 // La vetrina non è mai la pagina attiva: qui Home è forzata attiva per mostrarne lo stato.
 const { vociMobili, vociDesktop } = useNavigazione()
@@ -69,13 +72,16 @@ const vociMobiliCampione = computed(() => conHomeAttiva(vociMobili.value))
 
     <ShowcaseBlock id="shell-sidebar">
       <p class="text-xs text-subtle-foreground">
-        Dal breakpoint lg (1024px): il marchio e subito le sei voci.
+        Dal breakpoint lg (1024px): il marchio, subito le sei voci e in fondo il piede utente.
+        Registra non sta in sidebar ma nella barra in alto.
       </p>
       <div class="flex flex-wrap gap-6">
-        <Specimen code="SHL-sidebar-desktop">
-          <div class="overflow-hidden rounded-2xl border-[0.75px] border-border">
-            <AppSidebar class="static h-[560px]" />
-          </div>
+        <Specimen code="SHL-sidebar-desktop" note="232 · voci 40 · piede 48">
+          <RottaCampione percorso="/">
+            <div class="overflow-hidden rounded-2xl border-[0.75px] border-border">
+              <AppSidebar class="static h-[560px]" />
+            </div>
+          </RottaCampione>
         </Specimen>
       </div>
     </ShowcaseBlock>
@@ -101,9 +107,20 @@ const vociMobiliCampione = computed(() => conHomeAttiva(vociMobili.value))
     </ShowcaseBlock>
 
     <ShowcaseBlock id="shell-barra-alta">
+      <p class="text-xs text-subtle-foreground">
+        Alta 64, titolo a sinistra; Registra solo in Home, Movimenti e Valori. Nessuna freccia
+        indietro su desktop.
+      </p>
       <div class="flex flex-col gap-6">
-        <Specimen code="SHL-topbar-desktop">
-          <AppTopBar class="w-[720px]" />
+        <Specimen code="SHL-topbar-desktop" note="Home">
+          <RottaCampione percorso="/">
+            <AppTopBar class="w-[720px]" />
+          </RottaCampione>
+        </Specimen>
+        <Specimen code="SHL-topbar-desktop-senza-registra" note="Futuro">
+          <RottaCampione percorso="/futuro">
+            <AppTopBar class="w-[720px]" />
+          </RottaCampione>
         </Specimen>
         <Specimen code="SHL-navmenu-desktop">
           <NavigationMenu>
@@ -145,24 +162,46 @@ const vociMobiliCampione = computed(() => conHomeAttiva(vociMobili.value))
       </div>
     </ShowcaseBlock>
 
+    <ShowcaseBlock id="shell-menu-utente">
+      <p class="text-xs text-subtle-foreground">
+        Il piede della sidebar apre il menu sopra di sé, largo quanto il piede. Qui aperto in modo
+        statico: il menu vero va in un portal.
+      </p>
+      <Specimen code="SHL-menu-utente-desktop" note="voci 32 · icona 16">
+        <MenuUtentePreview />
+      </Specimen>
+    </ShowcaseBlock>
+
     <ShowcaseBlock id="shell-testata-mobile">
       <p class="text-xs text-subtle-foreground">
-        Sotto il breakpoint lg, mostrata in una cornice di telefono da 390px.
+        Sotto il breakpoint lg, in una cornice di telefono da 390px. Principale: titolo a sinistra e
+        avatar verso Profilo, in Home il saluto e la data. Secondaria: indietro e titolo al centro.
       </p>
       <div class="flex flex-wrap gap-6">
-        <Specimen code="SHL-header-mobile">
-          <PhoneFrame size="header">
-            <AppMobileHeader />
-          </PhoneFrame>
+        <Specimen code="SHL-header-mobile" note="Home">
+          <RottaCampione percorso="/">
+            <PhoneFrame size="header">
+              <AppMobileHeader />
+            </PhoneFrame>
+          </RottaCampione>
+        </Specimen>
+        <Specimen code="SHL-header-secondaria-mobile" note="Fisco">
+          <RottaCampione percorso="/fisco">
+            <PhoneFrame size="header">
+              <AppMobileHeader />
+            </PhoneFrame>
+          </RottaCampione>
         </Specimen>
       </div>
     </ShowcaseBlock>
 
     <ShowcaseBlock id="shell-barra-bassa">
       <Specimen code="SHL-bottombar-mobile">
-        <PhoneFrame size="bar">
-          <AppBottomBar />
-        </PhoneFrame>
+        <RottaCampione percorso="/">
+          <PhoneFrame size="bar">
+            <AppBottomBar />
+          </PhoneFrame>
+        </RottaCampione>
       </Specimen>
     </ShowcaseBlock>
 
@@ -171,13 +210,34 @@ const vociMobiliCampione = computed(() => conHomeAttiva(vociMobili.value))
         Scorri dentro la cornice: testata e barra in basso sfumano nel contenuto senza bordo.
       </p>
       <Specimen code="SHL-phone-mobile">
-        <PhoneFrame>
-          <AppMobileHeader />
-          <div class="flex flex-col gap-3 px-4 pt-7 pb-[calc(var(--bottom-bar-height)+16px)]">
-            <Skeleton v-for="index in 8" :key="index" class="h-28 rounded-[24px]" />
-          </div>
-          <AppBottomBar />
-        </PhoneFrame>
+        <RottaCampione percorso="/">
+          <PhoneFrame>
+            <AppMobileHeader />
+            <div class="flex flex-col gap-3 px-4 pt-7 pb-[calc(var(--bottom-bar-height)+16px)]">
+              <Skeleton v-for="index in 8" :key="index" class="h-28 rounded-[24px]" />
+            </div>
+            <AppBottomBar />
+          </PhoneFrame>
+        </RottaCampione>
+      </Specimen>
+    </ShowcaseBlock>
+
+    <ShowcaseBlock id="shell-profilo">
+      <p class="text-xs text-subtle-foreground">
+        La pagina vera: testata secondaria, barra in basso senza voce accesa. Esci qui agisce come
+        in app.
+      </p>
+      <Specimen code="SHL-profilo-mobile">
+        <RottaCampione percorso="/profilo">
+          <PhoneFrame>
+            <AppMobileHeader />
+            <!-- La vista toglie il padding da lg in su: nella cornice lo rimette questo involucro. -->
+            <div class="pb-[calc(var(--bottom-bar-height)+16px)] lg:px-4 lg:pt-3">
+              <VistaProfilo />
+            </div>
+            <AppBottomBar />
+          </PhoneFrame>
+        </RottaCampione>
       </Specimen>
     </ShowcaseBlock>
   </ShowcaseSection>

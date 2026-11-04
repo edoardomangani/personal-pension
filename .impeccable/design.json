@@ -180,7 +180,7 @@
       },
       "heading": {
         "displayName": "Intestazione",
-        "purpose": "text-base (16px, 600): titolo di card, sheet e testata su telefono."
+        "purpose": "text-base (16px, 600): titolo di card, sheet e testata secondaria su telefono."
       },
       "body": {
         "displayName": "Testo",
@@ -271,7 +271,7 @@
       "name": "Add Button",
       "kind": "button",
       "refersTo": "button-add",
-      "description": "Il «+» globale: tondo bianco da 48px al centro della barra in basso, Plus Bold scuro. Su desktop è «Registra» in cima alla sidebar.",
+      "description": "Il «+» globale: tondo bianco da 48px al centro della barra in basso, Plus Bold scuro. Su desktop è la pillola «Registra» a destra nella barra in alto, solo in Home, Movimenti e Valori.",
       "html": "<button class=\"ds-btn-add\" aria-label=\"Registra\"><svg width=\"24\" height=\"24\" viewBox=\"0 0 256 256\" fill=\"currentColor\"><path d=\"M228,128a12,12,0,0,1-12,12H140v76a12,12,0,0,1-24,0V140H40a12,12,0,0,1,0-24h76V40a12,12,0,0,1,24,0v76h76A12,12,0,0,1,228,128Z\"/></svg></button>",
       "css": ".ds-btn-add { display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; border: none; border-radius: 999px; background: #f3f5f2; color: #060708; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45); cursor: pointer; transition: transform .15s cubic-bezier(.2,.8,.2,1); } .ds-btn-add:active { transform: scale(.97); } .ds-btn-add:focus-visible { outline: 2px solid #f3f5f2; outline-offset: 2px; }"
     },
@@ -304,7 +304,7 @@
       "kind": "nav",
       "refersTo": "sidebar-item",
       "description": "Voci di sidebar desktop: la attiva su vetro con icona Fill e una pillola bianca a sinistra.",
-      "html": "<nav class=\"ds-nav\"><a class=\"ds-nav-item ds-nav-active\" href=\"#\" aria-current=\"page\">Panoramica</a><a class=\"ds-nav-item\" href=\"#\">Movimenti</a><a class=\"ds-nav-item\" href=\"#\">Valori</a><a class=\"ds-nav-item\" href=\"#\">Futuro</a><a class=\"ds-nav-item\" href=\"#\">Fisco</a><a class=\"ds-nav-item\" href=\"#\">Impostazioni</a></nav>",
+      "html": "<nav class=\"ds-nav\"><a class=\"ds-nav-item ds-nav-active\" href=\"#\" aria-current=\"page\">Home</a><a class=\"ds-nav-item\" href=\"#\">Movimenti</a><a class=\"ds-nav-item\" href=\"#\">Valori</a><a class=\"ds-nav-item\" href=\"#\">Futuro</a><a class=\"ds-nav-item\" href=\"#\">Fisco</a><a class=\"ds-nav-item\" href=\"#\">Impostazioni</a></nav>",
       "css": ".ds-nav { display: flex; flex-direction: column; gap: 2px; width: 208px; padding: 20px 12px; background: rgba(6, 7, 8, 0.4); border-right: 0.75px solid rgba(255, 255, 255, 0.07); } .ds-nav-item { position: relative; display: flex; align-items: center; gap: 10px; height: 40px; padding: 0 12px; border-radius: 10px; color: #9a9f9b; font: 500 14px 'Bricolage Grotesque', system-ui, sans-serif; text-decoration: none; transition: background-color .2s, color .2s; } .ds-nav-item:hover { background: rgba(255, 255, 255, 0.05); color: #f3f5f2; } .ds-nav-active { background: rgba(255, 255, 255, 0.08); color: #f3f5f2; font-weight: 600; } .ds-nav-active::before { content: ''; position: absolute; left: 0; top: 50%; width: 3px; height: 16px; margin-top: -8px; border-radius: 0 2px 2px 0; background: #f3f5f2; } .ds-nav-item:focus-visible { outline: 2px solid #f3f5f2; outline-offset: 2px; }"
     },
     {
@@ -312,7 +312,7 @@
       "kind": "nav",
       "refersTo": "bottom-bar",
       "description": "Barra in basso su telefono, ancorata a tutta larghezza, con il «+» al centro.",
-      "html": "<nav class=\"ds-bar\"><a class=\"ds-tab ds-tab-active\" href=\"#\" aria-current=\"page\">Panoramica</a><a class=\"ds-tab\" href=\"#\">Movimenti</a><span class=\"ds-bar-add\">+</span><a class=\"ds-tab\" href=\"#\">Valori</a><a class=\"ds-tab\" href=\"#\">Futuro</a></nav>",
+      "html": "<nav class=\"ds-bar\"><a class=\"ds-tab ds-tab-active\" href=\"#\" aria-current=\"page\">Home</a><a class=\"ds-tab\" href=\"#\">Movimenti</a><span class=\"ds-bar-add\">+</span><a class=\"ds-tab\" href=\"#\">Valori</a><a class=\"ds-tab\" href=\"#\">Futuro</a></nav>",
       "css": ".ds-bar { display: flex; align-items: center; width: 390px; padding: 4px 6px 24px; background: linear-gradient(to top, rgba(6, 7, 8, 0.72) 55%, rgba(6, 7, 8, 0.55)); backdrop-filter: blur(20px) saturate(140%); } .ds-tab { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; min-height: 56px; color: #9a9f9b; font: 600 10px/1 'Bricolage Grotesque', system-ui, sans-serif; text-decoration: none; } .ds-tab-active { color: #f3f5f2; } .ds-bar-add { width: 48px; height: 48px; margin: 0 8px; border-radius: 999px; display: grid; place-items: center; background: #f3f5f2; color: #060708; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45); font: 600 24px 'Bricolage Grotesque', system-ui, sans-serif; }"
     },
     {

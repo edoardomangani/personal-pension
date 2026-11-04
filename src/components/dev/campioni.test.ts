@@ -1,15 +1,43 @@
 import { enableAutoUnmount, mount, type DOMWrapper } from '@vue/test-utils'
-import { afterEach, describe, expect, it } from 'vitest'
+import { createPinia, setActivePinia } from 'pinia'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { defineComponent, h } from 'vue'
-import { createMemoryHistory, createRouter } from 'vue-router'
+import { createMemoryHistory, createRouter, type Router } from 'vue-router'
+import AppMobileHeader from '@/components/AppMobileHeader.vue'
+import { SidebarProvider } from '@/components/ui/sidebar'
 import { rotte } from '@/router'
 import DrawerPreview from './DrawerPreview.vue'
 import FormsSection from './FormsSection.vue'
 import MovementDaySample from './MovementDaySample.vue'
+import RottaCampione from './RottaCampione.vue'
+import ShellSection from './ShellSection.vue'
 import SheetSampleBody from './SheetSampleBody.vue'
 import StructureSection from './StructureSection.vue'
 
 enableAutoUnmount(afterEach)
+
+// I campioni della shell leggono sessione e data di oggi dagli store.
+beforeEach(() => {
+  setActivePinia(createPinia())
+})
+
+// Tooltip e menu misurano con ResizeObserver, che jsdom non ha.
+vi.stubGlobal(
+  'ResizeObserver',
+  class {
+    observe(): void {}
+    unobserve(): void {}
+    disconnect(): void {}
+  },
+)
+
+// La vetrina vera sta su /dev/ui: i campioni devono vedere la loro rotta, non questa.
+async function routerSuVetrina(): Promise<Router> {
+  const router = createRouter({ history: createMemoryHistory(), routes: rotte })
+  await router.push('/dev/ui')
+  await router.isReady()
+  return router
+}
 
 describe('MovementDaySample (R6)', () => {
   const props = { rows: [], density: 'desktop', day: '17/07/2026' } as const
@@ -90,5 +118,58 @@ describe('SheetSampleBody: id unici (R7)', () => {
         expect(istanza.find(`[id="${label.attributes('for') ?? ''}"]`).exists()).toBe(true)
       }
     }
+  })
+})
+
+describe('RottaCampione (R16)', () => {
+  function testataSu(router: Router, percorso: string) {
+    const Campione = defineComponent({
+      setup: () => () => h(RottaCampione, { percorso }, () => h(AppMobileHeader)),
+    })
+    return mount(Campione, { global: { plugins: [router] } })
+  }
+
+  it('su /fisco la testata è la secondaria con «Indietro» e «Fisco»', async () => {
+    const router = await routerSuVetrina()
+    const testata = testataSu(router, '/fisco')
+    expect(testata.find('button[aria-label="Indietro"]').exists()).toBe(true)
+    expect(testata.get('h1').text()).toBe('Fisco')
+    expect(router.currentRoute.value.path).toBe('/dev/ui')
+  })
+
+  it('su / la testata è la principale col saluto', async () => {
+    const router = await routerSuVetrina()
+    const testata = testataSu(router, '/')
+    expect(testata.get('h1').text()).toContain('Ciao')
+    expect(testata.find('button[aria-label="Indietro"]').exists()).toBe(false)
+  })
+})
+
+describe('ShellSection: la shell nuova (R16)', () => {
+  async function montaShell() {
+    const router = await routerSuVetrina()
+    // Sidebar, piede e Profilo vogliono il contesto che in app dà la shell.
+    const Sezione = defineComponent({
+      setup: () => () => h(SidebarProvider, null, () => h(ShellSection)),
+    })
+    return mount(Sezione, { global: { plugins: [router] }, attachTo: document.body })
+  }
+
+  it('mostra testate, barre, piede e Profilo ciascuno sulla sua rotta', async () => {
+    const wrapper = await montaShell()
+    const campione = (codice: string) => wrapper.get(`[data-specimen="${codice}"]`)
+
+    expect(campione('SHL-header-mobile').text()).toContain('Ciao')
+    expect(campione('SHL-header-secondaria-mobile').find('[aria-label="Indietro"]').exists()).toBe(
+      true,
+    )
+    expect(campione('SHL-topbar-desktop').text()).toContain('Registra')
+    expect(campione('SHL-topbar-desktop-senza-registra').text()).not.toContain('Registra')
+    expect(campione('SHL-sidebar-desktop').get('nav').text()).not.toContain('Registra')
+    const menu = campione('SHL-menu-utente-desktop').text()
+    expect(menu).toContain('Account')
+    expect(menu).toContain('Esci')
+    expect(campione('SHL-profilo-mobile').find('[aria-label="Cambia foto"]').exists()).toBe(true)
+    expect(wrapper.text()).not.toContain('Panoramica')
   })
 })
