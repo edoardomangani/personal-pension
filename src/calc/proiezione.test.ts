@@ -1,40 +1,12 @@
 import { describe, expect, it } from 'vitest'
+import { archivio, busta, estratto } from '../test/archivi'
 import { archivioDalSeed } from '../test/seed'
-import { IMPOSTAZIONI_PREDEFINITE } from '../types/dominio'
-import type { Archivio, BustaPaga, EstrattoConto, Impostazioni } from '../types/dominio'
-import { euroInCentesimi } from './importi'
+import type { Archivio, Impostazioni } from '../types/dominio'
 import { contributiMensili, inEuroDiOggi, proiezione, simula } from './proiezione'
 import type { ParametriSimulazione } from './proiezione'
 
-function archivio(parti: Partial<Archivio> = {}): Archivio {
-  return {
-    fondi: [],
-    buste: [],
-    movimenti: [],
-    estratti: [],
-    impostazioni: { ...IMPOSTAZIONI_PREDEFINITE },
-    ...parti,
-  }
-}
-
 function conImpostazioni(a: Archivio, impostazioni: Partial<Impostazioni>): Archivio {
   return { ...a, impostazioni: { ...a.impostazioni, ...impostazioni } }
-}
-
-function bustaTfr(id: string, fondoId: string, competenza: string, euro: number): BustaPaga {
-  return {
-    id,
-    fondoId,
-    competenza,
-    data: `${competenza}-16`,
-    righe: [{ tipo: 'TFR', importo: euroInCentesimi(euro) }],
-    movimentoId: null,
-    note: '',
-  }
-}
-
-function estratto(id: string, fondoId: string, data: string, euro: number): EstrattoConto {
-  return { id, fondoId, data, valore: euroInCentesimi(euro), note: '' }
 }
 
 const BASE: ParametriSimulazione = {
@@ -129,7 +101,7 @@ describe('proiezione', () => {
   })
 
   it('senza estratti la partenza è solo il da versare', () => {
-    const a = conImpostazioni(archivio({ buste: [bustaTfr('b1', 'A', '2026-10', 150)] }), {
+    const a = conImpostazioni(archivio({ buste: [busta('b1', 'A', '2026-10-16', { TFR: 150 })] }), {
       annoNascita: 1994,
     })
     const p = proiezione(a, '2026-11-04')
@@ -139,7 +111,10 @@ describe('proiezione', () => {
   describe('due fondi', () => {
     const a = conImpostazioni(
       archivio({
-        buste: [bustaTfr('a1', 'A', '2026-10', 100), bustaTfr('b1', 'B', '2026-10', 40)],
+        buste: [
+          busta('a1', 'A', '2026-10-16', { TFR: 100 }),
+          busta('b1', 'B', '2026-10-16', { TFR: 40 }),
+        ],
         estratti: [estratto('a1', 'A', '2026-09-30', 1000), estratto('b1', 'B', '2026-09-30', 500)],
       }),
       { annoNascita: 1994 },

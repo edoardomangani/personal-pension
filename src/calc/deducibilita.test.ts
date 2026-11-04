@@ -1,56 +1,7 @@
 import { describe, expect, it } from 'vitest'
+import { archivio, busta, movimento } from '../test/archivi'
 import { archivioDalSeed } from '../test/seed'
-import { IMPOSTAZIONI_PREDEFINITE } from '../types/dominio'
-import type {
-  Archivio,
-  BustaPaga,
-  Movimento,
-  TipoRigaBusta,
-  TipoRigaMovimento,
-} from '../types/dominio'
 import { deducibilitaAnno, storicoDeducibilita } from './deducibilita'
-import { euroInCentesimi } from './importi'
-
-function archivio(parti: Partial<Archivio> = {}): Archivio {
-  return {
-    fondi: [],
-    buste: [],
-    movimenti: [],
-    estratti: [],
-    impostazioni: { ...IMPOSTAZIONI_PREDEFINITE },
-    ...parti,
-  }
-}
-
-const TIPI_BUSTA: TipoRigaBusta[] = ['TFR', 'Datore', 'Personale']
-const TIPI_MOVIMENTO: TipoRigaMovimento[] = ['TFR', 'Datore', 'Personale', 'Volontario', 'Spesa']
-
-function busta(
-  id: string,
-  fondoId: string,
-  data: string,
-  euro: Partial<Record<TipoRigaBusta, number>>,
-  movimentoId: string | null = null,
-): BustaPaga {
-  const righe = TIPI_BUSTA.flatMap((tipo) => {
-    const importo = euro[tipo]
-    return importo === undefined ? [] : [{ tipo, importo: euroInCentesimi(importo) }]
-  })
-  return { id, fondoId, competenza: data.slice(0, 7), data, righe, movimentoId, note: '' }
-}
-
-function movimento(
-  id: string,
-  fondoId: string,
-  data: string,
-  euro: Partial<Record<TipoRigaMovimento, number>>,
-): Movimento {
-  const righe = TIPI_MOVIMENTO.flatMap((tipo) => {
-    const importo = euro[tipo]
-    return importo === undefined ? [] : [{ tipo, importo: euroInCentesimi(importo) }]
-  })
-  return { id, fondoId, data, righe, note: '' }
-}
 
 describe('deducibilitaAnno', () => {
   const casoTabella = archivio({

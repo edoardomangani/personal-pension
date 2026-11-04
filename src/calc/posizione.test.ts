@@ -1,62 +1,7 @@
 import { describe, expect, it } from 'vitest'
+import { archivio, busta, estratto, movimento } from '../test/archivi'
 import { archivioDalSeed } from '../test/seed'
-import { IMPOSTAZIONI_PREDEFINITE } from '../types/dominio'
-import type {
-  Archivio,
-  BustaPaga,
-  EstrattoConto,
-  Movimento,
-  TipoRigaBusta,
-  TipoRigaMovimento,
-} from '../types/dominio'
-import { euroInCentesimi } from './importi'
 import { crescita, daVersare, speseAl, stimaMensile, ultimoValore, versatoAl } from './posizione'
-
-function archivio(parti: Partial<Archivio> = {}): Archivio {
-  return {
-    fondi: [],
-    buste: [],
-    movimenti: [],
-    estratti: [],
-    impostazioni: { ...IMPOSTAZIONI_PREDEFINITE },
-    ...parti,
-  }
-}
-
-const TIPI_MOVIMENTO: TipoRigaMovimento[] = ['TFR', 'Datore', 'Personale', 'Volontario', 'Spesa']
-
-function movimento(
-  id: string,
-  fondoId: string,
-  data: string,
-  euro: Partial<Record<TipoRigaMovimento, number>>,
-): Movimento {
-  const righe = TIPI_MOVIMENTO.flatMap((tipo) => {
-    const importo = euro[tipo]
-    return importo === undefined ? [] : [{ tipo, importo: euroInCentesimi(importo) }]
-  })
-  return { id, fondoId, data, righe, note: '' }
-}
-
-const TIPI_BUSTA: TipoRigaBusta[] = ['TFR', 'Datore', 'Personale']
-
-function busta(
-  competenza: string,
-  fondoId: string,
-  euro: Partial<Record<TipoRigaBusta, number>>,
-  movimentoId: string | null = null,
-): BustaPaga {
-  const righe = TIPI_BUSTA.flatMap((tipo) => {
-    const importo = euro[tipo]
-    return importo === undefined ? [] : [{ tipo, importo: euroInCentesimi(importo) }]
-  })
-  const id = `${fondoId}-${competenza}`
-  return { id, fondoId, competenza, data: `${competenza}-15`, righe, movimentoId, note: '' }
-}
-
-function estratto(id: string, fondoId: string, data: string, euro: number): EstrattoConto {
-  return { id, fondoId, data, valore: euroInCentesimi(euro), note: '' }
-}
 
 describe('versatoAl e speseAl', () => {
   const seed = archivioDalSeed()
@@ -219,9 +164,9 @@ describe('daVersare', () => {
   it('somma per tipo e ordina per competenza', () => {
     const a = archivio({
       buste: [
-        busta('2026-03', 'A', { TFR: 100, Personale: 50 }),
-        busta('2026-01', 'A', { TFR: 90, Datore: 20 }),
-        busta('2026-02', 'A', { TFR: 95 }, 'm1'),
+        busta('A-2026-03', 'A', '2026-03', { TFR: 100, Personale: 50 }),
+        busta('A-2026-01', 'A', '2026-01', { TFR: 90, Datore: 20 }),
+        busta('A-2026-02', 'A', '2026-02', { TFR: 95 }, 'm1'),
       ],
     })
     const d = daVersare(a)
@@ -239,7 +184,7 @@ describe('stimaMensile', () => {
   it('5 buste TFR → l’elemento centrale', () => {
     const a = archivio({
       buste: [500, 100, 400, 200, 300].map((euro, i) =>
-        busta(`2026-0${i + 1}`, 'A', { TFR: euro }),
+        busta(`A-2026-0${i + 1}`, 'A', `2026-0${i + 1}`, { TFR: euro }),
       ),
     })
     expect(stimaMensile(a, 'TFR')).toBe(30000)
@@ -256,7 +201,7 @@ describe('stimaMensile', () => {
   it('usa solo le ultime 6 buste e, con n pari, l’elemento floor(n/2)', () => {
     const a = archivio({
       buste: [900, 100, 200, 300, 400, 500, 600].map((euro, i) =>
-        busta(`2026-0${i + 1}`, 'A', { TFR: euro }),
+        busta(`A-2026-0${i + 1}`, 'A', `2026-0${i + 1}`, { TFR: euro }),
       ),
     })
     // Ultime 6 ordinate: 100..600 → indice 3 = 400.
@@ -266,10 +211,10 @@ describe('stimaMensile', () => {
   it('una busta senza la riga del tipo non entra nella stima', () => {
     const a = archivio({
       buste: [
-        busta('2026-01', 'A', { TFR: 100, Datore: 10 }),
-        busta('2026-02', 'A', { TFR: 100, Datore: 30 }),
-        busta('2026-03', 'A', { TFR: 100 }),
-        busta('2026-04', 'A', { TFR: 100 }),
+        busta('A-2026-01', 'A', '2026-01', { TFR: 100, Datore: 10 }),
+        busta('A-2026-02', 'A', '2026-02', { TFR: 100, Datore: 30 }),
+        busta('A-2026-03', 'A', '2026-03', { TFR: 100 }),
+        busta('A-2026-04', 'A', '2026-04', { TFR: 100 }),
       ],
     })
     // Con le buste senza Datore la mediana sarebbe 0 o 10; solo 10 e 30 → indice 1 = 30.
@@ -280,13 +225,13 @@ describe('stimaMensile', () => {
 describe('daVersare e stimaMensile con due fondi', () => {
   const a = archivio({
     buste: [
-      busta('2026-01', 'A', { TFR: 100 }),
-      busta('2026-02', 'A', { TFR: 100 }, 'm1'),
-      busta('2026-03', 'A', { TFR: 100 }),
-      busta('2026-01', 'B', { TFR: 300 }),
-      busta('2026-02', 'B', { TFR: 300 }),
-      busta('2026-03', 'B', { TFR: 300 }),
-      busta('2026-04', 'B', { TFR: 300 }),
+      busta('A-2026-01', 'A', '2026-01', { TFR: 100 }),
+      busta('A-2026-02', 'A', '2026-02', { TFR: 100 }, 'm1'),
+      busta('A-2026-03', 'A', '2026-03', { TFR: 100 }),
+      busta('B-2026-01', 'B', '2026-01', { TFR: 300 }),
+      busta('B-2026-02', 'B', '2026-02', { TFR: 300 }),
+      busta('B-2026-03', 'B', '2026-03', { TFR: 300 }),
+      busta('B-2026-04', 'B', '2026-04', { TFR: 300 }),
     ],
   })
 

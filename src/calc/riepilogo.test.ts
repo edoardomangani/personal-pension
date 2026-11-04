@@ -1,39 +1,7 @@
 import { describe, expect, it } from 'vitest'
+import { archivio, estratto, movimento } from '../test/archivi'
 import { archivioDalSeed } from '../test/seed'
-import { IMPOSTAZIONI_PREDEFINITE } from '../types/dominio'
-import type { Archivio, EstrattoConto, Movimento, TipoRigaMovimento } from '../types/dominio'
-import { euroInCentesimi } from './importi'
 import { riepilogoAnnuale } from './riepilogo'
-
-function archivio(parti: Partial<Archivio> = {}): Archivio {
-  return {
-    fondi: [],
-    buste: [],
-    movimenti: [],
-    estratti: [],
-    impostazioni: { ...IMPOSTAZIONI_PREDEFINITE },
-    ...parti,
-  }
-}
-
-const TIPI_MOVIMENTO: TipoRigaMovimento[] = ['TFR', 'Datore', 'Personale', 'Volontario', 'Spesa']
-
-function movimento(
-  id: string,
-  fondoId: string,
-  data: string,
-  euro: Partial<Record<TipoRigaMovimento, number>>,
-): Movimento {
-  const righe = TIPI_MOVIMENTO.flatMap((tipo) => {
-    const importo = euro[tipo]
-    return importo === undefined ? [] : [{ tipo, importo: euroInCentesimi(importo) }]
-  })
-  return { id, fondoId, data, righe, note: '' }
-}
-
-function estratto(id: string, fondoId: string, data: string, euro: number): EstrattoConto {
-  return { id, fondoId, data, valore: euroInCentesimi(euro), note: '' }
-}
 
 describe('riepilogoAnnuale', () => {
   it('sul seed', () => {
