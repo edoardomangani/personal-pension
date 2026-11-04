@@ -1,0 +1,12 @@
+
+# ciclo: stato personale, non condiviso
+ciclo/.stato.db*
+ciclo/.job/
+ciclo/bin/lib/**/__pycache__/
+/.playwright-mcp/
+
+# app
+node_modules/
+dist/
+*.local
+.collaudo-lock
