@@ -1,0 +1,401 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-04T00:00:00Z",
+  "title": "Design System: Piano pensione",
+  "extensions": {
+    "colorMeta": {
+      "brand": {
+        "role": "primary",
+        "displayName": "Lime Acido",
+        "canonical": "#d4f53c",
+        "tonalRamp": [
+          "#1e2208",
+          "#374010",
+          "#556218",
+          "#778922",
+          "#99b02b",
+          "#b8d534",
+          "#d4f53c",
+          "#eefbb1"
+        ]
+      },
+      "primary": {
+        "role": "primary",
+        "displayName": "Bianco Gesso",
+        "canonical": "#f3f5f2",
+        "tonalRamp": [
+          "#232523",
+          "#3c3f3c",
+          "#5c605d",
+          "#7c807d",
+          "#9a9f9b",
+          "#b4b8b5",
+          "#d6d9d6",
+          "#f3f5f2"
+        ]
+      },
+      "background": {
+        "role": "neutral",
+        "displayName": "Nero Cassaforte",
+        "canonical": "#060708",
+        "tonalRamp": [
+          "#060708",
+          "#0e0f11",
+          "#141517",
+          "#1d1e21",
+          "#2a2c2e",
+          "#3c3f3c",
+          "#5c605d",
+          "#7c807d"
+        ]
+      },
+      "foreground": {
+        "role": "neutral",
+        "displayName": "Bianco Gesso",
+        "canonical": "#f3f5f2"
+      },
+      "muted-foreground": {
+        "role": "neutral",
+        "displayName": "Grigio Salvia",
+        "canonical": "#b4b8b5"
+      },
+      "subtle-foreground": {
+        "role": "neutral",
+        "displayName": "Grigio Nebbia",
+        "canonical": "#9a9f9b"
+      },
+      "card": {
+        "role": "neutral",
+        "displayName": "Vetro 1",
+        "canonical": "rgba(255, 255, 255, 0.06)"
+      },
+      "secondary": {
+        "role": "neutral",
+        "displayName": "Vetro 2",
+        "canonical": "rgba(255, 255, 255, 0.09)"
+      },
+      "border-strong": {
+        "role": "neutral",
+        "displayName": "Vetro 3",
+        "canonical": "rgba(255, 255, 255, 0.12)"
+      },
+      "brand-foreground": {
+        "role": "primary",
+        "displayName": "Lime Notte",
+        "canonical": "#0c1203"
+      },
+      "brand-soft": {
+        "role": "primary",
+        "displayName": "Lime Velato",
+        "canonical": "rgba(212, 245, 60, 0.16)"
+      },
+      "destructive": {
+        "role": "tertiary",
+        "displayName": "Corallo",
+        "canonical": "#ff7a6b",
+        "tonalRamp": [
+          "#3d120d",
+          "#5e1d15",
+          "#86291e",
+          "#b2392a",
+          "#dd4f3d",
+          "#ff7a6b",
+          "#ffa89c",
+          "#ffd6d0"
+        ]
+      },
+      "warning": {
+        "role": "tertiary",
+        "displayName": "Ambra",
+        "canonical": "#ffc457",
+        "tonalRamp": [
+          "#3d2a06",
+          "#5e420b",
+          "#865e12",
+          "#b07e1c",
+          "#dba02c",
+          "#ffc457",
+          "#ffd78c",
+          "#ffecc4"
+        ]
+      },
+      "ring": {
+        "role": "primary",
+        "displayName": "Bianco Gesso",
+        "canonical": "#f3f5f2"
+      },
+      "ambient-strong": {
+        "role": "primary",
+        "displayName": "Bagliore",
+        "canonical": "rgba(212, 245, 60, 0.15)"
+      },
+      "ambient-soft": {
+        "role": "primary",
+        "displayName": "Bagliore tenue",
+        "canonical": "rgba(212, 245, 60, 0.06)"
+      },
+      "bar": {
+        "role": "neutral",
+        "displayName": "Lastra della barra",
+        "canonical": "rgba(6, 7, 8, 0.72)"
+      },
+      "sidebar-hover": {
+        "role": "neutral",
+        "displayName": "Vetro di passaggio",
+        "canonical": "rgba(255, 255, 255, 0.05)"
+      }
+    },
+    "typographyMeta": {
+      "balance": {
+        "displayName": "Saldo",
+        "purpose": "text-balance-md 56px su telefono, text-balance-lg 76px su desktop; disegno ottico espressivo."
+      },
+      "balance-decimals": {
+        "displayName": "Decimali del saldo",
+        "purpose": "text-balance-md-decimals 26px o text-balance-lg-decimals 32px, in subtle-foreground."
+      },
+      "balance-lg": {
+        "displayName": "Saldo desktop",
+        "purpose": "text-balance-lg, 76px in 600."
+      },
+      "balance-lg-decimals": {
+        "displayName": "Decimali del saldo desktop",
+        "purpose": "text-balance-lg-decimals, 32px."
+      },
+      "display": {
+        "displayName": "Display",
+        "purpose": "text-2xl (24px, 500): saluto e frase di testata, una per schermata."
+      },
+      "title": {
+        "displayName": "Titolo",
+        "purpose": "text-xl (20px, 600): titolo di schermata e della barra in alto."
+      },
+      "figure": {
+        "displayName": "Cifra",
+        "purpose": "text-xl in 600, −0,03em: saldo di un conto."
+      },
+      "section": {
+        "displayName": "Sezione",
+        "purpose": "text-lg (18px, 600): titolo di sezione della Home."
+      },
+      "heading": {
+        "displayName": "Intestazione",
+        "purpose": "text-base (16px, 600): titolo di card, sheet e testata su telefono."
+      },
+      "body": {
+        "displayName": "Testo",
+        "purpose": "text-sm (14px): testo corrente, uguale su telefono e desktop."
+      },
+      "amount": {
+        "displayName": "Importo",
+        "purpose": "text-sm in 600, a destra, cifre tabulari."
+      },
+      "meta": {
+        "displayName": "Meta",
+        "purpose": "text-xs (12px): riga sotto il nome, totali del giorno, aiuti."
+      },
+      "label": {
+        "displayName": "Etichetta",
+        "purpose": "text-xs in 600: etichette, chip, badge; misura minima salvo tab-label."
+      },
+      "tab-label": {
+        "displayName": "Etichetta della barra",
+        "purpose": "text-tab-label 10px in 600: solo la barra in basso su telefono, eccezione voluta."
+      }
+    },
+    "shadows": [
+      {
+        "name": "shadow-glass",
+        "value": "inset 0 -1px 2px rgba(255, 255, 255, 0.06)",
+        "purpose": "Filo di luce su ogni superficie di vetro."
+      },
+      {
+        "name": "shadow-popover",
+        "value": "0 24px 60px rgba(0, 0, 0, 0.5)",
+        "purpose": "Popover, dialog, command e menu."
+      },
+      {
+        "name": "shadow-cutout",
+        "value": "0 0 0 3px var(--background)",
+        "purpose": "Stacca pallini e avatar sovrapposti dal fondo."
+      },
+      {
+        "name": "shadow-add",
+        "value": "0 8px 24px rgba(0, 0, 0, 0.45)",
+        "purpose": "Il «+» tondo della barra in basso."
+      }
+    ],
+    "motion": [
+      {
+        "name": "color-transition",
+        "value": "200ms",
+        "purpose": "Transizioni di colore di hover e stato."
+      },
+      {
+        "name": "press",
+        "value": "scale(.97) 150ms cubic-bezier(.2,.8,.2,1)",
+        "purpose": "Pressione dei bottoni; disattivata con prefers-reduced-motion."
+      },
+      {
+        "name": "focus",
+        "value": "outline 2px solid #f3f5f2, offset 2px",
+        "purpose": "Anello del focus bianco su ogni controllo."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "lg",
+        "value": "1024px",
+        "purpose": "Sotto: testata e barra in basso; da qui: sidebar e barra in alto."
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Azione principale della schermata, chiaro su scuro.",
+      "html": "<button class=\"ds-btn-primary\">Salva versamento</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 16px; border: none; border-radius: 999px; background: var(--primary, #f3f5f2); color: var(--primary-foreground, #060708); font: 600 14px 'Bricolage Grotesque', system-ui, sans-serif; cursor: pointer; transition: background-color .2s, transform .15s cubic-bezier(.2,.8,.2,1); } .ds-btn-primary:hover { background: color-mix(in srgb, #f3f5f2 90%, transparent); } .ds-btn-primary:active { transform: scale(.97); } .ds-btn-primary:focus-visible { outline: 2px solid #f3f5f2; outline-offset: 2px; }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Azione secondaria su vetro.",
+      "html": "<button class=\"ds-btn-outline\">Annulla</button>",
+      "css": ".ds-btn-outline { display: inline-flex; align-items: center; height: 36px; padding: 0 16px; border: 0.75px solid rgba(255, 255, 255, 0.08); border-radius: 999px; background: rgba(255, 255, 255, 0.06); box-shadow: inset 0 -1px 2px rgba(255, 255, 255, 0.06); color: #f3f5f2; font: 600 14px 'Bricolage Grotesque', system-ui, sans-serif; cursor: pointer; transition: background-color .2s, transform .15s cubic-bezier(.2,.8,.2,1); } .ds-btn-outline:hover { background: rgba(255, 255, 255, 0.09); } .ds-btn-outline:active { transform: scale(.97); } .ds-btn-outline:focus-visible { outline: 2px solid #f3f5f2; outline-offset: 2px; }"
+    },
+    {
+      "name": "Add Button",
+      "kind": "button",
+      "refersTo": "button-add",
+      "description": "Il «+» globale: tondo bianco da 48px al centro della barra in basso, Plus Bold scuro. Su desktop è «Registra» in cima alla sidebar.",
+      "html": "<button class=\"ds-btn-add\" aria-label=\"Registra\"><svg width=\"24\" height=\"24\" viewBox=\"0 0 256 256\" fill=\"currentColor\"><path d=\"M228,128a12,12,0,0,1-12,12H140v76a12,12,0,0,1-24,0V140H40a12,12,0,0,1,0-24h76V40a12,12,0,0,1,24,0v76h76A12,12,0,0,1,228,128Z\"/></svg></button>",
+      "css": ".ds-btn-add { display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; border: none; border-radius: 999px; background: #f3f5f2; color: #060708; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45); cursor: pointer; transition: transform .15s cubic-bezier(.2,.8,.2,1); } .ds-btn-add:active { transform: scale(.97); } .ds-btn-add:focus-visible { outline: 2px solid #f3f5f2; outline-offset: 2px; }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Campo a pillola su vetro.",
+      "html": "<input class=\"ds-input\" placeholder=\"Cerca un movimento\">",
+      "css": ".ds-input { height: 36px; width: 240px; padding: 0 12px; border: 0.75px solid rgba(255, 255, 255, 0.08); border-radius: 999px; background: rgba(255, 255, 255, 0.06); box-shadow: inset 0 -1px 2px rgba(255, 255, 255, 0.06); color: #f3f5f2; caret-color: #f3f5f2; font: 400 14px 'Bricolage Grotesque', system-ui, sans-serif; outline: none; transition: border-color .2s, box-shadow .2s; } .ds-input::placeholder { color: #9a9f9b; } .ds-input:focus-visible { outline: 2px solid #f3f5f2; outline-offset: 2px; }"
+    },
+    {
+      "name": "Badge",
+      "kind": "chip",
+      "refersTo": "badge",
+      "description": "Etichetta a pillola su vetro 2.",
+      "html": "<span class=\"ds-badge\">Versata</span> <span class=\"ds-badge ds-badge-warning\">Da versare</span>",
+      "css": ".ds-badge { display: inline-flex; align-items: center; height: 22px; padding: 0 9px; border-radius: 999px; background: rgba(255, 255, 255, 0.09); color: #f3f5f2; font: 600 12px 'Bricolage Grotesque', system-ui, sans-serif; } .ds-badge-warning { background: transparent; border: 0.75px solid #ffc457; color: #ffc457; }"
+    },
+    {
+      "name": "Glass Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Card di vetro 1 su desktop (22px), una per giorno, con etichetta e totale fuori. Versamenti in lime, spese nel colore del testo.",
+      "html": "<div class=\"ds-card\"><div class=\"ds-card-title\">09/07/2026</div><div class=\"ds-row\"><span class=\"ds-row-name\">Versamento TFR<small>Amundi Seconda Pensione</small></span><span class=\"ds-row-amount ds-income\">+534,95 €</span></div><div class=\"ds-row\"><span class=\"ds-row-name\">Spese del piano<small>Commissioni annue</small></span><span class=\"ds-row-amount\">−15,00 €</span></div></div>",
+      "css": ".ds-card { width: 320px; padding: 16px; border: 0.75px solid rgba(255, 255, 255, 0.08); border-radius: 22px; background: rgba(255, 255, 255, 0.06); box-shadow: inset 0 -1px 2px rgba(255, 255, 255, 0.06); color: #f3f5f2; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-variant-numeric: tabular-nums; } .ds-card-title { font-size: 17px; font-weight: 600; margin-bottom: 8px; } .ds-row { display: flex; justify-content: space-between; align-items: center; min-height: 40px; border-top: 0.75px solid rgba(255, 255, 255, 0.05); font-size: 14px; } .ds-row-name { display: flex; flex-direction: column; font-weight: 500; } .ds-row-name small { font-size: 13px; font-weight: 400; color: #9a9f9b; } .ds-row-amount { font-weight: 600; } .ds-income { color: #d4f53c; }"
+    },
+    {
+      "name": "Sidebar Navigation",
+      "kind": "nav",
+      "refersTo": "sidebar-item",
+      "description": "Voci di sidebar desktop: la attiva su vetro con icona Fill e una pillola bianca a sinistra.",
+      "html": "<nav class=\"ds-nav\"><a class=\"ds-nav-item ds-nav-active\" href=\"#\" aria-current=\"page\">Panoramica</a><a class=\"ds-nav-item\" href=\"#\">Movimenti</a><a class=\"ds-nav-item\" href=\"#\">Valori</a><a class=\"ds-nav-item\" href=\"#\">Futuro</a><a class=\"ds-nav-item\" href=\"#\">Fisco</a><a class=\"ds-nav-item\" href=\"#\">Impostazioni</a></nav>",
+      "css": ".ds-nav { display: flex; flex-direction: column; gap: 2px; width: 208px; padding: 20px 12px; background: rgba(6, 7, 8, 0.4); border-right: 0.75px solid rgba(255, 255, 255, 0.07); } .ds-nav-item { position: relative; display: flex; align-items: center; gap: 10px; height: 40px; padding: 0 12px; border-radius: 10px; color: #9a9f9b; font: 500 14px 'Bricolage Grotesque', system-ui, sans-serif; text-decoration: none; transition: background-color .2s, color .2s; } .ds-nav-item:hover { background: rgba(255, 255, 255, 0.05); color: #f3f5f2; } .ds-nav-active { background: rgba(255, 255, 255, 0.08); color: #f3f5f2; font-weight: 600; } .ds-nav-active::before { content: ''; position: absolute; left: 0; top: 50%; width: 3px; height: 16px; margin-top: -8px; border-radius: 0 2px 2px 0; background: #f3f5f2; } .ds-nav-item:focus-visible { outline: 2px solid #f3f5f2; outline-offset: 2px; }"
+    },
+    {
+      "name": "Bottom Bar",
+      "kind": "nav",
+      "refersTo": "bottom-bar",
+      "description": "Barra in basso su telefono, ancorata a tutta larghezza, con il «+» al centro.",
+      "html": "<nav class=\"ds-bar\"><a class=\"ds-tab ds-tab-active\" href=\"#\" aria-current=\"page\">Panoramica</a><a class=\"ds-tab\" href=\"#\">Movimenti</a><span class=\"ds-bar-add\">+</span><a class=\"ds-tab\" href=\"#\">Valori</a><a class=\"ds-tab\" href=\"#\">Futuro</a></nav>",
+      "css": ".ds-bar { display: flex; align-items: center; width: 390px; padding: 4px 6px 24px; background: linear-gradient(to top, rgba(6, 7, 8, 0.72) 55%, rgba(6, 7, 8, 0.55)); backdrop-filter: blur(20px) saturate(140%); } .ds-tab { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; min-height: 56px; color: #9a9f9b; font: 600 10px/1 'Bricolage Grotesque', system-ui, sans-serif; text-decoration: none; } .ds-tab-active { color: #f3f5f2; } .ds-bar-add { width: 48px; height: 48px; margin: 0 8px; border-radius: 999px; display: grid; place-items: center; background: #f3f5f2; color: #060708; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45); font: 600 24px 'Bricolage Grotesque', system-ui, sans-serif; }"
+    },
+    {
+      "name": "Inset Form",
+      "kind": "form",
+      "refersTo": "inset-form",
+      "description": "Gruppo di righe in una card di vetro: etichetta a sinistra, valore a destra, fili tra le righe.",
+      "html": "<div class=\"ds-inset\"><label class=\"ds-inset-row\">Data sul fondo<input value=\"09/07/2026\"></label><label class=\"ds-inset-row\">Importo TFR<input value=\"534,95\"></label></div>",
+      "css": ".ds-inset { width: 360px; overflow: hidden; border: 0.75px solid rgba(255, 255, 255, 0.08); border-radius: 24px; background: rgba(255, 255, 255, 0.06); box-shadow: inset 0 -1px 2px rgba(255, 255, 255, 0.06); font-family: 'Bricolage Grotesque', system-ui, sans-serif; } .ds-inset-row { position: relative; display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 0 16px; color: #f3f5f2; font-size: 14px; } .ds-inset-row + .ds-inset-row::before { content: ''; position: absolute; top: 0; left: 16px; right: 0; height: 0.75px; background: rgba(255, 255, 255, 0.07); } .ds-inset-row input { flex: 1; min-width: 0; border: 0; background: transparent; color: #f3f5f2; font: inherit; text-align: right; outline: none; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "La cassaforte di vetro",
+    "overview": "Piano pensione segue un fondo pensione: quanto è stato versato, quanto è cresciuto, quanto TFR aspetta di arrivare sul fondo e dove può portare da qui alla pensione. Il fondo è quasi nero, i numeri stanno dietro superfici di vetro sottili e tutto è calmo: niente compete con il valore della posizione. Il colore è un segnale, non una decorazione: il lime acido si accende solo sulle cifre positive (crescita, versato, rendimento) e sugli anni della proiezione. Le azioni sono bianche: il «+», «Registra», i bottoni principali, l'anello del focus. Se il lime compare altrove, perde il suo significato.\n\nÈ lo stesso design system dell'app dei conti di casa, per intero: un solo stile per le due app. È un'interfaccia da usare, non da guardare: la precisione conta più dell'espressione. Il carattere sta nei dettagli (il valore grande che prende il disegno espressivo di Bricolage, i fili di luce sul vetro, il bagliore lime appena percepibile dietro la pagina). Gli stessi componenti e le stesse misure su desktop e su telefono, che è lo strumento di tutti i giorni; il tocco ha sempre un'area di almeno 44px.\n\nSentimento dei componenti: precisi e silenziosi. Pill da 36px, bordi da un filo, nessun effetto oltre al vetro e a una lieve pressione: si fanno notare solo quando servono.",
+    "keyCharacteristics": [
+      "Un solo tema, scuro; nessun selettore di tema.",
+      "Vetro a tre gradini fissi sopra un fondo quasi nero, con bagliore lime al massimo al 15%.",
+      "Testi in tre colori pieni, mai trasparenti.",
+      "Una sola famiglia (Bricolage Grotesque) con asse ottico automatico e cifre tabulari ovunque.",
+      "Controlli a pillola, icone Phosphor in tre pesi con un ruolo ciascuno: Regular ovunque, Fill per la voce di navigazione attiva, Bold solo per il «+»."
+    ],
+    "rules": [
+      {
+        "name": "The Rare Lime Rule",
+        "body": "Il lime ha due ruoli e basta: cifre positive (crescita, versato, rendimento, versamenti arrivati) e anni della proiezione. Mai su azioni, focus, badge, titoli, spese, TFR da versare o decorazioni: è raro, quindi quando appare significa qualcosa.",
+        "section": "colors"
+      },
+      {
+        "name": "The White Acts Rule",
+        "body": "Ciò che si preme è bianco: il «+», «Registra», i bottoni principali, l'anello del focus (2px pieno ring, staccato di 2px). Il bianco non indica mai una cifra positiva.",
+        "section": "colors"
+      },
+      {
+        "name": "The Spending Isn't Red Rule",
+        "body": "Spese e importi da versare sono foreground, non rossi né ambra. Il corallo è per errori ed eliminazioni, non per i costi del piano.",
+        "section": "colors"
+      },
+      {
+        "name": "The Three Inks Rule",
+        "body": "I testi sono foreground, muted-foreground o subtle-foreground, colori pieni. Niente altri grigi, niente testo con opacità.",
+        "section": "colors"
+      },
+      {
+        "name": "The Ambient Ceiling Rule",
+        "body": "ambient-strong non supera 0,15 e ambient-soft 0,06, i valori delle maquette definitive: oltre, il testo secondario sul vetro sopra il bagliore perde contrasto.",
+        "section": "colors"
+      },
+      {
+        "name": "The Three Weights Rule",
+        "body": "400 per il testo, 500 per nomi di movimento e voci di menu, 600 per titoli, importi e voci attive. Mai 700.",
+        "section": "typography"
+      },
+      {
+        "name": "The 12px Floor Rule",
+        "body": "Nessun testo sotto i 12px, con una sola eccezione voluta: le etichette della barra in basso a 10px (tab-label); stanno sotto un'icona da 24px che le rende leggibili. Lettere strette solo dai 18px in su, mai oltre −0,04em.",
+        "section": "typography"
+      },
+      {
+        "name": "The Text-Off-Glass-3 Rule",
+        "body": "Il testo sta solo su vetro 1 o 2, mai sopra vetro 3.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Blur-Where-It-Scrolls Rule",
+        "body": "Blur 20px con saturazione 140% su testata e barra in basso, 24px sui pannelli, 30px su popover e dialog; altrove niente.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do mettere il bagliore (radial-gradient(900px 620px at 96% -12%, ambient-strong…) e radial-gradient(760px 620px at -6% 70%, ambient-soft…)) dietro ogni pagina, fisso mentre il contenuto scorre.",
+      "Do usare accent per hover e voce attiva; nella sidebar sidebar-hover e sidebar-accent.",
+      "Do allineare a destra gli importi con cifre tabulari, formato 1.641,45 €.",
+      "Do usare icone Phosphor nel colore del testo: Regular ovunque, Fill solo per la voce di navigazione attiva, Bold solo per il «+»; 16–20px su desktop, 20–24px su telefono.",
+      "Do accompagnare corallo e ambra sempre con una parola.",
+      "Do etichettare la proiezione come stima, anche quando è in lime."
+    ],
+    "donts": [
+      "Don't usare il lime fuori da cifre positive, proiezione, bagliore e tile di crescita e versamenti: niente lime su azioni o focus.",
+      "Don't colorare di rosso le spese o di ambra il TFR da versare.",
+      "Don't introdurre trasparenze oltre i tre gradini di vetro, né testo trasparente.",
+      "Don't usare il peso 700 o testo sotto i 12px (salvo le etichette della barra in basso).",
+      "Don't aggiungere un tema chiaro o un selettore di tema.",
+      "Don't mettere blur su superfici che non scorrono sopra altro contenuto."
+    ]
+  }
+}

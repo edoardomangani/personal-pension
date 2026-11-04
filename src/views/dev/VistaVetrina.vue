@@ -6,6 +6,7 @@ import FormsSection from '@/components/dev/FormsSection.vue'
 import FoundationsSection from '@/components/dev/FoundationsSection.vue'
 import OverlaysSection from '@/components/dev/OverlaysSection.vue'
 import ShellSection from '@/components/dev/ShellSection.vue'
+import StructureSection from '@/components/dev/StructureSection.vue'
 import {
   sectionBlocks,
   sectionNumber,
@@ -155,6 +156,7 @@ onBeforeUnmount(() => observer?.disconnect())
       <FieldsSection />
       <FormsSection />
       <OverlaysSection />
+      <StructureSection />
     </div>
   </div>
 </template>

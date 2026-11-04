@@ -102,6 +102,7 @@ describe('vetrina /dev/ui (R8)', () => {
     expect(wrapper.find('[data-specimen="SHL-bottombar-mobile"]').exists()).toBe(true)
     expect(wrapper.find('[data-specimen="BTN-new-movement-mobile"]').exists()).toBe(true)
     expect(wrapper.find('[data-specimen="FRM-rows-desktop"]').exists()).toBe(true)
+    expect(wrapper.find('[data-specimen="MOV-list-desktop"]').exists()).toBe(true)
     wrapper.unmount()
     expect(disconnect).toHaveBeenCalled()
   })

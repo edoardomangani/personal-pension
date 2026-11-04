@@ -273,6 +273,7 @@ describe('campioni e blocchi nei sorgenti della vetrina (R9)', () => {
     expect(Object.keys(elenchi)).toContain('ActionsSection.vue: buttonVariants')
     expect(Object.keys(elenchi)).toContain('FieldsSection.vue: fieldStates')
     expect(Object.keys(elenchi)).toContain('OverlaysSection.vue: sheetSamples')
+    expect(Object.keys(elenchi)).toContain('StructureSection.vue: movementRows')
     for (const [nome, valori] of Object.entries(elenchi)) {
       expect(valori, `${nome} è vuoto`).not.toEqual([])
       expect(
@@ -309,9 +310,7 @@ describe('campioni e blocchi nei sorgenti della vetrina (R9)', () => {
     const sezioneDelFile = Object.fromEntries(
       SEZIONI.map((f) => [basename(f, '.vue'), sezioneDi(readFileSync(f, 'utf8'))]),
     )
-    expect(montate.map((nome) => sezioneDelFile[nome])).toEqual(
-      showcaseSections.map((s) => s.id).filter((id) => Object.values(sezioneDelFile).includes(id)),
-    )
+    expect(montate.map((nome) => sezioneDelFile[nome])).toEqual(showcaseSections.map((s) => s.id))
     expect(montate).toHaveLength(SEZIONI.length)
   })
 
