@@ -61,6 +61,11 @@ function tooltipAperto(): boolean {
   return document.body.textContent?.includes('In arrivo') ?? false
 }
 
+// Pigra: si ferma al primo </Specimen>, non a un campione successivo.
+function campioneLogo(sorgente: string): string | null {
+  return /code="SHL-logo"[^>]*>([\s\S]*?)<\/Specimen>/.exec(sorgente)?.[1] ?? null
+}
+
 describe('NewMovementButton (R6)', () => {
   it('il + tondo è aria-disabled con aria-label «Nuovo movimento»', () => {
     const wrapper = mount(conTooltip(NewMovementButton, { variant: 'round' }), {
@@ -143,9 +148,25 @@ describe('marchio (DS-02 R2-R4)', () => {
   })
 
   it('SHL-logo monta AppLogo senza involucro', () => {
-    const campione = /code="SHL-logo"[^>]*>([\s\S]*?)<AppLogo \/>/.exec(sorgenteShellSection)
+    const campione = campioneLogo(sorgenteShellSection)
     expect(campione).not.toBeNull()
-    expect(campione?.[1]).not.toMatch(/h-8|gap-2\.5/)
+    expect(campione).toContain('<AppLogo />')
+    expect(campione).not.toMatch(/h-8|gap-2\.5/)
+  })
+
+  it('SHL-logo: la cattura si ferma al campione', () => {
+    const logoNelSuccessivo = campioneLogo(
+      '<Specimen code="SHL-logo"><AppLogoIcon /></Specimen><Specimen code="X"><AppLogo /></Specimen>',
+    )
+    expect(logoNelSuccessivo).toBe('<AppLogoIcon />')
+    expect(logoNelSuccessivo).not.toContain('<AppLogo />')
+
+    const conInvolucro = campioneLogo(
+      '<Specimen code="SHL-logo"><div class="flex h-8 gap-2.5"><AppLogo /></div></Specimen>',
+    )
+    expect(conInvolucro).toMatch(/h-8|gap-2\.5/)
+
+    expect(campioneLogo('<Specimen code="SHL-segno-24"><AppLogo /></Specimen>')).toBeNull()
   })
 })
 
