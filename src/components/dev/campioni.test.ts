@@ -60,7 +60,11 @@ describe('StructureSection: lista dei movimenti (R5)', () => {
     const router = createRouter({ history: createMemoryHistory(), routes: rotte })
     const wrapper = mount(StructureSection, { global: { plugins: [router] } })
     const lista = wrapper.get('[data-specimen="MOV-list-desktop"]')
-    const giorni = lista.findAll('.flex.flex-col.gap-2')
+    // Sul DOMWrapper findAllComponents è tipizzato any: si cerca sul montaggio e si tiene solo lo specimen.
+    const giorni = wrapper
+      .findAllComponents(MovementDaySample)
+      .filter((g) => lista.element.contains(g.element))
+    expect(giorni).toHaveLength(2)
     expect(giorni.map((g) => g.get('span').text())).toEqual(['17/07/2026', '09/07/2026'])
     expect(giorni[0]?.text()).toContain('TFR di giugno')
     expect(giorni[1]?.text()).not.toContain('TFR di giugno')
