@@ -1,11 +1,17 @@
 <!doctype html>
-<html lang="it">
+<html lang="it" class="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Come --background di app.css: evita il lampo chiaro prima che arrivi il CSS -->
+    <style>
+      html {
+        background-color: #060708;
+      }
+    </style>
     <title>Piano pensione</title>
   </head>
-  <body>
+  <body class="font-sans antialiased">
     <div id="app"></div>
     <script type="module" src="/src/main.ts"></script>
   </body>
