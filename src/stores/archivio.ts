@@ -132,13 +132,16 @@ export const useArchivioStore = defineStore('archivio', () => {
     }
   }
 
-  /** Esegue la scrittura; rifiuta con un `ErroreDati`, e con la sessione scaduta prima esce. */
-  async function scrivi<T>(operazione: () => Promise<T>): Promise<T> {
+  /**
+   * Esegue la scrittura; rifiuta sempre con un `ErroreDati`. Con la sessione scaduta esce
+   * solo se non c'è stato un `reset()` dalla partenza: non deve far uscire l'utente nuovo.
+   */
+  async function scrivi<T>(partenza: number, operazione: () => Promise<T>): Promise<T> {
     try {
       return await operazione()
     } catch (eccezione) {
       const e = erroreDaEccezione(eccezione)
-      if (e.tipo === 'sessione') await useSessioneStore().esci()
+      if (e.tipo === 'sessione' && partenza === generazione) await useSessioneStore().esci()
       throw e
     }
   }
@@ -165,27 +168,27 @@ export const useArchivioStore = defineStore('archivio', () => {
 
   async function salvaFondo(bozza: Bozza<Fondo>): Promise<Fondo> {
     const partenza = generazione
-    const salvato = await scrivi(() => salvaFondoDb(bozza))
+    const salvato = await scrivi(partenza, () => salvaFondoDb(bozza))
     seAncora(partenza, () => (fondi.value = sostituisciOAggiungi(fondi.value, salvato)))
     return salvato
   }
 
   async function eliminaFondo(id: string): Promise<void> {
     const partenza = generazione
-    await scrivi(() => eliminaFondoDb(id))
+    await scrivi(partenza, () => eliminaFondoDb(id))
     seAncora(partenza, () => (fondi.value = fondi.value.filter((f) => f.id !== id)))
   }
 
   async function salvaBusta(bozza: BozzaBusta): Promise<string> {
     const partenza = generazione
-    const id = await scrivi(() => salvaBustaDb(bozza))
+    const id = await scrivi(partenza, () => salvaBustaDb(bozza))
     await rileggiBusteEMovimenti(partenza)
     return id
   }
 
   async function eliminaBusta(id: string): Promise<void> {
     const partenza = generazione
-    await scrivi(() => eliminaBustaDb(id))
+    await scrivi(partenza, () => eliminaBustaDb(id))
     await rileggiBusteEMovimenti(partenza)
   }
 
@@ -194,33 +197,33 @@ export const useArchivioStore = defineStore('archivio', () => {
     busteIds: readonly string[],
   ): Promise<string> {
     const partenza = generazione
-    const id = await scrivi(() => salvaMovimentoDb(bozza, busteIds))
+    const id = await scrivi(partenza, () => salvaMovimentoDb(bozza, busteIds))
     await rileggiBusteEMovimenti(partenza)
     return id
   }
 
   async function eliminaMovimento(id: string): Promise<void> {
     const partenza = generazione
-    await scrivi(() => eliminaMovimentoDb(id))
+    await scrivi(partenza, () => eliminaMovimentoDb(id))
     await rileggiBusteEMovimenti(partenza)
   }
 
   async function salvaEstratto(bozza: Bozza<EstrattoConto>): Promise<EstrattoConto> {
     const partenza = generazione
-    const salvato = await scrivi(() => salvaEstrattoDb(bozza))
+    const salvato = await scrivi(partenza, () => salvaEstrattoDb(bozza))
     seAncora(partenza, () => (estratti.value = sostituisciOAggiungi(estratti.value, salvato)))
     return salvato
   }
 
   async function eliminaEstratto(id: string): Promise<void> {
     const partenza = generazione
-    await scrivi(() => eliminaEstrattoDb(id))
+    await scrivi(partenza, () => eliminaEstrattoDb(id))
     seAncora(partenza, () => (estratti.value = estratti.value.filter((e) => e.id !== id)))
   }
 
   async function salvaImpostazioni(nuove: Impostazioni): Promise<Impostazioni> {
     const partenza = generazione
-    const salvate = await scrivi(() => salvaImpostazioniDb(nuove))
+    const salvate = await scrivi(partenza, () => salvaImpostazioniDb(nuove))
     seAncora(partenza, () => (impostazioni.value = salvate))
     return salvate
   }

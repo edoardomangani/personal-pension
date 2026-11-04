@@ -2,14 +2,23 @@ import { createPinia, setActivePinia } from 'pinia'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { elencaBuste, eliminaBusta, salvaBusta } from '../data/buste'
 import { ErroreDati } from '../data/errori'
-import { elencaEstratti, salvaEstratto } from '../data/estratti'
-import { elencaFondi } from '../data/fondi'
-import { leggiImpostazioni } from '../data/impostazioni'
+import { storicoDeducibilita } from '../calc/deducibilita'
+import { crescita, ultimoValore } from '../calc/posizione'
+import { proiezione } from '../calc/proiezione'
+import { rendimentoAnnuo } from '../calc/xirr'
+import { elencaEstratti, eliminaEstratto, salvaEstratto } from '../data/estratti'
+import { elencaFondi, eliminaFondo, salvaFondo } from '../data/fondi'
+import { leggiImpostazioni, salvaImpostazioni } from '../data/impostazioni'
 import type { Bozza, BozzaBusta } from '../data/mappe'
 import { elencaMovimenti, eliminaMovimento, salvaMovimento } from '../data/movimenti'
 import { esci } from '../data/sessione'
 import { archivioDalSeed } from '../test/seed'
-import { IMPOSTAZIONI_PREDEFINITE, type EstrattoConto, type Movimento } from '../types/dominio'
+import {
+  IMPOSTAZIONI_PREDEFINITE,
+  type EstrattoConto,
+  type Fondo,
+  type Movimento,
+} from '../types/dominio'
 import { useArchivioStore } from './archivio'
 import { useSessioneStore } from './sessione'
 
@@ -302,6 +311,21 @@ describe('archivio: reset', () => {
     await scrittura
     expect(s.estratti).toEqual([])
   })
+
+  it('C5 T2: salvaEstratto in volo che fallisce con rete dopo un reset rifiuta senza uscire', async () => {
+    const s = useArchivioStore()
+    await s.carica()
+    const esciSessione = vi.spyOn(useSessioneStore(), 'esci')
+    const risposta = inSospeso<EstrattoConto>()
+    vi.mocked(salvaEstratto).mockReturnValueOnce(risposta.promessa)
+    const scrittura = s.salvaEstratto({ fondoId: FONDO, data: '2026-11-04', valore: 1, note: '' })
+    s.reset()
+    risposta.rifiuta(RETE())
+    await expect(scrittura).rejects.toMatchObject({ tipo: 'rete' })
+    expect(esciSessione).not.toHaveBeenCalled()
+    expect(esci).not.toHaveBeenCalled()
+    expect(s.estratti).toEqual([])
+  })
 })
 
 describe('archivio: scritture', () => {
@@ -371,6 +395,72 @@ describe('archivio: scritture', () => {
     await expect(
       s.salvaEstratto({ fondoId: FONDO, data: '2026-11-04', valore: 1, note: '' }),
     ).rejects.toMatchObject({ tipo: 'vincolo', messaggio: 'Valore non valido' })
+  })
+
+  it('C5 T8: salvaFondo senza id aggiunge, con id sostituisce', async () => {
+    const s = useArchivioStore()
+    await s.carica()
+    const quanti = s.fondi.length
+    vi.mocked(salvaFondo).mockResolvedValueOnce({ id: 'f-nuovo', nome: 'Fondo nuovo' })
+    await expect(s.salvaFondo({ nome: 'Fondo nuovo' })).resolves.toEqual({
+      id: 'f-nuovo',
+      nome: 'Fondo nuovo',
+    })
+    expect(s.fondi).toHaveLength(quanti + 1)
+    expect(s.fondi.at(-1)?.id).toBe('f-nuovo')
+
+    const delSeed: Fondo = { id: FONDO, nome: 'Nome cambiato' }
+    vi.mocked(salvaFondo).mockResolvedValueOnce(delSeed)
+    await expect(s.salvaFondo(delSeed)).resolves.toEqual(delSeed)
+    expect(s.fondi).toHaveLength(quanti + 1)
+    expect(s.fondi.find((f) => f.id === delSeed.id)?.nome).toBe('Nome cambiato')
+  })
+
+  it('C5 T9: eliminaFondo toglie quel fondo e lascia gli altri', async () => {
+    const s = useArchivioStore()
+    await s.carica()
+    vi.mocked(salvaFondo).mockResolvedValueOnce({ id: 'f-nuovo', nome: 'Fondo nuovo' })
+    await s.salvaFondo({ nome: 'Fondo nuovo' })
+    const altri = s.fondi.filter((f) => f.id !== 'f-nuovo')
+    vi.mocked(eliminaFondo).mockResolvedValueOnce(undefined)
+    await s.eliminaFondo('f-nuovo')
+    expect(eliminaFondo).toHaveBeenCalledWith('f-nuovo')
+    expect(s.fondi).toEqual(altri)
+  })
+
+  it('C5 T10: eliminaEstratto toglie quell’estratto e lascia gli altri', async () => {
+    const s = useArchivioStore()
+    await s.carica()
+    const quanti = s.estratti.length
+    const id = 'val-2025-11-04'
+    expect(s.estratti.some((e) => e.id === id)).toBe(true)
+    vi.mocked(eliminaEstratto).mockResolvedValueOnce(undefined)
+    await s.eliminaEstratto(id)
+    expect(s.estratti).toHaveLength(quanti - 1)
+    expect(s.estratti.some((e) => e.id === id)).toBe(false)
+  })
+
+  it('C5 T11: salvaImpostazioni tiene l’oggetto restituito, non quello passato', async () => {
+    const s = useArchivioStore()
+    await s.carica()
+    const passate = { ...s.impostazioni, aliquota: 23 }
+    const restituite = { ...passate, aliquota: 27 }
+    vi.mocked(salvaImpostazioni).mockResolvedValueOnce(restituite)
+    await expect(s.salvaImpostazioni(passate)).resolves.toEqual(restituite)
+    expect(s.impostazioni).toEqual(restituite)
+  })
+})
+
+describe('archivio: derivati', () => {
+  it('C5 T12: sono le funzioni di src/calc/ sui dati e sulla data dello store', async () => {
+    const s = useArchivioStore()
+    await s.carica()
+    expect(s.crescita).toEqual(crescita(s.archivio))
+    expect(s.rendimento).toEqual(rendimentoAnnuo(s.archivio, s.oggi))
+    expect(s.deducibilita).toEqual(storicoDeducibilita(s.archivio, s.oggi))
+    expect(s.proiezione).toEqual(proiezione(s.archivio, s.oggi))
+    expect(s.ultimoValore).toEqual({ data: '2026-11-03', valore: 164145 })
+    expect(s.ultimoValore).toEqual(ultimoValore(s.archivio))
   })
 })
 

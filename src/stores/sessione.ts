@@ -15,7 +15,10 @@ export const useSessioneStore = defineStore('sessione', () => {
     useArchivioStore().reset()
   }
 
-  /** Idempotente; `pronto` diventa true anche se il ripristino fallisce. */
+  /**
+   * Non rifiuta; `pronto` diventa true con ogni esito. Idempotente dopo un successo,
+   * un errore si riprova; le chiamate sovrapposte condividono quella in volo.
+   */
   function ripristina(): Promise<void> {
     ripristino ??= (async () => {
       try {
@@ -24,6 +27,8 @@ export const useSessioneStore = defineStore('sessione', () => {
       } catch (eccezione) {
         utente.value = null
         errore.value = erroreDaEccezione(eccezione)
+        // Siamo dopo l'await: `ripristino` è questa promessa, e finché è in volo nessuno la sostituisce.
+        ripristino = null
       } finally {
         pronto.value = true
       }

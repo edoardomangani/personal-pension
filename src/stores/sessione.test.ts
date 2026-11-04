@@ -42,6 +42,21 @@ async function accessoConArchivio() {
   return { sessione, archivio }
 }
 
+/** Una promessa che si risolve o rifiuta quando lo decide il test. */
+function inSospeso<T>() {
+  let risolvi: (valore: T) => void = () => {}
+  let rifiuta: (motivo: unknown) => void = () => {}
+  const promessa = new Promise<T>((r, x) => {
+    risolvi = r
+    rifiuta = x
+  })
+  return {
+    promessa,
+    risolvi: (valore: T) => risolvi(valore),
+    rifiuta: (motivo: unknown) => rifiuta(motivo),
+  }
+}
+
 function eVuoto(archivio: ReturnType<typeof useArchivioStore>): boolean {
   return (
     archivio.stato === 'vuoto' &&
@@ -99,6 +114,27 @@ describe('sessione (R8)', () => {
     expect(sessione.utente).toBeNull()
   })
 
+  it('C5 T1: salvaMovimento del primo utente che riceve sessione dopo il cambio di account non fa uscire il secondo', async () => {
+    const { sessione, archivio } = await accessoConArchivio()
+    const rpc = inSospeso<string>()
+    vi.mocked(salvaMovimento).mockReturnValueOnce(rpc.promessa)
+    const scrittura = archivio.salvaMovimento(
+      {
+        fondoId: 'Amundi Seconda Pensione',
+        data: '2026-11-04',
+        righe: [{ tipo: 'TFR', importo: 100 }],
+        note: '',
+      },
+      [],
+    )
+    vi.mocked(accedi).mockResolvedValueOnce(SECONDO)
+    await sessione.accedi(SECONDO.email, 'altra')
+    rpc.rifiuta(SESSIONE_SCADUTA)
+    await expect(scrittura).rejects.toMatchObject({ tipo: 'sessione' })
+    expect(esci).not.toHaveBeenCalled()
+    expect(sessione.utente).toEqual(SECONDO)
+  })
+
   it('signOut che fallisce → store comunque vuoti ed esci() risolve', async () => {
     const { sessione, archivio } = await accessoConArchivio()
     vi.mocked(esci).mockRejectedValueOnce(new ErroreDati('rete', 'Rete giù'))
@@ -146,6 +182,41 @@ describe('sessione (R8)', () => {
     expect(sessione.pronto).toBe(true)
     expect(sessione.utente).toBeNull()
     expect(sessione.errore?.tipo).toBe('rete')
+  })
+
+  it('C5 T4: ripristina() dopo un errore riprova e imposta l’utente', async () => {
+    vi.mocked(sessioneCorrente)
+      .mockRejectedValueOnce(new ErroreDati('rete', 'Rete giù'))
+      .mockResolvedValueOnce(PRIMO)
+    const sessione = useSessioneStore()
+    await sessione.ripristina()
+    expect(sessione.errore?.tipo).toBe('rete')
+    await sessione.ripristina()
+    expect(sessione.utente).toEqual(PRIMO)
+    expect(sessione.errore).toBeNull()
+    expect(sessione.pronto).toBe(true)
+    expect(sessioneCorrente).toHaveBeenCalledTimes(2)
+  })
+
+  it('C5 T5: due ripristina() concorrenti che falliscono condividono una chiamata e risolvono', async () => {
+    const risposta = inSospeso<null>()
+    vi.mocked(sessioneCorrente).mockReturnValueOnce(risposta.promessa)
+    const sessione = useSessioneStore()
+    const prima = sessione.ripristina()
+    const seconda = sessione.ripristina()
+    risposta.rifiuta(new ErroreDati('rete', 'Rete giù'))
+    await expect(Promise.all([prima, seconda])).resolves.toEqual([undefined, undefined])
+    expect(sessioneCorrente).toHaveBeenCalledOnce()
+    await sessione.ripristina()
+    expect(sessioneCorrente).toHaveBeenCalledTimes(2)
+  })
+
+  it('C5 T7: ripristina() riuscito senza sessione non richiama sessioneCorrente', async () => {
+    const sessione = useSessioneStore()
+    await sessione.ripristina()
+    await sessione.ripristina()
+    expect(sessione.utente).toBeNull()
+    expect(sessioneCorrente).toHaveBeenCalledOnce()
   })
 })
 
