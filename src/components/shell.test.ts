@@ -1,9 +1,13 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { defineComponent, h, nextTick, type Component } from 'vue'
 import { enableAutoUnmount, flushPromises, mount } from '@vue/test-utils'
+import { createPinia, setActivePinia } from 'pinia'
 import { TooltipProvider } from 'reka-ui'
 import { createMemoryHistory, createRouter, type Router } from 'vue-router'
+import { formatoGiorno } from '@/calc/formato'
 import { rotte } from '@/router'
+import { useArchivioStore } from '@/stores/archivio'
+import { useSessioneStore } from '@/stores/sessione'
 import { SidebarProvider } from '@/components/ui/sidebar'
 import AppBottomBar from './AppBottomBar.vue'
 import AppLayout from './AppLayout.vue'
@@ -15,6 +19,11 @@ import AppLogoIcon from './AppLogoIcon.vue'
 import NewMovementButton from './NewMovementButton.vue'
 
 enableAutoUnmount(afterEach)
+
+// Testate e layout leggono la sessione e la data di oggi dagli store.
+beforeEach(() => {
+  setActivePinia(createPinia())
+})
 
 // Il tooltip aperto misura la freccia con ResizeObserver, che jsdom non ha.
 vi.stubGlobal(
@@ -198,15 +207,89 @@ describe('AppSidebar (R5, R13)', () => {
   })
 })
 
-describe('testate (R7)', () => {
-  it('mostrano il titolo della rotta su telefono e desktop', async () => {
-    const router = await routerSu('/futuro')
-    expect(mount(AppMobileHeader, { global: { plugins: [router] } }).text()).toBe('Futuro')
-    expect(mount(AppTopBar, { global: { plugins: [router] } }).text()).toBe('Futuro')
+describe('testata mobile (R5-R7)', () => {
+  function montaTestata(router: Router) {
+    return mount(AppMobileHeader, { global: { plugins: [router] } })
+  }
+
+  it('su /valori: h1 «Valori», avatar verso /profilo, niente data né freccia (R5)', async () => {
+    const wrapper = montaTestata(await routerSu('/valori'))
+    expect(wrapper.get('h1').text()).toBe('Valori')
+    const avatar = wrapper.get('a')
+    expect(avatar.attributes('href')).toBe('/profilo')
+    expect(avatar.attributes('aria-label')).toBe('Profilo: account e impostazioni')
+    expect(wrapper.find('p').exists()).toBe(false)
+    expect(wrapper.find('button[aria-label="Indietro"]').exists()).toBe(false)
+  })
+
+  it('su / senza nome: «Ciao» e la data di oggi (R6)', async () => {
+    const wrapper = montaTestata(await routerSu('/'))
+    expect(wrapper.get('h1').text()).toBe('Ciao')
+    expect(wrapper.get('p').text()).toBe(formatoGiorno(useArchivioStore().oggi))
+    expect(wrapper.get('p').text()).not.toBe('')
+  })
+
+  it('su / con utente { email }: l’avatar mostra l’iniziale dell’email', async () => {
+    useSessioneStore().utente = { id: 'u1', email: 'edoardo@esempio.it' }
+    const wrapper = montaTestata(await routerSu('/'))
+    await flushPromises()
+    expect(wrapper.get('a').text()).toBe('E')
+  })
+
+  it('su /fisco: «Indietro», titolo «Fisco», nessun avatar (R7)', async () => {
+    const wrapper = montaTestata(await routerSu('/fisco'))
+    expect(wrapper.find('button[aria-label="Indietro"]').exists()).toBe(true)
+    expect(wrapper.get('h1').text()).toBe('Fisco')
+    expect(wrapper.find('a').exists()).toBe(false)
+  })
+
+  it('la freccia su /fisco aperto direttamente porta a /profilo (R8)', async () => {
+    const router = await routerSu('/fisco')
+    const wrapper = montaTestata(router)
+    await wrapper.get('button[aria-label="Indietro"]').trigger('click')
+    await flushPromises()
+    expect(router.currentRoute.value.path).toBe('/profilo')
+  })
+})
+
+describe('testata desktop (R12)', () => {
+  function montaTopBar(router: Router) {
+    return mount(conTooltip(AppTopBar), { global: { plugins: [router] } })
+  }
+
+  it('su /movimenti: h1 «Movimenti» e «Registra» disattivato', async () => {
+    const wrapper = montaTopBar(await routerSu('/movimenti'))
+    expect(wrapper.get('h1').text()).toBe('Movimenti')
+    const registra = wrapper.get('button')
+    expect(registra.text()).toBe('Registra')
+    expect(registra.attributes('aria-disabled')).toBe('true')
+  })
+
+  it('in Home il titolo è «Home», non il saluto, e «Registra» c’è', async () => {
+    const wrapper = montaTopBar(await routerSu('/'))
+    expect(wrapper.get('h1').text()).toBe('Home')
+    expect(wrapper.find('button').exists()).toBe(true)
+  })
+
+  it('su /futuro «Registra» non c’è e nemmeno la freccia indietro', async () => {
+    const wrapper = montaTopBar(await routerSu('/futuro'))
+    expect(wrapper.get('h1').text()).toBe('Futuro')
+    expect(wrapper.find('button').exists()).toBe(false)
+    expect(wrapper.text()).not.toContain('Registra')
   })
 })
 
 describe('AppLayout (R3)', () => {
+  it('su / monta la testata mobile e quella desktop', async () => {
+    const wrapper = mount(AppLayout, {
+      global: { plugins: [await routerSu('/')] },
+      attachTo: document.body,
+    })
+    await flushPromises()
+    expect(wrapper.findComponent(AppMobileHeader).exists()).toBe(true)
+    expect(wrapper.findComponent(AppTopBar).text()).toContain('Registra')
+  })
+
   it('la regione delle notifiche si chiama «Notifiche»', async () => {
     const wrapper = mount(AppLayout, {
       global: { plugins: [await routerSu('/')] },

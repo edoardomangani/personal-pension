@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { enableAutoUnmount, flushPromises, mount } from '@vue/test-utils'
+import { createPinia } from 'pinia'
 import App from './App.vue'
 import VistaSegnaposto from './views/VistaSegnaposto.vue'
 import { router } from './router'
@@ -85,9 +86,9 @@ describe('router', () => {
 describe('App', () => {
   it('su /valori mostra «Valori» nelle testate e il segnaposto', async () => {
     await vaiA('/valori')
-    const wrapper = mount(App, { global: { plugins: [router] } })
-    const testate = wrapper.findAll('header').map((h) => h.text())
-    expect(testate).toEqual(['Valori', 'Valori'])
+    const wrapper = mount(App, { global: { plugins: [router, createPinia()] } })
+    const titoli = wrapper.findAll('header h1').map((h) => h.text())
+    expect(titoli).toEqual(['Valori', 'Valori'])
     expect(wrapper.find('[data-segnaposto]').exists()).toBe(true)
   })
 })
@@ -125,12 +126,15 @@ describe('vetrina /dev/ui (R8)', () => {
     vi.resetModules()
     const { router: routerFresco } = await import('./router')
     const { default: AppFresca } = await import('./App.vue')
+    const { createPinia: createPiniaFresca } = await import('pinia')
     await routerFresco.push('/dev/ui')
     await routerFresco.isReady()
-    const wrapper = mount(AppFresca, { global: { plugins: [routerFresco] } })
+    const wrapper = mount(AppFresca, {
+      global: { plugins: [routerFresco, createPiniaFresca()] },
+    })
     await flushPromises()
 
-    expect(wrapper.find('h1').text()).toBe('Design system')
+    expect(wrapper.findAll('h1').map((h) => h.text())).toContain('Design system')
     expect(wrapper.find('[data-specimen="SHL-bottombar-mobile"]').exists()).toBe(true)
     expect(wrapper.find('[data-specimen="BTN-new-movement-mobile"]').exists()).toBe(true)
     expect(wrapper.find('[data-specimen="FRM-rows-desktop"]').exists()).toBe(true)

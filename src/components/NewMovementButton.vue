@@ -23,7 +23,8 @@ const { variant = 'pill', testo = 'Nuovo movimento' } = defineProps<{
     >
       <PhPlus weight="bold" class="size-6" />
     </Button>
-    <Button v-else type="button" aria-disabled="true">
+    <!-- 14 a sinistra, 16 a destra: il + ha più aria del testo. -->
+    <Button v-else type="button" aria-disabled="true" class="has-[>svg]:pr-4">
       <PhPlus weight="bold" />
       {{ testo }}
     </Button>

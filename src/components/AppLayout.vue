@@ -16,11 +16,11 @@ import { Toaster } from '@/components/ui/sonner'
     </div>
     <AppContent variant="sidebar" class="min-w-0 overflow-x-clip">
       <AppMobileHeader class="lg:hidden" />
+      <!-- max-lg:hidden batte il flex della testata, che hidden da solo non batterebbe. -->
+      <AppTopBar class="max-lg:hidden" />
       <div
-        class="mx-auto flex w-full max-w-content flex-1 flex-col pb-[calc(var(--bottom-bar-height)+env(safe-area-inset-bottom))] lg:px-[clamp(4px,calc(4vw-16px),32px)] lg:pb-14"
+        class="mx-auto flex w-full max-w-content flex-1 flex-col pb-[calc(var(--bottom-bar-height)+env(safe-area-inset-bottom))] lg:px-12 lg:pt-6 lg:pb-12"
       >
-        <!-- max-lg:hidden batte il flex della testata, che hidden da solo non batterebbe. -->
-        <AppTopBar class="px-4 pt-7 pb-2 max-lg:hidden" />
         <slot />
       </div>
       <div class="lg:hidden">
