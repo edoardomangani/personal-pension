@@ -479,3 +479,57 @@ describe('padding in basso del contenuto (DS-03-C2-C1)', () => {
     expect(indice).toContain('top-(--topbar-height)')
   })
 })
+
+describe('testata del telefono (DS-03-C2-C2 R3)', () => {
+  const RADICE = fileURLToPath(new URL('../../../', import.meta.url))
+
+  it(':root definisce --header-mobile-height a 68px, fuori da @theme inline', () => {
+    const css = readFileSync(`${RADICE}src/styles/app.css`, 'utf8')
+    const radice = /:root\s*\{([\s\S]*?)\n\}/.exec(css)?.[1] ?? ''
+    expect(radice).toMatch(/--header-mobile-height:\s*68px;/)
+    const tema = /@theme inline\s*\{([\s\S]*?)\n\}/.exec(css)?.[1] ?? ''
+    expect(tema).not.toBe('')
+    expect(tema).not.toContain('--header-mobile-height')
+  })
+
+  // 12 + 44 + 12 = 68: se cambia la testata, va cambiato il token.
+  it('AppMobileHeader somma ancora a 68px', () => {
+    const testata = readFileSync(`${RADICE}src/components/AppMobileHeader.vue`, 'utf8')
+    const header = /<header\s[^>]*>/.exec(testata)?.[0] ?? ''
+    expect(header).toContain('pt-[calc(12px+env(safe-area-inset-top))]')
+    expect(header).toMatch(/\bpb-3\b/)
+    expect(testata).toMatch(/<div v-else class="[^"]*\bmin-h-11\b/)
+  })
+})
+
+describe('scarto dello scroll della vetrina (DS-03-C2-C2 R4, R6)', () => {
+  const RADICE = fileURLToPath(new URL('../../../', import.meta.url))
+
+  function controllaScarto(tag: string): void {
+    const sotto = /(?:^|\s)scroll-mt-\[([^\s"]*)\]/.exec(tag)?.[1] ?? ''
+    expect(sotto).toContain('var(--header-mobile-height)')
+    expect(sotto).toContain('env(safe-area-inset-top)')
+    expect(sotto).toContain('--spacing(6)')
+    const sopra = /\blg:scroll-mt-\[([^\s"]*)\]/.exec(tag)?.[1] ?? ''
+    expect(sopra).toContain('var(--topbar-height)')
+    expect(sopra).toContain('--spacing(6)')
+    expect(tag).not.toMatch(/(?:^|[\s"])scroll-mt-6(?=[\s"]|$)/)
+  }
+
+  it('la section di ShowcaseSection scarta testata e barra', () => {
+    const sezione = /<section\s[^>]*>/.exec(sorgente('ShowcaseSection.vue'))?.[0] ?? ''
+    controllaScarto(sezione)
+  })
+
+  it("l'h3 di ShowcaseBlock scarta testata e barra", () => {
+    const titolo = /<h3\s[^>]*>/.exec(sorgente('ShowcaseBlock.vue'))?.[0] ?? ''
+    controllaScarto(titolo)
+  })
+
+  it('vaiA scorre con scrollIntoView, senza misure in JavaScript', () => {
+    const vista = readFileSync(`${RADICE}src/views/dev/VistaVetrina.vue`, 'utf8')
+    const vaiA = /function vaiA\([^)]*\)[^{]*\{([\s\S]*?)\n\}/.exec(vista)?.[1] ?? ''
+    expect(vaiA).toContain('scrollIntoView()')
+    expect(vista).not.toMatch(/\bscroll(To|By)\(/)
+  })
+})

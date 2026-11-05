@@ -402,7 +402,7 @@ describe('AppLayout (R3)', () => {
     expect(etichetta).not.toContain('Notifications')
   })
 
-  it('padding del contenuto nella shell (DS-03-C2 R4)', async () => {
+  it('padding del contenuto nella shell (DS-03-C2 R4, DS-03-C2-C2 R1)', async () => {
     const wrapper = mount(AppLayout, {
       slots: { default: '<p data-slot-prova>contenuto</p>' },
       global: { plugins: [await routerSu('/')] },
@@ -420,6 +420,18 @@ describe('AppLayout (R3)', () => {
     for (const classe of ['px-4', 'pt-3', 'lg:px-12', 'lg:pt-6', 'lg:pb-(--content-pad-bottom)']) {
       expect(esterno?.classList.contains(classe)).toBe(true)
     }
+
+    // Sotto lg: barra + 36px dalla scala + safe area.
+    const classiEsterno = [...(esterno?.classList ?? [])]
+    const fondo = classiEsterno.find((c) => c.startsWith('pb-[calc('))
+    expect(fondo).toBeDefined()
+    expect(fondo).toContain('var(--bottom-bar-height)')
+    expect(fondo).toContain('--spacing(9)')
+    expect(fondo).toContain('env(safe-area-inset-bottom)')
+    expect(classiEsterno).not.toContain('pb-[120px]')
+    expect(classiEsterno).not.toContain(
+      'pb-[calc(var(--bottom-bar-height)+env(safe-area-inset-bottom))]',
+    )
   })
 })
 

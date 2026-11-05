@@ -14,7 +14,7 @@ const heading = computed(() => showcaseBlock(props.id))
   <div class="flex flex-col gap-3">
     <h3
       :id="id"
-      class="flex scroll-mt-6 items-baseline gap-2 text-xs font-semibold text-muted-foreground"
+      class="flex scroll-mt-[calc(var(--header-mobile-height)+env(safe-area-inset-top)+(--spacing(6)))] lg:scroll-mt-[calc(var(--topbar-height)+(--spacing(6)))] items-baseline gap-2 text-xs font-semibold text-muted-foreground"
     >
       <span class="text-subtle-foreground">{{ heading.number }}</span>
       {{ heading.title }}
