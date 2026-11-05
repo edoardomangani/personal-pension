@@ -119,12 +119,37 @@ describe('vetrina /dev/ui (R8)', () => {
     const wrapper = mount(App, { global: { plugins: [router, createPinia()] } })
     await flushPromises()
 
-    expect(wrapper.findAll('h1').map((h) => h.text())).toContain('Design system')
     expect(wrapper.find('[data-specimen="SHL-bottombar-mobile"]').exists()).toBe(true)
     expect(wrapper.find('[data-specimen="BTN-new-movement-mobile"]').exists()).toBe(true)
     expect(wrapper.find('[data-specimen="FRM-rows-desktop"]').exists()).toBe(true)
     expect(wrapper.find('[data-specimen="MOV-list-desktop"]').exists()).toBe(true)
     wrapper.unmount()
     expect(disconnect).toHaveBeenCalled()
+  }, 20_000)
+  it('un solo titolo e nessun margine proprio (DS-03-C2 R8 R9)', async () => {
+    vi.stubGlobal(
+      'IntersectionObserver',
+      class {
+        observe = vi.fn()
+        disconnect = vi.fn()
+      },
+    )
+    await vaiA('/dev/ui')
+    const wrapper = mount(App, { global: { plugins: [router, createPinia()] } })
+    await flushPromises()
+
+    // Gli h1 dentro i campioni della shell sono titoli di altre pagine finte.
+    const h1 = wrapper.findAll('h1')
+    expect(h1.map((h) => h.text())).not.toContain('Design system')
+    const titoli = h1.filter((h) => !h.element.closest('[data-specimen]')).map((h) => h.text())
+    expect(titoli.length).toBeGreaterThan(0)
+    expect(titoli.every((t) => t === 'Vetrina dei componenti')).toBe(true)
+
+    const sezioni = wrapper.find('nav[aria-label="Indice della vetrina"] + div')
+    expect(sezioni.exists()).toBe(true)
+    expect(sezioni.classes()).not.toContain('px-4')
+    expect(sezioni.classes()).not.toContain('py-8')
+    expect(sezioni.classes()).toContain('lg:pl-10')
+    wrapper.unmount()
   }, 20_000)
 })

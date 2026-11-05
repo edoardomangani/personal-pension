@@ -8,7 +8,7 @@ const { titolo } = useShellHeading()
 </script>
 
 <template>
-  <header class="sticky top-0 isolate z-30 flex h-16 items-center gap-4 px-12">
+  <header class="sticky top-0 isolate z-30 flex h-(--topbar-height) items-center gap-4 px-12">
     <div
       aria-hidden="true"
       class="pointer-events-none absolute inset-x-0 top-0 -bottom-(--glass-fade) -z-10 glass-header"

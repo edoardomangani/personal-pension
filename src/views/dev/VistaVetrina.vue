@@ -73,7 +73,7 @@ onBeforeUnmount(() => observer?.disconnect())
   <div class="flex">
     <nav
       aria-label="Indice della vetrina"
-      class="sticky top-0 hidden h-dvh w-56 shrink-0 overflow-y-auto border-r-[0.75px] border-divider px-3 py-6 lg:block"
+      class="sticky top-(--topbar-height) hidden h-[calc(100dvh-var(--topbar-height)-var(--spacing)*12)] w-56 shrink-0 overflow-y-auto border-r-[0.75px] border-divider px-3 py-6 lg:block"
     >
       <p class="px-3 pb-3 text-xs font-semibold text-subtle-foreground">Sezioni</p>
       <ul class="flex flex-col gap-0.5">
@@ -110,10 +110,9 @@ onBeforeUnmount(() => observer?.disconnect())
       </ul>
     </nav>
 
-    <div class="flex w-full min-w-0 flex-col gap-16 px-4 py-8 lg:px-10">
+    <div class="flex w-full min-w-0 flex-col gap-16 lg:pl-10">
       <header class="flex flex-col gap-6 border-b-[0.75px] border-divider pb-8">
         <div class="flex flex-col gap-2">
-          <h1 class="text-2xl leading-[1.15] font-medium tracking-[-0.02em]">Design system</h1>
           <p class="max-w-2xl text-sm text-muted-foreground">
             Token, componenti e shell come li usa l'app. Ogni esempio ha un codice da citare nelle
             segnalazioni.

@@ -420,3 +420,26 @@ describe('DESIGN.md della shell (DS-03-C2 R10)', () => {
     expect(piede).toContain('sidebar-accent')
   })
 })
+
+describe('altezza della barra in alto (DS-03-C2 R7)', () => {
+  const RADICE = fileURLToPath(new URL('../../../', import.meta.url))
+
+  it(':root definisce --topbar-height a 64px e AppTopBar lo usa', () => {
+    const css = readFileSync(`${RADICE}src/styles/app.css`, 'utf8')
+    const radice = /:root\s*\{([\s\S]*?)\n\}/.exec(css)?.[1] ?? ''
+    expect(radice).toMatch(/--topbar-height:\s*64px;/)
+
+    const barra = readFileSync(`${RADICE}src/components/AppTopBar.vue`, 'utf8')
+    expect(barra).toContain('h-(--topbar-height)')
+    expect(barra).not.toMatch(/\bh-16\b/)
+  })
+
+  it("l'indice usa il token della barra (DS-03-C2 R7)", () => {
+    const vista = readFileSync(`${RADICE}src/views/dev/VistaVetrina.vue`, 'utf8')
+    const indice = /<nav\s[^>]*aria-label="Indice della vetrina"[^>]*>/.exec(vista)?.[0] ?? ''
+    expect(indice).toContain('top-(--topbar-height)')
+    expect(indice).toContain('var(--topbar-height)')
+    expect(indice).not.toMatch(/\btop-0\b/)
+    expect(indice).not.toMatch(/\bh-dvh\b/)
+  })
+})
