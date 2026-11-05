@@ -16,14 +16,14 @@ const { kind, title } = defineProps<{
       <div
         v-for="index in 5"
         :key="index"
-        class="h-24 rounded-[24px] border-[0.75px] border-border bg-card"
+        class="h-24 rounded-card-mobile border-[0.75px] border-border bg-card"
       />
     </div>
     <div class="absolute inset-0 bg-overlay" />
     <div
       role="dialog"
       :aria-label="title"
-      class="absolute inset-x-0 bottom-0 flex max-h-[90%] flex-col rounded-t-[24px] sheet-surface pb-6"
+      class="absolute inset-x-0 bottom-0 flex max-h-9/10 flex-col rounded-t-card-mobile sheet-surface pb-6"
     >
       <div class="mx-auto mt-3 h-1 w-10 shrink-0 rounded-full bg-handle" />
       <ResponsiveSheetHeader>

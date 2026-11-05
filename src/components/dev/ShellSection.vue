@@ -78,7 +78,7 @@ const vociMobiliCampione = computed(() => conHomeAttiva(vociMobili.value))
         <Specimen code="SHL-sidebar-desktop" note="232 · voci 40 · piede 48">
           <RottaCampione percorso="/">
             <div class="overflow-hidden rounded-2xl border-[0.75px] border-border">
-              <AppSidebar class="static h-[560px]" />
+              <AppSidebar class="static h-140" />
             </div>
           </RottaCampione>
         </Specimen>
@@ -98,7 +98,7 @@ const vociMobiliCampione = computed(() => conHomeAttiva(vociMobili.value))
           </div>
         </Specimen>
         <Specimen code="SHL-tabs-mobile" note="10 / 600">
-          <div class="flex w-[300px]">
+          <div class="flex w-75">
             <AppBottomBarItem v-for="voce in vociMobiliCampione" :key="voce.chiave" :voce="voce" />
           </div>
         </Specimen>
@@ -113,18 +113,18 @@ const vociMobiliCampione = computed(() => conHomeAttiva(vociMobili.value))
       <div class="flex flex-col gap-6">
         <Specimen code="SHL-topbar-desktop" note="Home">
           <RottaCampione percorso="/">
-            <AppTopBar class="w-[720px]" />
+            <AppTopBar class="w-180" />
           </RottaCampione>
         </Specimen>
         <Specimen code="SHL-topbar-desktop-senza-registra" note="Futuro">
           <RottaCampione percorso="/futuro">
-            <AppTopBar class="w-[720px]" />
+            <AppTopBar class="w-180" />
           </RottaCampione>
         </Specimen>
         <Specimen code="SHL-topbar-desktop-azione" note="Account, nome modificato">
           <RottaCampione percorso="/account">
             <AzioneTestataCampione>
-              <AppTopBar class="w-[720px]" />
+              <AppTopBar class="w-180" />
             </AzioneTestataCampione>
           </RottaCampione>
         </Specimen>
@@ -229,10 +229,8 @@ const vociMobiliCampione = computed(() => conHomeAttiva(vociMobili.value))
         <RottaCampione percorso="/">
           <PhoneFrame>
             <AppMobileHeader />
-            <div
-              class="flex flex-col gap-3 px-4 pt-7 pb-[calc(var(--bottom-bar-height)+(--spacing(9)))]"
-            >
-              <Skeleton v-for="index in 8" :key="index" class="h-28 rounded-[24px]" />
+            <div class="flex flex-col gap-3 px-4 pt-7 pb-(--bottom-bar-clearance)">
+              <Skeleton v-for="index in 8" :key="index" class="h-28 rounded-card-mobile" />
             </div>
             <AppBottomBar />
           </PhoneFrame>
@@ -250,7 +248,7 @@ const vociMobiliCampione = computed(() => conHomeAttiva(vociMobili.value))
           <PhoneFrame>
             <AppMobileHeader />
             <!-- Il padding sta nella shell, non nella vista: nella cornice lo rimette l'involucro. -->
-            <div class="px-4 pt-3 pb-[calc(var(--bottom-bar-height)+(--spacing(9)))]">
+            <div class="px-4 pt-3 pb-(--bottom-bar-clearance)">
               <VistaProfilo />
             </div>
             <AppBottomBar />

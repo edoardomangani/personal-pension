@@ -496,7 +496,8 @@ describe('testata del telefono (DS-03-C2-C2 R3)', () => {
   it('AppMobileHeader somma ancora a 68px', () => {
     const testata = readFileSync(`${RADICE}src/components/AppMobileHeader.vue`, 'utf8')
     const header = /<header\s[^>]*>/.exec(testata)?.[0] ?? ''
-    expect(header).toContain('pt-[calc(12px+env(safe-area-inset-top))]')
+    expect(header).toContain('pt-(--header-mobile-pad-top)')
+    expect(header).not.toContain('-[')
     expect(header).toMatch(/\bpb-3\b/)
     expect(testata).toMatch(/<div v-else class="[^"]*\bmin-h-11\b/)
   })
@@ -531,5 +532,138 @@ describe('scarto dello scroll della vetrina (DS-03-C2-C2 R4, R6)', () => {
     const vaiA = /function vaiA\([^)]*\)[^{]*\{([\s\S]*?)\n\}/.exec(vista)?.[1] ?? ''
     expect(vaiA).toContain('scrollIntoView()')
     expect(vista).not.toMatch(/\bscroll(To|By)\(/)
+  })
+})
+
+describe('token DS-04 R5', () => {
+  const RADICE = fileURLToPath(new URL('../../../', import.meta.url))
+  const css = readFileSync(`${RADICE}src/styles/app.css`, 'utf8')
+  const tema = /@theme inline\s*\{([\s\S]*?)\n\}/.exec(css)?.[1] ?? ''
+  const radice = /:root\s*\{([\s\S]*?)\n\}/.exec(css)?.[1] ?? ''
+
+  it('@theme inline ha il raggio della card sul telefono e le interlinee', () => {
+    expect(tema).toMatch(/--radius-card-mobile:\s*24px;/)
+    expect(tema).toMatch(/--leading-row:\s*1\.35;/)
+    expect(tema).toMatch(/--leading-display:\s*1\.15;/)
+    expect(tema).toMatch(/--leading-figure:\s*1\.1;/)
+  })
+
+  it(':root ha i padding della safe area, fuori da @theme inline', () => {
+    expect(radice).toMatch(/--header-mobile-pad-top:\s*calc\(12px \+ env\(safe-area-inset-top\)\);/)
+    expect(radice).toMatch(/--bottom-bar-pad-bottom:\s*max\(24px, env\(safe-area-inset-bottom\)\);/)
+    expect(radice).toMatch(
+      /--bottom-bar-clearance:\s*calc\(var\(--bottom-bar-height\) \+ var\(--spacing\) \* 9\);/,
+    )
+    expect(radice).toMatch(
+      /--content-pad-bottom-mobile:\s*calc\(var\(--bottom-bar-clearance\) \+ env\(safe-area-inset-bottom\)\);/,
+    )
+    for (const nome of ['pad-top', 'pad-bottom', 'clearance']) expect(tema).not.toContain(nome)
+  })
+})
+
+describe('icone delle sezioni nella vetrina (DS-04 R4)', () => {
+  const testo = sorgente('FoundationsSection.vue')
+
+  it('la lista icons ha le icone delle sezioni di oggi, in ordine', () => {
+    const corpo = /const icons = \[([\s\S]*?)\]/.exec(testo)?.[1] ?? ''
+    expect(corpo.match(/Ph\w+/g)).toEqual([
+      'PhSquaresFour',
+      'PhCoins',
+      'PhPiggyBank',
+      'PhMountains',
+      'PhCalculator',
+      'PhSlidersHorizontal',
+      'PhPlus',
+    ])
+  })
+
+  it('non importa più le icone vecchie e tiene PhTrendUp solo per la crescita', () => {
+    const importate =
+      /import \{([^}]*)\} from '@phosphor-icons\/vue'/.exec(testo)?.[1]?.match(/Ph\w+/g) ?? []
+    expect(importate).not.toEqual([])
+    for (const vecchia of ['PhHouse', 'PhListBullets', 'PhChartLineUp', 'PhReceipt', 'PhGearSix']) {
+      expect(importate).not.toContain(vecchia)
+    }
+    expect(testo.match(/PhTrendUp\b/g)).toHaveLength(2)
+    expect(testo).toMatch(/code="ACC-income-tile"[\s\S]*?<PhTrendUp /)
+  })
+})
+
+// Utility con valore arbitrario numerico o calcolato (`-[3…`, `-[#…`, `-[calc(`, `-[max(`, `-[var(`).
+function valoriArbitrari(testo: string): string[] {
+  const trovati = testo.matchAll(
+    /(?<=^|[\s"'`])[^\s"'`]*?-\[(?:\d|#|calc\(|max\(|var\()[^\]\s]*\]/g,
+  )
+  // Il filo da 0,75px del DS resta fuori perimetro (DS-04, voce a parte se serve un token).
+  const filo = /^(?:[^\s:]+:)*border(?:-[trblxy])?-\[0\.75px\]$/
+  return [...trovati].map((m) => m[0]).filter((classe) => !filo.test(classe))
+}
+
+describe('niente valori arbitrari nella vetrina e nella shell (DS-04 R6)', () => {
+  const COMPONENTI = fileURLToPath(new URL('..', import.meta.url))
+  const FILE_R5 = [
+    `${DEV}FoundationsSection.vue`,
+    `${DEV}MovementRowSample.vue`,
+    `${DEV}MovementDaySample.vue`,
+    `${DEV}DrawerPreview.vue`,
+    `${DEV}ShellSection.vue`,
+    `${COMPONENTI}AppMobileHeader.vue`,
+    `${COMPONENTI}AppBottomBar.vue`,
+    `${COMPONENTI}AppLayout.vue`,
+  ]
+
+  it("l'estrattore prende misure e calcoli, lascia il filo, tracking e le varianti", () => {
+    const esempio = `<div class="size-[18px] lg:min-h-[52px] rounded-t-[24px] bg-[#0e0e0d]
+      pt-[calc(12px+env(safe-area-inset-top))] pb-[max(24px,env(safe-area-inset-bottom))]
+      w-[var(--x)] [&>svg]:size-[18px] max-h-[90%] leading-[1.35]" />
+<div class="border-[0.75px] border-b-[0.75px] hover:border-[0.75px] border-[1px] tracking-[-0.02em]
+  [&>svg]:size-4.5 pb-(--bottom-bar-clearance) bg-[repeating-linear-gradient(90deg,red_0_4px)]
+  rounded-card-mobile" :class="[rowClass, specimen ? 'w-72' : 'px-4']" />`
+    expect(valoriArbitrari(esempio)).toEqual([
+      'size-[18px]',
+      'lg:min-h-[52px]',
+      'rounded-t-[24px]',
+      'bg-[#0e0e0d]',
+      'pt-[calc(12px+env(safe-area-inset-top))]',
+      'pb-[max(24px,env(safe-area-inset-bottom))]',
+      'w-[var(--x)]',
+      '[&>svg]:size-[18px]',
+      'max-h-[90%]',
+      'leading-[1.35]',
+      'border-[1px]',
+    ])
+  })
+
+  it('i file di R5 esistono e non hanno valori arbitrari', () => {
+    for (const file of FILE_R5) expect(existsSync(file), basename(file)).toBe(true)
+    const trovati = FILE_R5.flatMap((f) =>
+      valoriArbitrari(readFileSync(f, 'utf8')).map((c) => `${basename(f)}: ${c}`),
+    )
+    expect(trovati).toEqual([])
+  })
+
+  it('la card sul telefono usa il token da 24px, anche nella tabella dei raggi', () => {
+    expect(sorgente('FoundationsSection.vue')).toContain(
+      "{ code: 'card-mobile', radius: 'rounded-card-mobile', value: '24px' }",
+    )
+    expect(sorgente('MovementDaySample.vue')).toContain("'rounded-card-mobile'")
+    expect(sorgente('DrawerPreview.vue')).toContain('rounded-t-card-mobile')
+  })
+})
+
+describe('raggi dei tile in DESIGN.md (DS-04 R3)', () => {
+  const RADICE = fileURLToPath(new URL('../../../', import.meta.url))
+  const design = readFileSync(`${RADICE}DESIGN.md`, 'utf8')
+  const forme = /^## Shapes\n([\s\S]*?)^## /m.exec(design)?.[1] ?? ''
+
+  it('§ Shapes dà ai tile 12px da 36 e 10px da 32, senza «8px per i tile icona»', () => {
+    expect(forme).not.toBe('')
+    expect(design).not.toContain('8px per i tile icona')
+    expect(forme).toMatch(/12px \(`rounded-tile`[^)]*\) per i tile da 36px/)
+    expect(forme).toMatch(/10px \(`rounded-lg`[^)]*\) per quelli da 32px/)
+  })
+
+  it('la card su telefono cita il token da 24px', () => {
+    expect(forme).toMatch(/24px \(`rounded-card-mobile`/)
   })
 })

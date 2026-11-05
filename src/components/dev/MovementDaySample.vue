@@ -13,7 +13,7 @@ const { rows, density, day, total } = defineProps<{
 }>()
 
 // Card del giorno: 22px su desktop, 24px su mobile; le misure delle righe stanno in MovementRowSample.
-const cardRadius = computed(() => (density === 'mobile' ? 'rounded-[24px]' : 'rounded-3xl'))
+const cardRadius = computed(() => (density === 'mobile' ? 'rounded-card-mobile' : 'rounded-3xl'))
 </script>
 
 <template>

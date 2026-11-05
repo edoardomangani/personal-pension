@@ -337,7 +337,7 @@ La profondità è vetro, non ombra. Le superfici sono strati di bianco velato so
 
 ## Shapes
 
-I controlli sono pill: bottoni, input, badge, segmenti. Il resto cresce col contenitore: 6px per piccoli contenitori, 8px per i tile icona, 12px (`rounded-tile`, `--radius-tile`) per i tile da 36px delle righe di «Profilo», 10px (la base `--radius`) per voci di menu e sidebar, 14px per tabelle e tooltip ricchi, 18px per i dialog, 22px per le card su desktop e lo Sheet dal basso, 24px per le card su telefono. Bordi sempre da un filo (0,75px).
+I controlli sono pill: bottoni, input, badge, segmenti. Il resto cresce col contenitore: 6px per piccoli contenitori; i tile con icona in proporzione alla misura, 12px (`rounded-tile`, `--radius-tile`) per i tile da 36px (`size-9`: righe su telefono, «Profilo», tile della crescita) e 10px (`rounded-lg`, la base `--radius`) per quelli da 32px (`size-8`: righe su desktop); 10px anche per voci di menu e sidebar, 14px per tabelle e tooltip ricchi, 18px per i dialog, 22px per le card su desktop e lo Sheet dal basso, 24px (`rounded-card-mobile`, `--radius-card-mobile`) per le card su telefono. Bordi sempre da un filo (0,75px).
 
 ## Components
 

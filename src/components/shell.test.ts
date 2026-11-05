@@ -72,7 +72,7 @@ function campioneLogo(sorgente: string): string | null {
 }
 
 // Forma di AppLayout senza safe area: nella cornice non c'è.
-const PADDING_SOTTO_CORNICE = 'pb-[calc(var(--bottom-bar-height)+(--spacing(9)))]'
+const PADDING_SOTTO_CORNICE = 'pb-(--bottom-bar-clearance)'
 
 describe('NewMovementButton (R6)', () => {
   it('il + tondo è aria-disabled con aria-label «Nuovo movimento»', () => {
@@ -319,6 +319,29 @@ describe('AppSidebar (R5, R13)', () => {
   })
 })
 
+describe('safe area di testata e barra dai token (DS-04 R5)', () => {
+  it('la testata mobile ha pt-(--header-mobile-pad-top) e pb-3', async () => {
+    const header = mount(AppMobileHeader, {
+      global: { plugins: [await routerSu('/valori')] },
+    }).get('header')
+    expect(header.classes()).toEqual(
+      expect.arrayContaining(['px-4', 'pt-(--header-mobile-pad-top)', 'pb-3']),
+    )
+    expect(header.classes().some((c) => c.includes('-['))).toBe(false)
+  })
+
+  it('la barra in basso ha px-1.5 pt-1 pb-(--bottom-bar-pad-bottom)', async () => {
+    const wrapper = mount(conTooltip(AppBottomBar), {
+      global: { plugins: [await routerSu('/valori')] },
+    })
+    const nav = wrapper.get('nav')
+    expect(nav.classes()).toEqual(
+      expect.arrayContaining(['px-1.5', 'pt-1', 'pb-(--bottom-bar-pad-bottom)']),
+    )
+    expect(nav.classes().some((c) => c.includes('-['))).toBe(false)
+  })
+})
+
 describe('testata mobile (R5-R7)', () => {
   function montaTestata(router: Router) {
     return mount(AppMobileHeader, { global: { plugins: [router] } })
@@ -458,17 +481,10 @@ describe('AppLayout (R3)', () => {
       expect(esterno?.classList.contains(classe)).toBe(true)
     }
 
-    // Sotto lg: barra + 36px dalla scala + safe area.
+    // Sotto lg: barra + 36px dalla scala + safe area, dalla variabile di app.css (DS-04 R5).
     const classiEsterno = [...(esterno?.classList ?? [])]
-    const fondo = classiEsterno.find((c) => c.startsWith('pb-[calc('))
-    expect(fondo).toBeDefined()
-    expect(fondo).toContain('var(--bottom-bar-height)')
-    expect(fondo).toContain('--spacing(9)')
-    expect(fondo).toContain('env(safe-area-inset-bottom)')
-    expect(classiEsterno).not.toContain('pb-[120px]')
-    expect(classiEsterno).not.toContain(
-      'pb-[calc(var(--bottom-bar-height)+env(safe-area-inset-bottom))]',
-    )
+    expect(classiEsterno).toContain('pb-(--content-pad-bottom-mobile)')
+    expect(classiEsterno.some((c) => c.includes('-['))).toBe(false)
   })
 })
 

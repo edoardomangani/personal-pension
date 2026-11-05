@@ -24,11 +24,11 @@ const {
 }>()
 
 // Desktop: righe 52px e tile 32px; mobile: righe 56px e tile 36px.
-const rowClass = computed(() => (density === 'mobile' ? 'min-h-14' : 'min-h-[52px]'))
+const rowClass = computed(() => (density === 'mobile' ? 'min-h-14' : 'min-h-13'))
 const tileClass = computed(() =>
   density === 'mobile'
-    ? 'size-9 rounded-xl [&>svg]:size-[18px]'
-    : 'size-8 rounded-[10px] [&>svg]:size-4',
+    ? 'size-9 rounded-tile [&>svg]:size-4.5'
+    : 'size-8 rounded-lg [&>svg]:size-4',
 )
 </script>
 
@@ -42,7 +42,7 @@ const tileClass = computed(() =>
       <component :is="row.icon" />
     </span>
     <span v-if="specimen" class="flex-1 truncate text-sm font-medium">{{ row.label }}</span>
-    <span v-else class="flex min-w-0 flex-1 flex-col leading-[1.35]">
+    <span v-else class="flex min-w-0 flex-1 flex-col leading-row">
       <span class="truncate text-sm font-medium">{{ row.label }}</span>
       <span class="truncate text-xs text-subtle-foreground">{{ row.meta }}</span>
     </span>

@@ -1,13 +1,15 @@
 import { enableAutoUnmount, mount, type DOMWrapper } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { defineComponent, h } from 'vue'
+import { defineComponent, h, markRaw } from 'vue'
 import { createMemoryHistory, createRouter, type Router } from 'vue-router'
 import AppMobileHeader from '@/components/AppMobileHeader.vue'
 import { SidebarProvider } from '@/components/ui/sidebar'
 import { rotte } from '@/router'
 import DrawerPreview from './DrawerPreview.vue'
 import FormsSection from './FormsSection.vue'
+import FoundationsSection from './FoundationsSection.vue'
+import MovementRowSample, { type MovementSampleRow } from './MovementRowSample.vue'
 import MovementDaySample from './MovementDaySample.vue'
 import RottaCampione from './RottaCampione.vue'
 import ShellSection from './ShellSection.vue'
@@ -52,6 +54,61 @@ describe('MovementDaySample (R6)', () => {
       'div > div',
     )
     expect(testata.findAll('span').map((s) => s.text())).toEqual(['17/07/2026', '+519,95 €'])
+  })
+})
+
+describe('raggi dei tile (DS-04 R1)', () => {
+  const riga: MovementSampleRow = {
+    code: 'prova',
+    label: 'TFR di giugno',
+    meta: 'Busta paga',
+    amount: '+100,00 €',
+    icon: markRaw(defineComponent({ render: () => h('svg') })),
+    tile: 'bg-secondary',
+    ink: 'text-income',
+  }
+
+  function tile(density: 'mobile' | 'desktop'): string[] {
+    return mount(MovementRowSample, { props: { row: riga, density } })
+      .get('span.grid')
+      .classes()
+  }
+
+  it('sul telefono il tile da 36 ha rounded-tile e icona da 18', () => {
+    const classi = tile('mobile')
+    expect(classi).toEqual(expect.arrayContaining(['size-9', 'rounded-tile', '[&>svg]:size-4.5']))
+    expect(classi).not.toContain('rounded-xl')
+  })
+
+  it('su desktop il tile da 32 ha rounded-lg', () => {
+    const classi = tile('desktop')
+    expect(classi).toEqual(expect.arrayContaining(['size-8', 'rounded-lg']))
+    expect(classi.some((c) => c.startsWith('rounded-['))).toBe(false)
+  })
+
+  it('le righe restano alte 56 e 52', () => {
+    expect(
+      mount(MovementRowSample, { props: { row: riga, density: 'mobile' } }).classes(),
+    ).toContain('min-h-14')
+    expect(
+      mount(MovementRowSample, { props: { row: riga, density: 'desktop' } }).classes(),
+    ).toContain('min-h-13')
+  })
+
+  it('il tile della crescita ha rounded-tile e icona size-4.5', () => {
+    const campione = mount(FoundationsSection).get('[data-specimen="ACC-income-tile"]')
+    const quadro = campione.get('span.grid')
+    expect(quadro.classes()).toEqual(expect.arrayContaining(['size-9', 'rounded-tile']))
+    expect(quadro.classes()).not.toContain('rounded-xl')
+    expect(quadro.get('svg').classes()).toContain('size-4.5')
+  })
+
+  it('lo skeleton della riga ha il tile da 36 con rounded-tile', () => {
+    const router = createRouter({ history: createMemoryHistory(), routes: rotte })
+    const wrapper = mount(StructureSection, { global: { plugins: [router] } })
+    const quadro = wrapper.get('[data-specimen="IND-skeleton-row"] .size-9')
+    expect(quadro.classes()).toContain('rounded-tile')
+    expect(quadro.classes()).not.toContain('rounded-xl')
   })
 })
 

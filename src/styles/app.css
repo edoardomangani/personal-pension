@@ -43,6 +43,13 @@
   --radius-3xl: 22px;
   /* Tile 36px delle righe di «Profilo». */
   --radius-tile: 12px;
+  /* Card sul telefono (DESIGN.md, rounded.card-mobile). */
+  --radius-card-mobile: 24px;
+
+  /* Interlinee dei ruoli di DESIGN.md § Typography che la scala di Tailwind non ha. */
+  --leading-row: 1.35;
+  --leading-display: 1.15;
+  --leading-figure: 1.1;
 
   --shadow-glass: inset 0 -1px 2px rgba(255, 255, 255, 0.06);
   --shadow-popover: 0 24px 60px rgba(0, 0, 0, 0.5);
@@ -195,6 +202,11 @@
   --touch-min: 44px;
   --glass-fade: 24px;
   --bottom-bar-height: 84px;
+  /* Safe area della shell sul telefono: testata 12 + 44 + 12, barra con 24px sotto. */
+  --header-mobile-pad-top: calc(12px + env(safe-area-inset-top));
+  --bottom-bar-pad-bottom: max(24px, env(safe-area-inset-bottom));
+  --bottom-bar-clearance: calc(var(--bottom-bar-height) + var(--spacing) * 9);
+  --content-pad-bottom-mobile: calc(var(--bottom-bar-clearance) + env(safe-area-inset-bottom));
 }
 
 @layer base {

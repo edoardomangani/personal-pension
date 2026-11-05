@@ -14,7 +14,7 @@ const vociDestra = computed(() => vociMobili.value.slice(2))
 <template>
   <nav
     aria-label="Navigazione principale"
-    class="fixed inset-x-0 bottom-0 isolate z-40 px-1.5 pt-1 pb-[max(24px,env(safe-area-inset-bottom))]"
+    class="fixed inset-x-0 bottom-0 isolate z-40 px-1.5 pt-1 pb-(--bottom-bar-pad-bottom)"
   >
     <div
       aria-hidden="true"

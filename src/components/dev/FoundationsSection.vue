@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import {
-  PhChartLineUp,
-  PhGearSix,
+  PhCalculator,
+  PhCoins,
   PhHourglassMedium,
-  PhHouse,
-  PhListBullets,
+  PhMountains,
+  PhPiggyBank,
   PhPlus,
-  PhReceipt,
+  PhSlidersHorizontal,
+  PhSquaresFour,
   PhTrendUp,
 } from '@phosphor-icons/vue'
 import ShowcaseBlock from '@/components/dev/ShowcaseBlock.vue'
@@ -47,7 +48,7 @@ const radii = [
   { code: 'xl', radius: 'rounded-xl', value: '14px' },
   { code: '2xl', radius: 'rounded-2xl', value: '18px' },
   { code: '3xl', radius: 'rounded-3xl', value: '22px' },
-  { code: 'card-mobile', radius: 'rounded-[24px]', value: '24px' },
+  { code: 'card-mobile', radius: 'rounded-card-mobile', value: '24px' },
   { code: 'full', radius: 'rounded-full', value: '999px' },
 ]
 
@@ -55,7 +56,7 @@ const radii = [
 const typeScale = [
   {
     code: 'display',
-    type: 'text-2xl leading-[1.15] font-medium tracking-[-0.02em]',
+    type: 'text-2xl leading-display font-medium tracking-[-0.02em]',
     spec: 'text-2xl · 24 / 500',
   },
   { code: 'title', type: 'text-xl font-semibold tracking-[-0.015em]', spec: 'text-xl · 20 / 600' },
@@ -73,7 +74,16 @@ const typeScale = [
 
 const iconWeights = ['regular', 'fill', 'bold'] as const
 
-const icons = [PhHouse, PhListBullets, PhTrendUp, PhChartLineUp, PhReceipt, PhGearSix, PhPlus]
+// Le icone delle sezioni dell'app, più il «+».
+const icons = [
+  PhSquaresFour,
+  PhCoins,
+  PhPiggyBank,
+  PhMountains,
+  PhCalculator,
+  PhSlidersHorizontal,
+  PhPlus,
+]
 
 const spacings = [
   { code: '1', bar: 'w-1', value: '4px' },
@@ -131,8 +141,8 @@ const spese = formatoEuro(-1500)
           <span class="text-sm font-semibold text-income">+{{ crescita }}</span>
         </Specimen>
         <Specimen code="ACC-income-tile" note="Tile della crescita">
-          <span class="grid size-9 place-items-center rounded-xl bg-brand-soft text-brand">
-            <PhTrendUp class="size-[18px]" />
+          <span class="grid size-9 place-items-center rounded-tile bg-brand-soft text-brand">
+            <PhTrendUp class="size-4.5" />
           </span>
         </Specimen>
         <Specimen code="ACC-forecast" note="Cifre positive: il versato">
@@ -161,7 +171,7 @@ const spese = formatoEuro(-1500)
         </Specimen>
         <Specimen code="ACC-transfer-amount" note="Il TFR da versare non è lime">
           <span class="flex items-center gap-2 text-sm font-semibold text-subtle-foreground">
-            <PhHourglassMedium class="size-[18px]" />
+            <PhHourglassMedium class="size-4.5" />
             {{ daVersare }}
           </span>
         </Specimen>
@@ -254,7 +264,7 @@ const spese = formatoEuro(-1500)
           </p>
         </Specimen>
         <Specimen code="AMT-account" note="20 / 14">
-          <span class="text-xl leading-[1.1] font-semibold tracking-[-0.03em]"
+          <span class="text-xl leading-figure font-semibold tracking-[-0.03em]"
             >{{ versatoIntero
             }}<span class="text-sm tracking-normal text-subtle-foreground"
               >,{{ versatoDecimali }}</span

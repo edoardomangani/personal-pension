@@ -25,7 +25,7 @@ const giorno = computed(() => formatoGiorno(archivio.oggi))
 </script>
 
 <template>
-  <header class="sticky top-0 isolate z-30 px-4 pt-[calc(12px+env(safe-area-inset-top))] pb-3">
+  <header class="sticky top-0 isolate z-30 px-4 pt-(--header-mobile-pad-top) pb-3">
     <div
       aria-hidden="true"
       class="pointer-events-none absolute inset-x-0 top-0 -bottom-(--glass-fade) -z-10 glass-header"
