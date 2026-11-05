@@ -155,18 +155,27 @@ export function urlApp(percorso: string): string {
   return `${window.location.origin}${import.meta.env.BASE_URL}#${percorso}`
 }
 
+/** I parametri con questo prefisso li legge l'SDK di Neon Auth dalla search: lì restano. */
+export const PREFISSO_NEON = 'neon_'
+
 /**
- * Better Auth mette i suoi parametri prima del `#`: li sposta nella query del frammento.
- * `null` se la search è vuota; sui nomi doppi vince il frammento.
+ * Better Auth mette i suoi parametri prima del `#`: li sposta nella query del frammento,
+ * tranne quelli `neon_`. `null` se non c'è niente da spostare; sui nomi doppi vince il frammento.
  */
 export function indirizzoConSearchNelFrammento(
   pathname: string,
   search: string,
   hash: string,
 ): string | null {
-  const daSearch = new URLSearchParams(search)
+  const resta = new URLSearchParams()
+  const daSearch = new URLSearchParams()
+  for (const [nome, valore] of new URLSearchParams(search)) {
+    if (nome.startsWith(PREFISSO_NEON)) resta.append(nome, valore)
+    else daSearch.append(nome, valore)
+  }
   if (daSearch.toString() === '') return null
 
+  const searchRestante = resta.toString() === '' ? '' : `?${resta.toString()}`
   const frammento = hash.startsWith('#') ? hash.slice(1) : hash
   const inizioQuery = frammento.indexOf('?')
   const percorso = (inizioQuery === -1 ? frammento : frammento.slice(0, inizioQuery)) || '/'
@@ -175,7 +184,7 @@ export function indirizzoConSearchNelFrammento(
   for (const [nome, valore] of daSearch) {
     if (!nomiDelFrammento.has(nome)) query.append(nome, valore)
   }
-  return `${pathname}#${percorso}?${query.toString()}`
+  return `${pathname}${searchRestante}#${percorso}?${query.toString()}`
 }
 
 /** R9. Esportato a parte: i test lo montano su un router in memoria. */

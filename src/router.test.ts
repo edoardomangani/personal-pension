@@ -289,7 +289,7 @@ describe('rottaDiRitorno e urlApp (R10)', () => {
   })
 })
 
-describe('search nel frammento (ACC-01-C1 R1-R3, R5)', () => {
+describe('search nel frammento (ACC-01-C1 R1-R3, R5; ACC-01-C1-C1 R1-R3, R5)', () => {
   const BASE = '/personal-pension/'
 
   it.each([
@@ -307,6 +307,27 @@ describe('search nel frammento (ACC-01-C1 R1-R3, R5)', () => {
     ['?token', '#/nuova-password', '/personal-pension/#/nuova-password?token='],
     ['?k=1&k=2', '#/accedi', '/personal-pension/#/accedi?k=1&k=2'],
     ['?error=x', '#accedi', '/personal-pension/#accedi?error=x'],
+    ['?neon_auth_session_verifier=V', '#/', null],
+    ['?neon_popup=true&neon_popup_callback=X', '#/', null],
+    ['?neon_futuro=1', '#/accedi', null],
+    [
+      '?neon_auth_session_verifier=V&error=x',
+      '#/accedi',
+      '/personal-pension/?neon_auth_session_verifier=V#/accedi?error=x',
+    ],
+    [
+      '?error=x&neon_auth_session_verifier=V',
+      '#/accedi',
+      '/personal-pension/?neon_auth_session_verifier=V#/accedi?error=x',
+    ],
+    [
+      '?neon_a=1&token=T&neon_b=2',
+      '#/nuova-password',
+      '/personal-pension/?neon_a=1&neon_b=2#/nuova-password?token=T',
+    ],
+    ['?Neon_x=1', '#/accedi', '/personal-pension/#/accedi?Neon_x=1'],
+    ['?neon=1', '#/accedi', '/personal-pension/#/accedi?neon=1'],
+    ['?token=T', '#/nuova-password', '/personal-pension/#/nuova-password?token=T'],
   ])('%s con %j → %s', (search, hash, atteso) => {
     expect(indirizzoConSearchNelFrammento(BASE, search, hash)).toBe(atteso)
   })
@@ -383,18 +404,24 @@ describe('vetrina /dev/ui (R8)', () => {
 })
 
 // Ultimo: vi.resetModules() ricarica le viste, e i test col router statico non devono vederle.
-describe('avvio da indirizzo reale (ACC-01-C1 R1, R3, R4, R8)', () => {
+describe('avvio da indirizzo reale (ACC-01-C1 R1, R3, R4, R8; ACC-01-C1-C1 R2-R5)', () => {
   afterEach(() => {
     vi.restoreAllMocks()
     window.history.replaceState(null, '', '/')
   })
 
-  /** Porta jsdom all'indirizzo, ricarica il router senza sessione e fa la navigazione iniziale. */
-  async function avviaDa(indirizzo: string): Promise<Router> {
+  /**
+   * Porta jsdom all'indirizzo, ricarica il router senza sessione e fa la navigazione iniziale.
+   * `allaRichiesta` gira dentro `sessioneCorrente`, al posto dello scambio dell'SDK.
+   */
+  async function avviaDa(indirizzo: string, allaRichiesta?: () => void): Promise<Router> {
     window.history.replaceState(null, '', indirizzo)
     vi.resetModules()
     const sessione = await import('./data/sessione')
-    vi.mocked(sessione.sessioneCorrente).mockResolvedValue(null)
+    vi.mocked(sessione.sessioneCorrente).mockImplementation(async () => {
+      allaRichiesta?.()
+      return null
+    })
     const { router: avviato } = await import('./router')
     await avviato.push(avviato.options.history.location)
     await avviato.isReady()
@@ -451,4 +478,61 @@ describe('avvio da indirizzo reale (ACC-01-C1 R1, R3, R4, R8)', () => {
     expect(window.location.search).toBe('')
     expect(window.location.hash).toBe('#/nuova-password?token=T')
   })
+
+  it("con il solo verifier l'involucro non chiama replaceState", () => {
+    window.history.replaceState(null, '', '/?neon_auth_session_verifier=V#/')
+    const replaceState = vi.spyOn(window.history, 'replaceState')
+    spostaSearchNelFrammento()
+    expect(replaceState).not.toHaveBeenCalled()
+  })
+
+  it("l'involucro lascia il verifier nella search e sposta error, con history.state", () => {
+    const stato = { chiave: 'k' }
+    window.history.replaceState(stato, '', '/?neon_auth_session_verifier=V&error=x#/accedi')
+    spostaSearchNelFrammento()
+    expect(window.history.state).toEqual(stato)
+    expect(window.location.search).toBe('?neon_auth_session_verifier=V')
+    expect(window.location.hash).toBe('#/accedi?error=x')
+  })
+
+  /** Come l'SDK: registra l'indirizzo della richiesta, poi toglie il verifier. */
+  function scambioSimulato(): {
+    richieste: { search: string; hash: string }[]
+    scambia: () => void
+  } {
+    const richieste: { search: string; hash: string }[] = []
+    const scambia = (): void => {
+      const { search, hash, pathname } = window.location
+      richieste.push({ search, hash })
+      const parametri = new URLSearchParams(search)
+      parametri.delete('neon_auth_session_verifier')
+      const resto = parametri.toString()
+      window.history.replaceState(
+        window.history.state,
+        '',
+        `${pathname}${resto ? `?${resto}` : ''}${hash}`,
+      )
+    }
+    return { richieste, scambia }
+  }
+
+  it('verifier nella search al momento della richiesta', async () => {
+    const { richieste, scambia } = scambioSimulato()
+    const avviato = await avviaDa('/?neon_auth_session_verifier=V#/', scambia)
+    expect(richieste.length).toBeGreaterThan(0)
+    expect(richieste[0]?.search).toContain('neon_auth_session_verifier=V')
+    expect(richieste[0]?.hash).not.toContain('neon_')
+    expect(avviato.currentRoute.value.path).toBe('/accedi')
+    expect(window.location.search).toBe('')
+    expect(window.location.hash).toBe('#/accedi')
+  }, 20_000)
+
+  it('dopo lo scambio una navigazione non rimette la search', async () => {
+    const { scambia } = scambioSimulato()
+    const avviato = await avviaDa('/?neon_auth_session_verifier=V#/', scambia)
+    await avviato.push('/nuova-password')
+    expect(avviato.currentRoute.value.path).toBe('/nuova-password')
+    expect(window.location.search).toBe('')
+    expect(window.location.hash).toBe('#/nuova-password')
+  }, 20_000)
 })
