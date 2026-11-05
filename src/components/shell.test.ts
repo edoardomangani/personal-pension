@@ -664,6 +664,7 @@ describe('errore di caricamento (PWA-01 R14-R18)', () => {
   it('con utente e archivio vuoto parte un carica()', async () => {
     conRete(true)
     useSessioneStore().utente = utenteDiProva()
+    useSessioneStore().confermata = true
     const carica = vi.mocked(useArchivioStore().carica)
     await layoutSu('/')
     expect(carica).toHaveBeenCalledTimes(1)

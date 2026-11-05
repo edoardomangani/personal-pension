@@ -292,3 +292,63 @@ describe('VistaAccedi: Riprova (R6, R7)', () => {
     expect(sessioneCorrente).toHaveBeenCalledTimes(1)
   })
 })
+
+describe('VistaAccedi: ritorno della rete (PWA-01-C1 R14)', () => {
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  /** Avviso di rete e vista aperta offline; restituisce come far tornare la rete. */
+  async function apriOffline(percorso: string) {
+    await ripristinoFallito(reteGiu())
+    vi.mocked(sessioneCorrente).mockClear()
+    const getter = vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false)
+    const aperta = await apri(percorso)
+    const torna = async () => {
+      getter.mockReturnValue(true)
+      window.dispatchEvent(new Event('online'))
+      await flushPromises()
+    }
+    return { ...aperta, torna }
+  }
+
+  it('T29: sessione valida al ritorno della rete → un ripristino e la rotta di da', async () => {
+    const { router, torna } = await apriOffline('/accedi?da=/movimenti')
+    vi.mocked(sessioneCorrente).mockResolvedValueOnce(utenteDiProva())
+    await torna()
+    expect(sessioneCorrente).toHaveBeenCalledTimes(1)
+    expect(router.currentRoute.value.path).toBe('/movimenti')
+  })
+
+  it('T30: senza sessione al ritorno della rete → resta su /accedi senza avviso di rete', async () => {
+    const { wrapper, router, torna } = await apriOffline('/accedi?da=/movimenti')
+    vi.mocked(sessioneCorrente).mockResolvedValueOnce(null)
+    await torna()
+    expect(router.currentRoute.value.path).toBe('/accedi')
+    expect(wrapper.find('[data-avviso="rete"]').exists()).toBe(false)
+  })
+
+  it('T31: con Riprova in corso il ritorno della rete non rifà la chiamata', async () => {
+    const { wrapper, torna } = await apriOffline('/accedi')
+    let risolvi: (valore: null) => void = () => {}
+    vi.mocked(sessioneCorrente).mockReturnValueOnce(
+      new Promise((resolve) => {
+        risolvi = resolve
+      }),
+    )
+    await bottoneRiprova(wrapper).trigger('click')
+    await torna()
+    expect(sessioneCorrente).toHaveBeenCalledTimes(1)
+    expect(bottoneRiprova(wrapper).attributes('disabled')).toBeDefined()
+    risolvi(null)
+    await flushPromises()
+    expect(sessioneCorrente).toHaveBeenCalledTimes(1)
+  })
+
+  it('con l’avviso di Google il ritorno della rete non chiama sessioneCorrente', async () => {
+    const { wrapper, torna } = await apriOffline('/accedi?error=access_denied')
+    await torna()
+    expect(sessioneCorrente).not.toHaveBeenCalled()
+    expect(wrapper.get('[data-avviso]').text()).toContain('Accesso con Google non riuscito')
+  })
+})

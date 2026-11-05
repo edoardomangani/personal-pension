@@ -6,7 +6,16 @@ import {
   PhWarningCircle,
   PhWifiSlash,
 } from '@phosphor-icons/vue'
-import { computed, nextTick, onMounted, onUnmounted, reactive, ref, type Component } from 'vue'
+import {
+  computed,
+  nextTick,
+  onMounted,
+  onUnmounted,
+  reactive,
+  ref,
+  watch,
+  type Component,
+} from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { validaAccesso, type BozzaAccesso } from '@/calc/validaAccesso'
 import { insetPasswordClass } from '@/components/forms/inset'
@@ -22,6 +31,7 @@ import { FieldSeparator } from '@/components/ui/field'
 import { Spinner } from '@/components/ui/spinner'
 import { useAccessoGoogle } from '@/composables/useAccessoGoogle'
 import { primoCampoConErrore, useModulo } from '@/composables/useModulo'
+import { useRete } from '@/composables/useRete'
 import { rottaDiRitorno } from '@/router'
 import { CODICE_EMAIL_DA_VERIFICARE, useSessioneStore } from '@/stores/sessione'
 
@@ -94,6 +104,12 @@ async function riprova(): Promise<void> {
   if (smontata || sessione.utente === null) return
   await router.replace(rottaDiRitorno(route.query.da))
 }
+
+// R14: al ritorno della rete fa da sola quello che fa Riprova.
+const { online } = useRete()
+watch(online, (ora, prima) => {
+  if (ora && !prima && avviso.value === AVVISO_RETE) void riprova()
+})
 
 const bozza = reactive<BozzaAccesso>({ email: '', password: '' })
 
