@@ -23,6 +23,7 @@ import {
   verificaCodice,
   verificaPassword,
 } from '../data/sessione'
+import { CHIAVE_ULTIMO_UTENTE, leggiUltimoUtente, salvaUltimoUtente } from '../data/ultimoUtente'
 import { inSospeso } from '../test/promesse'
 import { archivioDalSeed } from '../test/seed'
 import { utenteDiProva } from '../test/utenti'
@@ -198,7 +199,7 @@ describe('sessione (R8)', () => {
     expect(sessioneCorrente).toHaveBeenCalledOnce()
   })
 
-  it('ripristina() con un errore → pronto true ed errore impostato', async () => {
+  it('T10: ripristina() con un errore di rete senza ultimo noto → utente null, errore impostato', async () => {
     vi.mocked(sessioneCorrente).mockRejectedValueOnce(new ErroreDati('rete', 'Rete giù'))
     const sessione = useSessioneStore()
     await sessione.ripristina()
@@ -392,11 +393,13 @@ describe('foto, metodi e cancellazione (R5, R6)', () => {
     const { sessione, archivio } = await accessoConArchivio()
     await lettureFinite()
     expect(sessione.foto).toBe(FOTO)
+    expect(leggiUltimoUtente()).toEqual(PRIMO)
     await sessione.esci()
     expect(sessione.utente).toBeNull()
     expect(sessione.foto).toBeNull()
     expect(sessione.metodi).toBeNull()
     expect(eVuoto(archivio)).toBe(true)
+    expect(localStorage.getItem(CHIAVE_ULTIMO_UTENTE)).toBeNull()
   })
 
   it('lettura che arriva dopo esci() → ignorata', async () => {
@@ -609,6 +612,209 @@ describe('sessione scaduta (R10)', () => {
     expect(archivio.haFondo).toBe(true)
     await sessione.esci()
     expect(archivio.haFondo).toBeNull()
+  })
+})
+
+describe('ultimo utente noto (R2, R3, R7)', () => {
+  it('T5: accedi() e verificaCodice() riusciti salvano l’utente nuovo', async () => {
+    const sessione = useSessioneStore()
+    await sessione.accedi(PRIMO.email, 'segreta')
+    expect(leggiUltimoUtente()).toEqual(PRIMO)
+    vi.mocked(verificaCodice).mockResolvedValueOnce(GIULIA)
+    await sessione.verificaCodice(GIULIA.email, '123456')
+    expect(leggiUltimoUtente()).toEqual(GIULIA)
+    expect(sessione.confermata).toBe(true)
+  })
+
+  it('T6: aggiornaNome riuscito salva il nome nuovo', async () => {
+    const sessione = useSessioneStore()
+    await sessione.accedi(PRIMO.email, 'segreta')
+    vi.mocked(aggiornaNome).mockResolvedValueOnce(undefined)
+    await sessione.aggiornaNome('Nuovo')
+    expect(leggiUltimoUtente()).toEqual({ ...PRIMO, nome: 'Nuovo' })
+  })
+
+  it('T7: esci() con signOut che rifiuta per la rete → chiave assente, store vuoti', async () => {
+    const { sessione, archivio } = await accessoConArchivio()
+    vi.mocked(esci).mockRejectedValueOnce(new ErroreDati('rete', 'Rete giù'))
+    await sessione.esci()
+    expect(localStorage.getItem(CHIAVE_ULTIMO_UTENTE)).toBeNull()
+    expect(sessione.utente).toBeNull()
+    expect(sessione.confermata).toBe(false)
+    expect(eVuoto(archivio)).toBe(true)
+  })
+
+  it('T7: cancellaAccount → chiave assente', async () => {
+    const sessione = useSessioneStore()
+    await sessione.accedi(PRIMO.email, 'segreta')
+    vi.mocked(cancellaAccount).mockResolvedValueOnce(undefined)
+    await sessione.cancellaAccount(PRIMO.email, false)
+    expect(localStorage.getItem(CHIAVE_ULTIMO_UTENTE)).toBeNull()
+  })
+
+  it('T8: ultimo noto A, accedi() che rifiuta → chiave assente', async () => {
+    salvaUltimoUtente(PRIMO)
+    vi.mocked(accedi).mockRejectedValueOnce(new ErroreDati('rete', 'Rete giù'))
+    await expect(useSessioneStore().accedi(SECONDO.email, 'x')).rejects.toMatchObject({
+      tipo: 'rete',
+    })
+    expect(localStorage.getItem(CHIAVE_ULTIMO_UTENTE)).toBeNull()
+  })
+
+  it('verificaCodice sbagliato → ultimo noto invariato', async () => {
+    const sessione = useSessioneStore()
+    await sessione.accedi(PRIMO.email, 'segreta')
+    vi.mocked(verificaCodice).mockRejectedValueOnce(new ErroreDati('vincolo', 'Codice errato.'))
+    await expect(sessione.verificaCodice(GIULIA.email, '000000')).rejects.toMatchObject({
+      tipo: 'vincolo',
+    })
+    expect(leggiUltimoUtente()).toEqual(PRIMO)
+  })
+})
+
+const RETE = new ErroreDati('rete', 'Rete giù')
+
+/** Ultimo noto `noto` e un ripristino senza rete: lo store resta con l'utente provvisorio. */
+async function daProvvisorio(noto = PRIMO) {
+  salvaUltimoUtente(noto)
+  vi.mocked(sessioneCorrente).mockRejectedValueOnce(RETE)
+  const sessione = useSessioneStore()
+  await sessione.ripristina()
+  return sessione
+}
+
+describe('utente provvisorio e confermato (R4, R5, R6)', () => {
+  it('T4: ripristina() riuscito → confermato, salvato, foto e metodi letti', async () => {
+    vi.mocked(sessioneCorrente).mockResolvedValueOnce(PRIMO)
+    vi.mocked(leggiFoto).mockResolvedValueOnce(FOTO)
+    const sessione = useSessioneStore()
+    await sessione.ripristina()
+    await lettureFinite()
+    expect(sessione.utente).toEqual(PRIMO)
+    expect(sessione.confermata).toBe(true)
+    expect(leggiUltimoUtente()).toEqual(PRIMO)
+    expect(sessione.foto).toBe(FOTO)
+    expect(sessione.metodi).toEqual(ENTRAMBI)
+  })
+
+  it('T9: ultimo noto e fetch che lancia → provvisorio, errore rete, profilo non letto', async () => {
+    salvaUltimoUtente(PRIMO)
+    vi.mocked(sessioneCorrente).mockRejectedValueOnce(new TypeError('Failed to fetch'))
+    const sessione = useSessioneStore()
+    await sessione.ripristina()
+    await lettureFinite()
+    expect(sessione.utente).toEqual(PRIMO)
+    expect(sessione.confermata).toBe(false)
+    expect(sessione.errore?.tipo).toBe('rete')
+    expect(sessione.pronto).toBe(true)
+    expect(leggiFoto).not.toHaveBeenCalled()
+    expect(metodiDiAccesso).not.toHaveBeenCalled()
+  })
+
+  it('T11: provvisorio A, poi il server conferma A → confermato senza svuotare l’archivio', async () => {
+    const sessione = await daProvvisorio()
+    const reset = vi.spyOn(useArchivioStore(), 'reset')
+    vi.mocked(sessioneCorrente).mockResolvedValueOnce(PRIMO)
+    await sessione.ripristina()
+    expect(sessione.confermata).toBe(true)
+    expect(sessione.errore).toBeNull()
+    expect(reset).not.toHaveBeenCalled()
+  })
+
+  it('T12: provvisorio A, poi il server dà B → store svuotati, B confermato e salvato', async () => {
+    const sessione = await daProvvisorio()
+    const reset = vi.spyOn(useArchivioStore(), 'reset')
+    vi.mocked(sessioneCorrente).mockResolvedValueOnce(SECONDO)
+    await sessione.ripristina()
+    expect(reset).toHaveBeenCalledOnce()
+    expect(sessione.utente).toEqual(SECONDO)
+    expect(sessione.confermata).toBe(true)
+    expect(leggiUltimoUtente()).toEqual(SECONDO)
+  })
+
+  it('T13: provvisorio A, poi il server dice nessuna sessione → sessione scaduta', async () => {
+    const sessione = await daProvvisorio()
+    vi.mocked(sessioneCorrente).mockResolvedValueOnce(null)
+    await sessione.ripristina()
+    expect(sessione.motivoUscita).toBe('sessione')
+    expect(sessione.utente).toBeNull()
+    expect(sessione.confermata).toBe(false)
+    expect(localStorage.getItem(CHIAVE_ULTIMO_UTENTE)).toBeNull()
+  })
+
+  it('T14: provvisorio A, poi un 401 → sessione scaduta', async () => {
+    const sessione = await daProvvisorio()
+    vi.mocked(sessioneCorrente).mockRejectedValueOnce(SESSIONE_SCADUTA)
+    await sessione.ripristina()
+    expect(sessione.motivoUscita).toBe('sessione')
+    expect(sessione.utente).toBeNull()
+    expect(localStorage.getItem(CHIAVE_ULTIMO_UTENTE)).toBeNull()
+  })
+
+  it('T15: nessun provvisorio, nessuna sessione con chiave presente → chiave cancellata, nessun motivo', async () => {
+    salvaUltimoUtente(PRIMO)
+    const sessione = useSessioneStore()
+    await sessione.ripristina()
+    expect(sessione.utente).toBeNull()
+    expect(localStorage.getItem(CHIAVE_ULTIMO_UTENTE)).toBeNull()
+    expect(sessione.motivoUscita).toBeNull()
+    expect(esci).not.toHaveBeenCalled()
+  })
+
+  it('T16: provvisorio A, poi errore altro → resta A provvisorio con l’errore', async () => {
+    const sessione = await daProvvisorio()
+    vi.mocked(sessioneCorrente).mockRejectedValueOnce(new ErroreDati('altro', 'Errore'))
+    await sessione.ripristina()
+    expect(sessione.utente).toEqual(PRIMO)
+    expect(sessione.confermata).toBe(false)
+    expect(sessione.errore?.tipo).toBe('altro')
+  })
+
+  it('errore altro senza provvisorio → utente null anche con un ultimo noto', async () => {
+    salvaUltimoUtente(PRIMO)
+    vi.mocked(sessioneCorrente).mockRejectedValueOnce(new ErroreDati('altro', 'Errore'))
+    const sessione = useSessioneStore()
+    await sessione.ripristina()
+    expect(sessione.utente).toBeNull()
+    expect(sessione.errore?.tipo).toBe('altro')
+  })
+
+  it('T17: provvisorio, ripristini dopo errori di rete tornano al server; i sovrapposti una volta', async () => {
+    const sessione = await daProvvisorio()
+    expect(sessioneCorrente).toHaveBeenCalledOnce()
+    const risposta = inSospeso<null>()
+    vi.mocked(sessioneCorrente).mockReturnValueOnce(risposta.promessa)
+    const prima = sessione.ripristina()
+    const seconda = sessione.ripristina()
+    risposta.rifiuta(RETE)
+    await Promise.all([prima, seconda])
+    expect(sessioneCorrente).toHaveBeenCalledTimes(2)
+    expect(sessione.utente).toEqual(PRIMO)
+    vi.mocked(sessioneCorrente).mockRejectedValueOnce(RETE)
+    await sessione.ripristina()
+    expect(sessioneCorrente).toHaveBeenCalledTimes(3)
+    expect(sessione.confermata).toBe(false)
+  })
+
+  it('confermato da accedi(), poi ripristina() → resta confermato senza tornare al server', async () => {
+    vi.mocked(sessioneCorrente).mockRejectedValue(RETE)
+    const sessione = useSessioneStore()
+    await sessione.ripristina()
+    await sessione.accedi(PRIMO.email, 'segreta')
+    vi.mocked(sessioneCorrente).mockClear()
+    await sessione.ripristina()
+    expect(sessioneCorrente).not.toHaveBeenCalled()
+    expect(sessione.utente).toEqual(PRIMO)
+    expect(sessione.confermata).toBe(true)
+    expect(sessione.errore).toBeNull()
+  })
+
+  it('provvisorio che esce → chiave assente e store vuoti', async () => {
+    const sessione = await daProvvisorio()
+    vi.mocked(esci).mockRejectedValueOnce(RETE)
+    await sessione.esci()
+    expect(sessione.utente).toBeNull()
+    expect(localStorage.getItem(CHIAVE_ULTIMO_UTENTE)).toBeNull()
   })
 })
 

@@ -10,6 +10,7 @@ export default defineConfig((env) =>
         environment: 'jsdom',
         include: ['src/**/*.test.ts', 'scripts/**/*.test.ts'],
         exclude: [...configDefaults.exclude],
+        setupFiles: ['src/test/setup.ts'],
         root: fileURLToPath(new URL('./', import.meta.url)),
       },
     }),

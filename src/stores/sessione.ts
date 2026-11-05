@@ -20,6 +20,7 @@ import {
   type MetodiDiAccesso,
   type Utente,
 } from '../data/sessione'
+import { cancellaUltimoUtente, leggiUltimoUtente, salvaUltimoUtente } from '../data/ultimoUtente'
 import { useArchivioStore } from './archivio'
 
 // Le viste riconoscono l'esito «email da verificare» senza importare il livello dati.
@@ -30,6 +31,8 @@ export type MotivoUscita = 'sessione'
 
 export const useSessioneStore = defineStore('sessione', () => {
   const utente = ref<Utente | null>(null)
+  /** Vero solo se `utente` l'ha dato il server; falso per l'ultimo utente noto messo senza rete. */
+  const confermata = ref(false)
   const pronto = ref(false)
   const errore = ref<ErroreDati | null>(null)
   const foto = ref<string | null>(null)
@@ -94,21 +97,41 @@ export const useSessioneStore = defineStore('sessione', () => {
     }
   }
 
+  const provvisorio = () => utente.value !== null && !confermata.value
+
+  /** Utente dato dal server: confermato, ricordato sul dispositivo, profilo letto. */
+  function conferma(nuovo: Utente): void {
+    utente.value = nuovo
+    confermata.value = true
+    errore.value = null
+    salvaUltimoUtente(nuovo)
+    caricaProfilo(nuovo.id)
+  }
+
   /**
-   * Non rifiuta; `pronto` diventa true con ogni esito. Idempotente dopo un successo,
-   * un errore si riprova; le chiamate sovrapposte condividono quella in volo.
+   * Non rifiuta; `pronto` diventa true con ogni esito. Idempotente dopo un successo o dopo una
+   * conferma da `accedi()`, un errore si riprova; le chiamate sovrapposte condividono quella in volo.
    */
   function ripristina(): Promise<void> {
+    // Una sessione appena confermata dal server non torna dubbia per un errore di rete.
+    if (ripristino === null && confermata.value) return Promise.resolve()
     ripristino ??= (async () => {
       try {
-        utente.value = await sessioneCorrente()
-        errore.value = null
-        if (utente.value !== null) caricaProfilo(utente.value.id)
+        const dalServer = await sessioneCorrente()
+        if (dalServer === null) await senzaSessione(null)
+        else {
+          // R6a: il provvisorio era un altro account, i suoi dati non restano.
+          if (provvisorio() && utente.value?.id !== dalServer.id) svuotaStore()
+          conferma(dalServer)
+        }
       } catch (eccezione) {
-        utente.value = null
-        errore.value = erroreDaEccezione(eccezione)
-        // Siamo dopo l'await: `ripristino` è questa promessa, e finché è in volo nessuno la sostituisce.
-        ripristino = null
+        const err = erroreDaEccezione(eccezione)
+        if (err.tipo === 'sessione') await senzaSessione(err)
+        else {
+          inDubbio(err)
+          // Siamo dopo l'await: `ripristino` è questa promessa, e finché è in volo nessuno la sostituisce.
+          ripristino = null
+        }
       } finally {
         pronto.value = true
       }
@@ -116,17 +139,31 @@ export const useSessioneStore = defineStore('sessione', () => {
     return ripristino
   }
 
+  /** R6b: il server dice che la sessione non c'è; da provvisorio è una sessione scaduta. */
+  async function senzaSessione(err: ErroreDati | null): Promise<void> {
+    cancellaUltimoUtente()
+    errore.value = err
+    if (utente.value !== null) await sessioneScaduta()
+  }
+
+  /** R6c-d: il server non ha risposto; senza un utente, con la rete giù vale l'ultimo noto. */
+  function inDubbio(err: ErroreDati): void {
+    if (confermata.value) return
+    errore.value = err
+    if (utente.value === null && err.tipo === 'rete') utente.value = leggiUltimoUtente()
+  }
+
   /** Rifiuta con un `ErroreDati`: il modulo di login lo mostra. */
   async function accedi(email: string, password: string): Promise<Utente> {
     // Il cambio di account non deve vedere i dati di quello prima.
     svuotaStore()
     utente.value = null
+    confermata.value = false
+    cancellaUltimoUtente()
     const nuovo = await accediDb(email, password)
     motivoUscita.value = null
-    utente.value = nuovo
-    errore.value = null
     pronto.value = true
-    caricaProfilo(nuovo.id)
+    conferma(nuovo)
     return nuovo
   }
 
@@ -134,6 +171,8 @@ export const useSessioneStore = defineStore('sessione', () => {
   async function esci(): Promise<void> {
     svuotaStore()
     utente.value = null
+    confermata.value = false
+    cancellaUltimoUtente()
     try {
       await esciDb()
     } catch {
@@ -155,19 +194,20 @@ export const useSessioneStore = defineStore('sessione', () => {
     const nuovo = await verificaCodiceDb(email.trim(), codice.trim())
     // È un cambio di account: niente dati di chi c'era prima.
     svuotaStore()
+    cancellaUltimoUtente()
     motivoUscita.value = null
-    utente.value = nuovo
-    errore.value = null
     pronto.value = true
-    caricaProfilo(nuovo.id)
+    conferma(nuovo)
     return nuovo
   }
 
   async function aggiornaNome(nome: string): Promise<void> {
     const pulito = nome.trim()
     await conSessione(() => aggiornaNomeDb(pulito))
-    if (utente.value !== null)
+    if (utente.value !== null) {
       utente.value = { ...utente.value, nome: pulito === '' ? null : pulito }
+      salvaUltimoUtente(utente.value)
+    }
   }
 
   async function cambiaPassword(attuale: string, nuova: string): Promise<void> {
@@ -231,6 +271,7 @@ export const useSessioneStore = defineStore('sessione', () => {
 
   return {
     utente,
+    confermata,
     pronto,
     errore,
     foto,
