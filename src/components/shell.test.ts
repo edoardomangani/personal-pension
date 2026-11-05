@@ -417,7 +417,7 @@ describe('AppLayout (R3)', () => {
     const esterno = interno?.closest('[data-contenuto]')
     expect(esterno).not.toBeNull()
     expect(esterno).not.toBe(interno)
-    for (const classe of ['px-4', 'pt-3', 'lg:px-12', 'lg:pt-6', 'lg:pb-12']) {
+    for (const classe of ['px-4', 'pt-3', 'lg:px-12', 'lg:pt-6', 'lg:pb-(--content-pad-bottom)']) {
       expect(esterno?.classList.contains(classe)).toBe(true)
     }
   })

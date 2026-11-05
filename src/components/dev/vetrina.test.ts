@@ -402,6 +402,16 @@ describe('token del tile (DS-03-C2 R6)', () => {
     expect(tema).toMatch(/--radius-tile:\s*12px;/)
   })
 
+  it('i raggi della vetrina hanno RAD-tile a 12px fra lg e xl', () => {
+    const testo = readFileSync(`${RADICE}src/components/dev/FoundationsSection.vue`, 'utf8')
+    const codici = elenchiDeiCodici(testo).radii ?? []
+    const posizione = codici.indexOf('tile')
+    expect(posizione).toBeGreaterThan(0)
+    expect(codici[posizione - 1]).toBe('lg')
+    expect(codici[posizione + 1]).toBe('xl')
+    expect(testo).toMatch(/\{ code: 'tile', radius: 'rounded-tile', value: '12px' \}/)
+  })
+
   it('DESIGN.md ha il raggio del tile nel frontmatter rounded', () => {
     const design = readFileSync(`${RADICE}DESIGN.md`, 'utf8')
     const rounded = /^rounded:\n((?: {2}.*\n)+)/m.exec(design)?.[1] ?? ''
@@ -441,5 +451,31 @@ describe('altezza della barra in alto (DS-03-C2 R7)', () => {
     expect(indice).toContain('var(--topbar-height)')
     expect(indice).not.toMatch(/\btop-0\b/)
     expect(indice).not.toMatch(/\bh-dvh\b/)
+  })
+})
+
+describe('padding in basso del contenuto (DS-03-C2-C1)', () => {
+  const RADICE = fileURLToPath(new URL('../../../', import.meta.url))
+
+  it(':root definisce --content-pad-bottom a 48px', () => {
+    const css = readFileSync(`${RADICE}src/styles/app.css`, 'utf8')
+    const radice = /:root\s*\{([\s\S]*?)\n\}/.exec(css)?.[1] ?? ''
+    expect(radice).toMatch(/--content-pad-bottom:\s*48px;/)
+  })
+
+  it('il contenitore della shell usa il token al posto di lg:pb-12', () => {
+    const layout = readFileSync(`${RADICE}src/components/AppLayout.vue`, 'utf8')
+    const contenitore = /<div\s[^>]*data-contenuto[^>]*>/.exec(layout)?.[0] ?? ''
+    expect(contenitore).toContain('lg:pb-(--content-pad-bottom)')
+    expect(contenitore).not.toMatch(/\blg:pb-12\b/)
+  })
+
+  it("l'altezza dell'indice sottrae la barra e il token del padding", () => {
+    const vista = readFileSync(`${RADICE}src/views/dev/VistaVetrina.vue`, 'utf8')
+    const indice = /<nav\s[^>]*aria-label="Indice della vetrina"[^>]*>/.exec(vista)?.[0] ?? ''
+    expect(indice).toContain('var(--topbar-height)')
+    expect(indice).toContain('var(--content-pad-bottom)')
+    expect(indice).not.toContain('--spacing)*12')
+    expect(indice).toContain('top-(--topbar-height)')
   })
 })

@@ -73,7 +73,7 @@ onBeforeUnmount(() => observer?.disconnect())
   <div class="flex">
     <nav
       aria-label="Indice della vetrina"
-      class="sticky top-(--topbar-height) hidden h-[calc(100dvh-var(--topbar-height)-var(--spacing)*12)] w-56 shrink-0 overflow-y-auto border-r-[0.75px] border-divider px-3 py-6 lg:block"
+      class="sticky top-(--topbar-height) hidden h-[calc(100dvh-var(--topbar-height)-var(--content-pad-bottom))] w-56 shrink-0 overflow-y-auto border-r-[0.75px] border-divider px-3 py-6 lg:block"
     >
       <p class="px-3 pb-3 text-xs font-semibold text-subtle-foreground">Sezioni</p>
       <ul class="flex flex-col gap-0.5">

@@ -21,7 +21,7 @@ import { Toaster } from '@/components/ui/sonner'
       <!-- Il padding sta fuori: il limite di 1180px vale per il contenuto dentro. -->
       <div
         data-contenuto
-        class="flex flex-1 flex-col px-4 pt-3 pb-[calc(var(--bottom-bar-height)+env(safe-area-inset-bottom))] lg:px-12 lg:pt-6 lg:pb-12"
+        class="flex flex-1 flex-col px-4 pt-3 pb-[calc(var(--bottom-bar-height)+env(safe-area-inset-bottom))] lg:px-12 lg:pt-6 lg:pb-(--content-pad-bottom)"
       >
         <div class="mx-auto flex w-full max-w-content flex-1 flex-col">
           <slot />

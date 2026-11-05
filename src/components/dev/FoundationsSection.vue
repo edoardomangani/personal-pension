@@ -43,6 +43,7 @@ const radii = [
   { code: 'sm', radius: 'rounded-sm', value: '6px' },
   { code: 'md', radius: 'rounded-md', value: '8px' },
   { code: 'lg', radius: 'rounded-lg', value: '10px' },
+  { code: 'tile', radius: 'rounded-tile', value: '12px' },
   { code: 'xl', radius: 'rounded-xl', value: '14px' },
   { code: '2xl', radius: 'rounded-2xl', value: '18px' },
   { code: '3xl', radius: 'rounded-3xl', value: '22px' },
