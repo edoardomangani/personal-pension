@@ -1,11 +1,20 @@
 import pg from 'pg'
+import { registrati } from '../src/data/sessione'
+import { nuovoClient, type Configurazione } from './lib/auth'
 import {
   QUERY_ROUTINE,
+  configurazioneAuth,
   controllaRuoloCollaudo,
+  istruzioniRicreaUtenti,
   istruzioniSvuotamento,
+  messaggioErroreUtente,
+  messaggioRicreati,
   messaggioSvuotamento,
+  nomeVisualizzato,
+  utentiAggiuntivi,
   type FunzioneTrovata,
   type TabellaTrovata,
+  type UtenteAggiuntivo,
 } from './lib/collaudo'
 import {
   SEED_PREDEFINITO,
@@ -43,11 +52,37 @@ async function svuota(client: pg.Client): Promise<void> {
   scrivi(messaggioSvuotamento(routine.length, tabelle.length))
 }
 
+/** R4, R5: toglie e ricrea U3, U4, U5 uno alla volta: `nuovoClient` cambia il client globale di `src/data/`. */
+async function ricreaUtenti(
+  client: pg.Client,
+  auth: Configurazione,
+  utenti: readonly UtenteAggiuntivo[],
+): Promise<void> {
+  for (const { utente, cancella, verificaEmail } of istruzioniRicreaUtenti(utenti)) {
+    try {
+      await client.query(cancella.sql, cancella.parametri)
+      nuovoClient(auth)
+      await registrati({
+        nome: nomeVisualizzato(utente),
+        email: utente.email,
+        password: utente.password,
+      })
+      const { rowCount } = await client.query(verificaEmail.sql, verificaEmail.parametri)
+      if (rowCount !== 1) throw new Error("dopo la registrazione l'utente non risulta nel database")
+    } catch (e) {
+      throw new Error(messaggioErroreUtente(utente, e))
+    }
+  }
+  scrivi(messaggioRicreati(utenti))
+}
+
 async function main(): Promise<void> {
   const argv = process.argv.slice(2)
   const vuoto = argv.includes('--vuoto')
   const variabili = caricaVariabili(valoreOpzione(argv, '--env') ?? ENV_COLLAUDO)
-  // Prima di connettersi: seed ed email si controllano senza aver toccato nulla.
+  // Prima di connettersi: seed, email e variabili si controllano senza aver toccato nulla.
+  const aggiuntivi = utentiAggiuntivi(variabili)
+  const auth = configurazioneAuth(variabili)
   const importa = vuoto
     ? null
     : {
@@ -67,6 +102,7 @@ async function main(): Promise<void> {
     await applicaMigrazioni(client)
     if (importa === null) scrivi('--vuoto: schema rifatto, nessun import.')
     else await importaPerEmail(client, importa.email, importa.righe)
+    await ricreaUtenti(client, auth, aggiuntivi)
   } finally {
     await client.end()
   }

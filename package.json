@@ -18,6 +18,7 @@
     "db:migra": "tsx scripts/db-migra.ts",
     "db:importa": "tsx scripts/db-importa.ts",
     "db:collaudo": "tsx scripts/db-collaudo.ts",
+    "db:collaudo-google": "tsx scripts/db-collaudo-google.ts",
     "db:verifica": "tsx scripts/db-verifica.ts",
     "icone": "tsx scripts/genera-icone.ts"
   },

@@ -1,9 +1,8 @@
 import { randomBytes } from 'node:crypto'
-import { BetterAuthVanillaAdapter, createClient } from '@neon/neon-js'
 import pg from 'pg'
 import { cancellaAccount } from '../src/data/account'
 import { elencaBuste, salvaBusta } from '../src/data/buste'
-import { authDaSdk, impostaAuthDati, impostaClientDati, type ClientDati } from '../src/data/client'
+import type { ClientDati } from '../src/data/client'
 import { attendi, eErroreDati } from '../src/data/errori'
 import { elencaEstratti } from '../src/data/estratti'
 import { elencaFondi, eliminaFondo, salvaFondo } from '../src/data/fondi'
@@ -13,6 +12,7 @@ import type { Bozza } from '../src/data/mappe'
 import { elencaMovimenti, eliminaMovimento, salvaMovimento } from '../src/data/movimenti'
 import { accedi, esci, registrati } from '../src/data/sessione'
 import type { BustaPaga, Fondo, Movimento } from '../src/types/dominio'
+import { ORIGINE, nuovoClient, type Configurazione } from './lib/auth'
 import { controllaRuoloCollaudo } from './lib/collaudo'
 import { scrivi } from './lib/db'
 import { caricaVariabili, richiedi, valoreOpzione, type Variabili } from './lib/env'
@@ -56,47 +56,6 @@ const NOME_TEMPORANEO = 'verifica db — temporaneo'
 
 // Il più piccolo data URL che il check di foto_profilo accetta: il contenuto non conta.
 const FOTO_PROVA = 'data:image/jpeg;base64,/9j/2Q=='
-
-interface Configurazione {
-  authUrl: string
-  dataApiUrl: string
-}
-
-// Better Auth rifiuta i POST senza Origin: è un dominio già ammesso sul branch collaudo.
-const ORIGINE = 'http://localhost:4174'
-
-/** Node non ha cookie: la sessione del sign-in va rimandata a mano, se no `get-session` non dà il JWT. */
-function adapterConCookie() {
-  const cookie = new Map<string, string>()
-  return BetterAuthVanillaAdapter({
-    fetchOptions: {
-      onRequest: (ctx) => {
-        ctx.headers.set('Origin', ORIGINE)
-        if (cookie.size > 0) {
-          ctx.headers.set('Cookie', [...cookie].map(([k, v]) => `${k}=${v}`).join('; '))
-        }
-      },
-      onSuccess: (ctx) => {
-        for (const riga of ctx.response.headers.getSetCookie()) {
-          const coppia = riga.split(';', 1)[0] ?? ''
-          const uguale = coppia.indexOf('=')
-          if (uguale > 0) cookie.set(coppia.slice(0, uguale), coppia.slice(uguale + 1))
-        }
-      },
-    },
-  })
-}
-
-/** Un client nuovo per ogni utente, iniettato in `src/data/`. */
-function nuovoClient(c: Configurazione): ClientDati {
-  const creato = createClient({
-    auth: { url: c.authUrl, adapter: adapterConCookie() },
-    dataApi: { url: c.dataApiUrl },
-  })
-  impostaClientDati(creato)
-  impostaAuthDati(authDaSdk(creato.auth))
-  return creato
-}
 
 async function controllaRuolo(databaseUrl: string): Promise<void> {
   const db = new pg.Client({ connectionString: databaseUrl })
