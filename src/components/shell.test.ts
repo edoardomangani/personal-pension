@@ -69,6 +69,9 @@ function campioneLogo(sorgente: string): string | null {
   return /code="SHL-logo"[^>]*>([\s\S]*?)<\/Specimen>/.exec(sorgente)?.[1] ?? null
 }
 
+// Forma di AppLayout senza safe area: nella cornice non c'è.
+const PADDING_SOTTO_CORNICE = 'pb-[calc(var(--bottom-bar-height)+(--spacing(9)))]'
+
 describe('NewMovementButton (R6)', () => {
   it('il + tondo è aria-disabled con aria-label «Nuovo movimento»', () => {
     const wrapper = mount(conTooltip(NewMovementButton, { variant: 'round' }), {
@@ -183,10 +186,21 @@ describe('marchio (DS-02 R2-R4)', () => {
     const campione = /code="SHL-profilo-mobile"[^>]*>([\s\S]*?)<\/Specimen>/.exec(
       sorgenteShellSection,
     )?.[1]
-    const involucro = /<div class="([^"]*)">\s*<VistaProfilo \/>/.exec(campione ?? '')?.[1]
+    const involucro = /<div\s+class="([^"]*)"\s*>\s*<VistaProfilo \/>/.exec(campione ?? '')?.[1]
     const classi = involucro?.split(/\s+/) ?? []
-    expect(classi).toEqual(expect.arrayContaining(['px-4', 'pt-3']))
+    expect(classi).toEqual(expect.arrayContaining(['px-4', 'pt-3', PADDING_SOTTO_CORNICE]))
     expect(classi.some((c) => c.startsWith('lg:'))).toBe(false)
+  })
+
+  it('SHL-phone-mobile rimette sotto la barra lo stesso padding della shell', () => {
+    const campione = /code="SHL-phone-mobile"[^>]*>([\s\S]*?)<\/Specimen>/.exec(
+      sorgenteShellSection,
+    )?.[1]
+    const involucro = /<div\s+class="([^"]*)"\s*>\s*<Skeleton/.exec(campione ?? '')?.[1]
+    const classi = involucro?.split(/\s+/) ?? []
+    expect(classi).toEqual(
+      expect.arrayContaining(['flex', 'flex-col', 'gap-3', 'px-4', 'pt-7', PADDING_SOTTO_CORNICE]),
+    )
   })
 
   it('SHL-logo: la cattura si ferma al campione', () => {
