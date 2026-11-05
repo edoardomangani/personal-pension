@@ -7,10 +7,13 @@ import AppMobileHeader from '@/components/AppMobileHeader.vue'
 import AppShell from '@/components/AppShell.vue'
 import AppSidebar from '@/components/AppSidebar.vue'
 import AppTopBar from '@/components/AppTopBar.vue'
+import BannerOffline from '@/components/BannerOffline.vue'
 import { Toaster } from '@/components/ui/sonner'
 import { fornisciAzioneTestata } from '@/composables/useAzioneTestata'
+import { useRete } from '@/composables/useRete'
 
 fornisciAzioneTestata()
+const { online } = useRete()
 
 const route = useRoute()
 // Il pannello di destra è fisso: testata e contenuto finiscono dove comincia.
@@ -35,6 +38,8 @@ const classeContenuto = computed(() =>
         class="flex flex-1 flex-col px-4 pt-3 pb-(--content-pad-bottom-mobile) lg:px-12 lg:pt-6 lg:pb-(--content-pad-bottom)"
       >
         <div class="mx-auto flex w-full max-w-content flex-1 flex-col">
+          <!-- Sotto lg il banner sta nella testata mobile. -->
+          <BannerOffline v-if="!online" class="mb-8 max-lg:hidden" />
           <slot />
         </div>
       </div>

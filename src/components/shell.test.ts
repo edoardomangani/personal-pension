@@ -488,6 +488,59 @@ describe('AppLayout (R3)', () => {
   })
 })
 
+describe('banner offline (PWA-01 R12-R13)', () => {
+  // useOnline legge navigator.onLine alla creazione: lo stub va messo prima del mount.
+  function conRete(online: boolean): void {
+    vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(online)
+  }
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  async function layoutSu(percorso: string) {
+    const wrapper = mount(AppLayout, {
+      slots: { default: '<p data-slot-prova>contenuto</p>' },
+      global: { plugins: [await routerSu(percorso)] },
+      attachTo: document.body,
+    })
+    await flushPromises()
+    return wrapper
+  }
+
+  it.each(['/', '/fisco'])(
+    'offline su %s il banner è dentro la testata mobile (T11)',
+    async (percorso) => {
+      conRete(false)
+      const wrapper = await layoutSu(percorso)
+      const banner = wrapper.findComponent(AppMobileHeader).get('header [role="status"]')
+      expect(banner.text()).toContain('Sei offline')
+      expect(banner.text()).toContain('I dati si aggiornano quando torna la rete.')
+      expect(banner.classes()).toContain('mt-3')
+    },
+  )
+
+  it('da lg è il primo figlio del contenuto, fuori dalla barra in alto (T12)', async () => {
+    conRete(false)
+    const wrapper = await layoutSu('/')
+    const interno = wrapper.get('[data-contenuto] > div.max-w-content').element
+    const primo = interno.firstElementChild
+    expect(primo?.getAttribute('role')).toBe('status')
+    expect(primo?.textContent).toContain('Sei offline')
+    expect(primo?.classList.contains('max-lg:hidden')).toBe(true)
+    expect(wrapper.findComponent(AppTopBar).find('[role="status"]').exists()).toBe(false)
+  })
+
+  it('online nessun banner (T13)', async () => {
+    conRete(true)
+    const wrapper = await layoutSu('/')
+    expect(wrapper.text()).not.toContain('Sei offline')
+    expect(wrapper.get('[data-contenuto] > div.max-w-content').element.firstElementChild).toBe(
+      wrapper.get('[data-slot-prova]').element,
+    )
+  })
+})
+
 describe('pannello di destra (ACC-01 R20)', () => {
   async function contenutoSu(percorso: string) {
     const wrapper = mount(AppLayout, {

@@ -667,3 +667,10 @@ describe('raggi dei tile in DESIGN.md (DS-04 R3)', () => {
     expect(forme).toMatch(/24px \(`rounded-card-mobile`/)
   })
 })
+
+describe('campioni del banner offline (PWA-01 R26)', () => {
+  it('ALR-offline e SHL-header-mobile-offline sono codici letterali (T22)', () => {
+    expect(codiciScritti(sorgente('StructureSection.vue'))).toContain('ALR-offline')
+    expect(codiciScritti(sorgente('ShellSection.vue'))).toContain('SHL-header-mobile-offline')
+  })
+})

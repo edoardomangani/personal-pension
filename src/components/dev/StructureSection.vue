@@ -13,6 +13,7 @@ import { RouterLink } from 'vue-router'
 import iconaApp from '../../../icons/apple-touch-icon.png'
 import { formatoData, formatoEuro } from '@/calc/formato'
 import AvatarUtente from '@/components/AvatarUtente.vue'
+import BannerOffline from '@/components/BannerOffline.vue'
 import MovementDaySample from '@/components/dev/MovementDaySample.vue'
 import MovementRowSample from '@/components/dev/MovementRowSample.vue'
 import PhoneFrame from '@/components/dev/PhoneFrame.vue'
@@ -166,6 +167,9 @@ const movementDays = [
               Il fondo lo accredita a trimestri: controlla il prossimo estratto conto.
             </AlertDescription>
           </Alert>
+        </Specimen>
+        <Specimen code="ALR-offline" note="role status · nella testata o in cima al contenuto">
+          <BannerOffline class="w-96 max-w-full" />
         </Specimen>
       </div>
     </ShowcaseBlock>

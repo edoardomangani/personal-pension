@@ -5,10 +5,12 @@ import { RouterLink, useRoute } from 'vue-router'
 import AvatarUtente from '@/components/AvatarUtente.vue'
 import { Button } from '@/components/ui/button'
 import AzioneTestata from '@/components/AzioneTestata.vue'
+import BannerOffline from '@/components/BannerOffline.vue'
 import { formatoGiorno } from '@/calc/formato'
 import { useAzioneTestata } from '@/composables/useAzioneTestata'
 import { useIndietro } from '@/composables/useIndietro'
 import { useProfilo } from '@/composables/useProfilo'
+import { useRete } from '@/composables/useRete'
 import { useShellHeading } from '@/composables/useShellHeading'
 import { useArchivioStore } from '@/stores/archivio'
 
@@ -18,6 +20,7 @@ const { titolo } = useShellHeading()
 const { iniziali, saluto, foto } = useProfilo()
 const { indietro } = useIndietro()
 const azione = useAzioneTestata()
+const { online } = useRete()
 
 const secondaria = computed(() => route.meta.testata === 'secondaria')
 const inHome = computed(() => route.name === 'home')
@@ -58,5 +61,7 @@ const giorno = computed(() => formatoGiorno(archivio.oggi))
         </RouterLink>
       </Button>
     </div>
+    <!-- Dentro la testata sticky: resta visibile scorrendo. -->
+    <BannerOffline v-if="!online" class="mt-3" />
   </header>
 </template>

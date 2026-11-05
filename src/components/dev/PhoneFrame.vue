@@ -1,11 +1,13 @@
 <script setup lang="ts">
 const { size = 'screen' } = defineProps<{
-  size?: 'screen' | 'header' | 'bar' | 'card' | 'form'
+  size?: 'screen' | 'header' | 'header-banner' | 'bar' | 'card' | 'form'
 }>()
 
 const heights = {
   screen: 'h-[760px]',
   header: 'h-[132px]',
+  // Testata col banner offline, più la sfumatura del vetro sotto.
+  'header-banner': 'h-[210px]',
   bar: 'h-[220px]',
   card: 'h-[340px]',
   form: 'h-[480px]',

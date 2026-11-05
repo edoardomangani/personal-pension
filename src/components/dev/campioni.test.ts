@@ -238,4 +238,12 @@ describe('ShellSection: la shell nuova (R16)', () => {
     expect(campione('SHL-profilo-mobile').find('[aria-label="Cambia foto"]').exists()).toBe(true)
     expect(wrapper.text()).not.toContain('Panoramica')
   })
+
+  it('la testata offline ha il banner dentro header, le altre no (PWA-01 R26)', async () => {
+    const wrapper = await montaShell()
+    const offline = wrapper.get('[data-specimen="SHL-header-mobile-offline"]')
+    expect(offline.get('header [role="status"]').text()).toContain('Sei offline')
+    expect(offline.get('h1').text()).toContain('Ciao')
+    expect(wrapper.get('[data-specimen="SHL-header-mobile"]').text()).not.toContain('Sei offline')
+  })
 })

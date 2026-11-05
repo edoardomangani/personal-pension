@@ -12,6 +12,7 @@ import AppTopBar from '@/components/AppTopBar.vue'
 import MenuUtentePreview from '@/components/dev/MenuUtentePreview.vue'
 import PhoneFrame from '@/components/dev/PhoneFrame.vue'
 import AzioneTestataCampione from '@/components/dev/AzioneTestataCampione.vue'
+import ReteOfflineCampione from '@/components/dev/ReteOfflineCampione.vue'
 import RottaCampione from '@/components/dev/RottaCampione.vue'
 import ShowcaseBlock from '@/components/dev/ShowcaseBlock.vue'
 import ShowcaseSection from '@/components/dev/ShowcaseSection.vue'
@@ -182,7 +183,8 @@ const vociMobiliCampione = computed(() => conHomeAttiva(vociMobili.value))
       <p class="text-xs text-subtle-foreground">
         Sotto il breakpoint lg, in una cornice di telefono da 390px. Principale: titolo a sinistra e
         avatar verso Profilo, in Home il saluto e la data. Secondaria: indietro e titolo al centro,
-        a destra l'azione della pagina se c'è.
+        a destra l'azione della pagina se c'è. Offline il banner sta nella testata, sotto la riga
+        del titolo.
       </p>
       <div class="flex flex-wrap gap-6">
         <Specimen code="SHL-header-mobile" note="Home">
@@ -190,6 +192,15 @@ const vociMobiliCampione = computed(() => conHomeAttiva(vociMobili.value))
             <PhoneFrame size="header">
               <AppMobileHeader />
             </PhoneFrame>
+          </RottaCampione>
+        </Specimen>
+        <Specimen code="SHL-header-mobile-offline" note="Home, offline">
+          <RottaCampione percorso="/">
+            <ReteOfflineCampione>
+              <PhoneFrame size="header-banner">
+                <AppMobileHeader />
+              </PhoneFrame>
+            </ReteOfflineCampione>
           </RottaCampione>
         </Specimen>
         <Specimen code="SHL-header-secondaria-mobile" note="Fisco">
