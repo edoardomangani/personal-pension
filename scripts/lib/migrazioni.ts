@@ -110,11 +110,15 @@ export interface StatoFunzione {
   eseguibileDaAnonymous: boolean
 }
 
-/** Mancanze di sicurezza delle funzioni RPC: niente `security definer`, niente `execute` ad `anonymous`. */
+/** Le sole `security definer` ammesse, per nome come `regprocedure`: cancellano anche fuori da `public`. */
+export const FUNZIONI_DEFINER_AMMESSE: readonly string[] = ['cancella_account()']
+
+/** Mancanze di sicurezza delle funzioni RPC: niente `security definer` fuori elenco, niente `execute` ad `anonymous`. */
 export function mancanzeFunzioni(funzioni: StatoFunzione[]): string[] {
   const mancanze: string[] = []
   for (const f of funzioni) {
-    if (f.securityDefiner) mancanze.push(`${f.funzione}: è security definer`)
+    if (f.securityDefiner && !FUNZIONI_DEFINER_AMMESSE.includes(f.funzione))
+      mancanze.push(`${f.funzione}: è security definer`)
     if (f.eseguibileDaAnonymous) mancanze.push(`${f.funzione}: anonymous può eseguirla`)
   }
   return mancanze

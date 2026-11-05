@@ -2,7 +2,11 @@
 import { describe, expect, it } from 'vitest'
 import { TABELLE_UTENTE, type TabellaUtente } from './importa'
 import {
+  TABELLE_ACCOUNT,
+  emailUsaEGetta,
+  esitoAccessoNonVerificato,
   esitoBustaAncoraDaVersare,
+  esitoFotoAltrui,
   esitoLetturaAnonima,
   esitoRifiutoAtteso,
   esitoScritturaAltrui,
@@ -10,10 +14,12 @@ import {
   esitoStatoInvariato,
   mancanzaCollegamentoPerso,
   mancanzeConteggi,
+  mancanzeResidui,
   MESSAGGIO_BUSTA_ASSENTE,
   MESSAGGIO_BUSTA_COLLEGATA,
   riepilogo,
   type StatoCollegamento,
+  type TabellaAccount,
 } from './verifica'
 
 const SENZA_CREDENZIALI = {
@@ -231,6 +237,86 @@ describe('mancanzeConteggi (R13)', () => {
     expect(mancanzeConteggi({ ...zero, buste_paga: 1 })).toEqual([
       "l'utente 2 vede 1 righe in buste_paga",
     ])
+  })
+})
+
+describe('emailUsaEGetta', () => {
+  it('timestamp e dominio di COLLAUDO2_EMAIL', () => {
+    expect(emailUsaEGetta('collaudo2@prova.esempio.it', 1767225600000)).toBe(
+      'collaudo-cancella-1767225600000@prova.esempio.it',
+    )
+  })
+
+  it('email senza dominio → errore', () => {
+    expect(() => emailUsaEGetta('collaudo2', 1)).toThrow(/senza dominio/)
+  })
+})
+
+describe('mancanzeResidui', () => {
+  const zero = (): Record<TabellaAccount, number> => ({
+    fondi: 0,
+    movimenti: 0,
+    movimento_righe: 0,
+    buste_paga: 0,
+    busta_righe: 0,
+    estratti_conto: 0,
+    impostazioni: 0,
+    foto_profilo: 0,
+  })
+
+  it('comprende foto_profilo', () => {
+    expect(TABELLE_ACCOUNT).toContain('foto_profilo')
+  })
+
+  it('tutto a zero e utente sparito → nessuna mancanza', () => {
+    expect(mancanzeResidui(zero(), false)).toEqual([])
+  })
+
+  it('righe rimaste e utente ancora in neon_auth → una mancanza ciascuno', () => {
+    expect(mancanzeResidui({ ...zero(), fondi: 1, foto_profilo: 1 }, true)).toEqual([
+      'restano 1 righe in fondi',
+      'restano 1 righe in foto_profilo',
+      'la riga in neon_auth."user" c\'è ancora',
+    ])
+  })
+})
+
+describe('esitoFotoAltrui', () => {
+  it('zero righe → ok; una → mancanza', () => {
+    expect(esitoFotoAltrui(0)).toBeNull()
+    expect(esitoFotoAltrui(1)).toMatch(/vede 1 foto/)
+  })
+})
+
+describe('esitoAccessoNonVerificato', () => {
+  it('rifiuto sessione con codice email-da-verificare → ok', () => {
+    expect(
+      esitoAccessoNonVerificato({
+        tipo: 'rifiutato',
+        errore: 'sessione',
+        messaggio: 'Verifica la tua email.',
+        codice: 'email-da-verificare',
+      }),
+    ).toBeNull()
+  })
+
+  it('accesso riuscito → la verifica non è obbligatoria', () => {
+    expect(esitoAccessoNonVerificato({ tipo: 'riuscito' })).toMatch(
+      /la verifica email non è obbligatoria/,
+    )
+  })
+
+  it('altro errore o altro codice → mancanza col messaggio', () => {
+    expect(
+      esitoAccessoNonVerificato({
+        tipo: 'rifiutato',
+        errore: 'sessione',
+        messaggio: 'Email o password non corretti.',
+      }),
+    ).toMatch(/Email o password non corretti\./)
+    expect(
+      esitoAccessoNonVerificato({ tipo: 'rifiutato', errore: 'rete', messaggio: 'Rete giù' }),
+    ).toMatch(/rete «Rete giù»/)
   })
 })
 

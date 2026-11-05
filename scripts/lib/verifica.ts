@@ -140,6 +140,47 @@ export function mancanzeConteggi(conteggi: Record<TabellaUtente, number>): strin
   )
 }
 
+/** Tabelle in cui un utente cancellato non deve lasciare righe: quelle del seed più la foto. */
+export const TABELLE_ACCOUNT = [...TABELLE_UTENTE, 'foto_profilo'] as const
+
+export type TabellaAccount = (typeof TABELLE_ACCOUNT)[number]
+
+/** Email dell'utente usa-e-getta, sul dominio di `COLLAUDO2_EMAIL`. */
+export function emailUsaEGetta(emailCollaudo2: string, adesso: number): string {
+  const chiocciola = emailCollaudo2.lastIndexOf('@')
+  const dominio = chiocciola < 0 ? '' : emailCollaudo2.slice(chiocciola + 1)
+  if (dominio === '') throw new Error(`COLLAUDO2_EMAIL senza dominio: «${emailCollaudo2}»`)
+  return `collaudo-cancella-${adesso}@${dominio}`
+}
+
+/** Dopo `cancella_account()`: nessuna riga in `public` e nessuna riga in `neon_auth."user"`. */
+export function mancanzeResidui(
+  conteggi: Record<TabellaAccount, number>,
+  utenteAncoraInAuth: boolean,
+): string[] {
+  const mancanze = TABELLE_ACCOUNT.filter((t) => conteggi[t] !== 0).map(
+    (t) => `restano ${conteggi[t]} righe in ${t}`,
+  )
+  if (utenteAncoraInAuth) mancanze.push('la riga in neon_auth."user" c\'è ancora')
+  return mancanze
+}
+
+/** L'utente 2 non deve vedere la foto dell'utente 1. */
+export function esitoFotoAltrui(righeVisibili: number): Mancanza {
+  return righeVisibili === 0 ? null : `l'utente 2 vede ${righeVisibili} foto non sue`
+}
+
+export type EsitoAccesso =
+  | { tipo: 'riuscito' }
+  | { tipo: 'rifiutato'; errore: TipoErroreDati; messaggio: string; codice?: string }
+
+/** Un utente non verificato non deve entrare: prova che la verifica email è obbligatoria. */
+export function esitoAccessoNonVerificato(esito: EsitoAccesso): Mancanza {
+  if (esito.tipo === 'riuscito') return 'la verifica email non è obbligatoria: l’accesso riesce'
+  if (esito.errore === 'sessione' && esito.codice === 'email-da-verificare') return null
+  return `accesso rifiutato con ${esito.errore} «${esito.messaggio}» (codice ${esito.codice ?? 'assente'}), atteso email-da-verificare`
+}
+
 export interface Riepilogo {
   righe: string[]
   exitCode: 0 | 1

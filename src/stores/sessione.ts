@@ -1,15 +1,19 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
+import { cancellaAccount as cancellaAccountDb } from '../data/account'
 import { ErroreDati, MESSAGGI, erroreDaEccezione } from '../data/errori'
+import { eliminaFoto, leggiFoto, salvaFoto as salvaFotoDb } from '../data/foto'
 import {
   accedi as accediDb,
   aggiornaNome as aggiornaNomeDb,
   cambiaPassword as cambiaPasswordDb,
   esci as esciDb,
+  metodiDiAccesso,
   registrati as registratiDb,
   sessioneCorrente,
   verificaCodice as verificaCodiceDb,
   verificaPassword,
+  type MetodiDiAccesso,
   type Utente,
 } from '../data/sessione'
 import { useArchivioStore } from './archivio'
@@ -18,11 +22,39 @@ export const useSessioneStore = defineStore('sessione', () => {
   const utente = ref<Utente | null>(null)
   const pronto = ref(false)
   const errore = ref<ErroreDati | null>(null)
+  const foto = ref<string | null>(null)
+  const metodi = ref<MetodiDiAccesso | null>(null)
   let ripristino: Promise<void> | null = null
 
   // Ogni store con dati dell'utente va svuotato qui.
   function svuotaStore(): void {
     useArchivioStore().reset()
+    foto.value = null
+    metodi.value = null
+  }
+
+  const eAncora = (id: string) => utente.value?.id === id
+
+  /**
+   * Foto e metodi in parallelo, senza ritardare l'accesso. Un esito che arriva dopo l'uscita
+   * o un cambio di account si scarta; un errore lascia null.
+   */
+  function caricaProfilo(id: string): void {
+    void leggiPer(id, leggiFoto, (letta) => (foto.value = letta))
+    void leggiPer(id, metodiDiAccesso, (letti) => (metodi.value = letti))
+  }
+
+  async function leggiPer<T>(
+    id: string,
+    leggi: () => Promise<T>,
+    scrivi: (valore: T) => void,
+  ): Promise<void> {
+    try {
+      const valore = await leggi()
+      if (eAncora(id)) scrivi(valore)
+    } catch {
+      // Senza foto o metodi l'app va avanti con le iniziali e le righe di Accesso generiche.
+    }
   }
 
   /**
@@ -34,6 +66,7 @@ export const useSessioneStore = defineStore('sessione', () => {
       try {
         utente.value = await sessioneCorrente()
         errore.value = null
+        if (utente.value !== null) caricaProfilo(utente.value.id)
       } catch (eccezione) {
         utente.value = null
         errore.value = erroreDaEccezione(eccezione)
@@ -55,6 +88,7 @@ export const useSessioneStore = defineStore('sessione', () => {
     utente.value = nuovo
     errore.value = null
     pronto.value = true
+    caricaProfilo(nuovo.id)
     return nuovo
   }
 
@@ -86,6 +120,7 @@ export const useSessioneStore = defineStore('sessione', () => {
     utente.value = nuovo
     errore.value = null
     pronto.value = true
+    caricaProfilo(nuovo.id)
     return nuovo
   }
 
@@ -116,10 +151,34 @@ export const useSessioneStore = defineStore('sessione', () => {
     }
   }
 
+  /** Rifiuta con un `ErroreDati` se l'utente non è più quello per cui è partito il salvataggio. */
+  async function salvaFoto(dataUrl: string): Promise<void> {
+    const id = utente.value?.id
+    if (id === undefined) throw new ErroreDati('sessione', MESSAGGI.sessione)
+    await salvaFotoDb(dataUrl)
+    if (eAncora(id)) foto.value = dataUrl
+  }
+
+  async function rimuoviFoto(): Promise<void> {
+    const id = utente.value?.id
+    if (id === undefined) throw new ErroreDati('sessione', MESSAGGI.sessione)
+    await eliminaFoto()
+    if (eAncora(id)) foto.value = null
+  }
+
+  /** R6: conferma, RPC, poi uscita locale. Se la RPC rifiuta, l'utente resta dentro. */
+  async function cancellaAccount(conferma: string, conPassword: boolean): Promise<void> {
+    await confermaCancellazione(conferma, conPassword)
+    await cancellaAccountDb()
+    await esci()
+  }
+
   return {
     utente,
     pronto,
     errore,
+    foto,
+    metodi,
     ripristina,
     accedi,
     esci,
@@ -128,5 +187,8 @@ export const useSessioneStore = defineStore('sessione', () => {
     aggiornaNome,
     cambiaPassword,
     confermaCancellazione,
+    salvaFoto,
+    rimuoviFoto,
+    cancellaAccount,
   }
 })

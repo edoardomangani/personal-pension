@@ -1,14 +1,17 @@
+import { randomBytes } from 'node:crypto'
 import { BetterAuthVanillaAdapter, createClient } from '@neon/neon-js'
 import pg from 'pg'
+import { cancellaAccount } from '../src/data/account'
 import { elencaBuste, salvaBusta } from '../src/data/buste'
 import { authDaSdk, impostaAuthDati, impostaClientDati, type ClientDati } from '../src/data/client'
 import { attendi, eErroreDati } from '../src/data/errori'
 import { elencaEstratti } from '../src/data/estratti'
 import { elencaFondi, eliminaFondo, salvaFondo } from '../src/data/fondi'
+import { eliminaFoto, leggiFoto, salvaFoto } from '../src/data/foto'
 import { leggiImpostazioni } from '../src/data/impostazioni'
 import type { Bozza } from '../src/data/mappe'
 import { elencaMovimenti, eliminaMovimento, salvaMovimento } from '../src/data/movimenti'
-import { accedi, esci } from '../src/data/sessione'
+import { accedi, esci, registrati } from '../src/data/sessione'
 import type { BustaPaga, Fondo, Movimento } from '../src/types/dominio'
 import { controllaRuoloCollaudo } from './lib/collaudo'
 import { scrivi } from './lib/db'
@@ -24,7 +27,11 @@ import {
   MESSAGGIO_ALTRO_FONDO,
   MESSAGGIO_BUSTA_ASSENTE,
   MESSAGGIO_BUSTA_COLLEGATA,
+  TABELLE_ACCOUNT,
+  emailUsaEGetta,
+  esitoAccessoNonVerificato,
   esitoBustaAncoraDaVersare,
+  esitoFotoAltrui,
   esitoLetturaAnonima,
   esitoRifiutoAtteso,
   esitoScritturaAltrui,
@@ -32,10 +39,13 @@ import {
   esitoStatoInvariato,
   mancanzaCollegamentoPerso,
   mancanzeConteggi,
+  mancanzeResidui,
   riepilogo,
   type Controllo,
+  type EsitoAccesso,
   type RispostaHttp,
   type StatoCollegamento,
+  type TabellaAccount,
   type TentativoAltrui,
 } from './lib/verifica'
 
@@ -43,6 +53,9 @@ const ENV_COLLAUDO = '.env.collaudo.local'
 
 // R11: riconoscibile come residuo di verifica.
 const NOME_TEMPORANEO = 'verifica db — temporaneo'
+
+// Il più piccolo data URL che il check di foto_profilo accetta: il contenuto non conta.
+const FOTO_PROVA = 'data:image/jpeg;base64,/9j/2Q=='
 
 interface Configurazione {
   authUrl: string
@@ -122,7 +135,18 @@ async function utente1(c: Configurazione, email: string, password: string) {
     const daVersare = buste.find((b) => b.movimentoId === null) ?? null
     controlli.push(...(await provaBustaCollegata(collegata)))
     controlli.push(...(await provaAltroFondo(daVersare)))
-    return { controlli, busta: buste[0] ?? null, daVersare }
+    // La foto che l'utente 2 non deve vedere; la toglie il rientro dell'utente 1.
+    let conFoto = true
+    try {
+      await salvaFoto(FOTO_PROVA)
+    } catch (e) {
+      conFoto = false
+      controlli.push({
+        nome: 'utente 1: foto_profilo di prova',
+        mancanza: `la foto non si salva (${descrivi(e)})`,
+      })
+    }
+    return { controlli, busta: buste[0] ?? null, daVersare, conFoto }
   } finally {
     await esci()
   }
@@ -331,6 +355,7 @@ async function utente2(
   password: string,
   altrui: BustaPaga,
   daVersare: BustaPaga | null,
+  conFoto: boolean,
 ): Promise<Controllo[]> {
   const client = nuovoClient(c)
   await accedi(email, password)
@@ -352,6 +377,7 @@ async function utente2(
     const mancanze = mancanzeConteggi(conteggi)
     return [
       ...prove,
+      { nome: 'utente 2: foto_profilo isolata', mancanza: await provaFotoIsolata(client, conFoto) },
       {
         nome: 'utente 2: aggiornare una busta dell’utente 1',
         mancanza: esitoScritturaAltrui('aggiornare una busta dell’utente 1', aggiorna),
@@ -367,6 +393,25 @@ async function utente2(
     ]
   } finally {
     await esci()
+  }
+}
+
+/** L'utente 2 non vede la foto dell'utente 1; scrive, rilegge e cancella la sua. */
+async function provaFotoIsolata(client: ClientDati, fotoAltrui: boolean): Promise<string | null> {
+  if (!fotoAltrui) return 'manca la foto dell’utente 1 da non vedere'
+  try {
+    const visibili = (await attendi(client.from('foto_profilo').select('user_id'))).length
+    const altrui = esitoFotoAltrui(visibili)
+    if (altrui !== null) return altrui
+    await salvaFoto(FOTO_PROVA)
+    const scritta = await leggiFoto()
+    await eliminaFoto()
+    const dopo = await leggiFoto()
+    if (scritta !== FOTO_PROVA) return 'la foto salvata non si rilegge'
+    if (dopo !== null) return 'la foto non si cancella'
+    return null
+  } catch (e) {
+    return descrivi(e)
   }
 }
 
@@ -389,7 +434,15 @@ async function rientroUtente1(
             buste.find((b) => b.id === bustaR5.id),
           )
     const residui = fondi.filter((f) => f.nome === NOME_TEMPORANEO)
+    let fotoResidua: string | null = null
+    try {
+      await eliminaFoto()
+      if ((await leggiFoto()) !== null) fotoResidua = 'la foto di prova è ancora lì'
+    } catch (e) {
+      fotoResidua = `la foto di prova non si toglie (${descrivi(e)})`
+    }
     return [
+      { nome: 'utente 1: nessuna foto di prova residua', mancanza: fotoResidua },
       { nome: 'utente 1: R6 busta di R5 ancora da versare', mancanza: r6 },
       {
         nome: 'utente 1: nessun fondo temporaneo residuo',
@@ -448,13 +501,19 @@ async function tokenAnonimo(authUrl: string): Promise<string | null> {
 
 async function controlliAnonimi(dataApiUrl: string, chi: string, token: string | null) {
   const controlli: Controllo[] = []
-  for (const t of TABELLE_UTENTE) {
+  for (const t of TABELLE_ACCOUNT) {
     const r = await richiesta(`${dataApiUrl}/${t}?select=user_id&limit=1`, token)
     controlli.push({ nome: `${chi}: lettura di ${t}`, mancanza: esitoLetturaAnonima(t, r) })
   }
   const scritture: [string, string, string][] = [
     ['rpc salva_busta', `${dataApiUrl}/rpc/salva_busta`, '{"p":{}}'],
     ['insert in buste_paga', `${dataApiUrl}/buste_paga`, '{}'],
+    [
+      'insert in foto_profilo',
+      `${dataApiUrl}/foto_profilo`,
+      JSON.stringify({ immagine: FOTO_PROVA }),
+    ],
+    ['rpc cancella_account', `${dataApiUrl}/rpc/cancella_account`, '{}'],
   ]
   for (const [nome, url, body] of scritture) {
     const r = await richiesta(url, token, { method: 'POST', body })
@@ -470,6 +529,97 @@ async function anonimo(c: Configurazione): Promise<Controllo[]> {
     return [...senzaToken, { nome: 'ruolo anonymous', mancanza: 'il token anonimo non si ottiene' }]
   }
   return [...senzaToken, ...(await controlliAnonimi(c.dataApiUrl, 'ruolo anonymous', token))]
+}
+
+/** Esito di `accedi` ridotto a quello che serve al controllo della verifica obbligatoria. */
+async function tentaAccesso(email: string, password: string): Promise<EsitoAccesso> {
+  try {
+    await accedi(email, password)
+    return { tipo: 'riuscito' }
+  } catch (e) {
+    if (!eErroreDati(e)) throw e
+    return { tipo: 'rifiutato', errore: e.tipo, messaggio: e.messaggio, codice: e.codice }
+  }
+}
+
+async function esciSenzaErrori(): Promise<void> {
+  try {
+    await esci()
+  } catch {
+    // Dopo cancella_account l'utente non esiste più: il signOut remoto può fallire.
+  }
+}
+
+/**
+ * `cancella_account()` su un utente usa-e-getta creato qui. È l'unico utente Neon Auth che il
+ * ciclo cancella: la `finally` tocca solo l'email esatta di questa esecuzione.
+ */
+async function provaCancellazione(
+  c: Configurazione,
+  databaseUrl: string,
+  emailCollaudo2: string,
+): Promise<Controllo[]> {
+  const email = emailUsaEGetta(emailCollaudo2, Date.now())
+  const password = randomBytes(18).toString('base64url')
+  const controlli: Controllo[] = []
+  const db = new pg.Client({ connectionString: databaseUrl })
+  await db.connect()
+  let id: string | null = null
+  let cancellato = false
+  try {
+    nuovoClient(c)
+    await registrati({ nome: 'COLLAUDO usa-e-getta', email, password })
+    const { rows } = await db.query<{ id: string }>(
+      'select id::text as id from neon_auth."user" where email = $1',
+      [email],
+    )
+    id = rows[0]?.id ?? null
+    if (id === null) throw new Error(`l'utente ${email} non risulta in neon_auth dopo signUp`)
+
+    const esito = await tentaAccesso(email, password)
+    if (esito.tipo === 'riuscito') await esciSenzaErrori()
+    controlli.push({
+      nome: 'Neon Auth: verifica email obbligatoria',
+      mancanza: esitoAccessoNonVerificato(esito),
+    })
+
+    await db.query('update neon_auth."user" set "emailVerified" = true where email = $1', [email])
+    nuovoClient(c)
+    await accedi(email, password)
+    await salvaFondo({ nome: NOME_TEMPORANEO })
+    await salvaFoto(FOTO_PROVA)
+    await cancellaAccount()
+    cancellato = true
+    await esciSenzaErrori()
+
+    const conteggi: Record<TabellaAccount, number> = { ...zeri(), foto_profilo: 0 }
+    for (const t of TABELLE_ACCOUNT) {
+      const r = await db.query<{ n: number }>(
+        `select count(*)::int as n from public.${t} where user_id = $1`,
+        [id],
+      )
+      conteggi[t] = r.rows[0]?.n ?? 0
+    }
+    const { rows: rimasti } = await db.query('select 1 from neon_auth."user" where id::text = $1', [
+      id,
+    ])
+    const mancanze = mancanzeResidui(conteggi, rimasti.length > 0)
+    controlli.push({
+      nome: 'cancella_account: nessun residuo',
+      mancanza: mancanze.length === 0 ? null : mancanze.join('; '),
+    })
+  } catch (e) {
+    controlli.push({ nome: 'cancella_account: nessun residuo', mancanza: descrivi(e) })
+  } finally {
+    // Interrotto prima della RPC: si toglie a mano solo quello che questa esecuzione ha creato.
+    if (!cancellato && id !== null) {
+      await db.query('delete from foto_profilo where user_id = $1', [id])
+      await db.query('delete from fondi where user_id = $1', [id])
+    }
+    await db.query('delete from neon_auth."user" where email = $1', [email])
+    await db.end()
+  }
+  return controlli
 }
 
 async function verifica(variabili: Variabili): Promise<Controllo[]> {
@@ -497,6 +647,7 @@ async function verifica(variabili: Variabili): Promise<Controllo[]> {
         richiedi(variabili, 'COLLAUDO2_PASSWORD'),
         uno.busta,
         uno.daVersare,
+        uno.conFoto,
       )),
     )
   }
@@ -506,6 +657,13 @@ async function verifica(variabili: Variabili): Promise<Controllo[]> {
       richiedi(variabili, 'COLLAUDO_EMAIL'),
       richiedi(variabili, 'COLLAUDO_PASSWORD'),
       uno.daVersare,
+    )),
+  )
+  controlli.push(
+    ...(await provaCancellazione(
+      c,
+      richiedi(variabili, 'DATABASE_URL'),
+      richiedi(variabili, 'COLLAUDO2_EMAIL'),
     )),
   )
   controlli.push(...(await anonimo(c)))

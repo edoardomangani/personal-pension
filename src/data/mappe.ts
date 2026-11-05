@@ -64,6 +64,11 @@ export interface ImpostazioniDb {
   limite_deducibile: number
 }
 
+/** Una riga per utente: l'immagine è un data URL JPEG. */
+export interface FotoDb {
+  immagine: string
+}
+
 export const COLONNE_FONDO = 'id, nome'
 export const COLONNE_BUSTA =
   'id, fondo_id, competenza, data, movimento_id, note, busta_righe(tipo, importo)'
@@ -72,6 +77,8 @@ export const COLONNE_ESTRATTO = 'id, fondo_id, data, valore, note'
 export const COLONNE_IMPOSTAZIONI =
   'anno_nascita, eta_pensione, rendimento, inflazione, crescita, tfr_mensile, datore_mensile, ' +
   'personale_mensile, volontario_mensile, aliquota, limite_deducibile'
+
+export const COLONNE_FOTO = 'immagine'
 
 const centesimiONull = (euro: number | null): Centesimi | null =>
   euro === null ? null : euroInCentesimi(euro)

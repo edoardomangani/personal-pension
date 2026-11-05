@@ -1,4 +1,5 @@
 // @vitest-environment node
+import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import {
   daApplicare,
@@ -158,5 +159,57 @@ describe('mancanzeFunzioni', () => {
     expect(mancanzeFunzioni([{ ...sicura, securityDefiner: true }])).toEqual([
       'salva_busta: è security definer',
     ])
+  })
+
+  it('security definer ammessa per nome → nessuna mancanza', () => {
+    expect(
+      mancanzeFunzioni([{ ...sicura, funzione: 'cancella_account()', securityDefiner: true }]),
+    ).toEqual([])
+  })
+
+  it('altra security definer → mancanza', () => {
+    expect(
+      mancanzeFunzioni([{ ...sicura, funzione: 'cancella_tutto()', securityDefiner: true }]),
+    ).toEqual(['cancella_tutto(): è security definer'])
+  })
+
+  it('cancella_account() eseguibile da anonymous → mancanza', () => {
+    expect(
+      mancanzeFunzioni([
+        {
+          funzione: 'cancella_account()',
+          securityDefiner: true,
+          eseguibileDaAnonymous: true,
+        },
+      ]),
+    ).toEqual(['cancella_account(): anonymous può eseguirla'])
+  })
+})
+
+describe('003_account.sql', () => {
+  const sql = readFileSync(new URL('../../db/migrations/003_account.sql', import.meta.url), 'utf8')
+
+  it('foto_profilo con RLS, policy per proprietario e grant ad authenticated', () => {
+    expect(sql).toMatch(/user_id\s+text primary key default auth\.user_id\(\)/)
+    expect(sql).toContain('alter table foto_profilo enable row level security')
+    expect(sql).toMatch(
+      /create policy foto_profilo_proprietario on foto_profilo for all to authenticated\s+using \(user_id = auth\.user_id\(\)\) with check \(user_id = auth\.user_id\(\)\)/,
+    )
+    expect(sql).toContain('grant select, insert, update, delete on foto_profilo to authenticated')
+    expect(sql).not.toMatch(/to anonymous/)
+  })
+
+  it('cancella_account() eseguibile solo da authenticated', () => {
+    expect(sql).toContain('revoke execute on function cancella_account() from public, anonymous')
+    expect(sql).toContain('grant execute on function cancella_account() to authenticated')
+  })
+
+  it("ogni delete filtra sull'utente della sessione", () => {
+    const cancellazioni = sql.match(/delete from [^;]+;/g) ?? []
+    expect(cancellazioni).toHaveLength(7)
+    for (const d of cancellazioni) {
+      expect(d).toMatch(/where (user_id|id::text) = v_utente;$/)
+    }
+    expect(sql).toContain('v_utente text := auth.user_id()')
   })
 })

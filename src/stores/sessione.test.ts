@@ -1,9 +1,11 @@
 import { createPinia, setActivePinia } from 'pinia'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { cancellaAccount } from '../data/account'
 import { elencaBuste } from '../data/buste'
 import { ErroreDati } from '../data/errori'
 import { elencaEstratti } from '../data/estratti'
 import { elencaFondi } from '../data/fondi'
+import { eliminaFoto, leggiFoto, salvaFoto } from '../data/foto'
 import { leggiImpostazioni } from '../data/impostazioni'
 import { elencaMovimenti, salvaMovimento } from '../data/movimenti'
 import {
@@ -11,6 +13,7 @@ import {
   aggiornaNome,
   cambiaPassword,
   esci,
+  metodiDiAccesso,
   registrati,
   sessioneCorrente,
   verificaCodice,
@@ -31,7 +34,10 @@ vi.mock('../data/sessione', () => ({
   aggiornaNome: vi.fn(),
   cambiaPassword: vi.fn(),
   verificaPassword: vi.fn(),
+  metodiDiAccesso: vi.fn(),
 }))
+vi.mock('../data/foto', () => ({ leggiFoto: vi.fn(), salvaFoto: vi.fn(), eliminaFoto: vi.fn() }))
+vi.mock('../data/account', () => ({ cancellaAccount: vi.fn() }))
 vi.mock('../data/fondi', () => ({ elencaFondi: vi.fn() }))
 vi.mock('../data/buste', () => ({ elencaBuste: vi.fn() }))
 vi.mock('../data/movimenti', () => ({ elencaMovimenti: vi.fn(), salvaMovimento: vi.fn() }))
@@ -42,6 +48,11 @@ const PRIMO = utenteDiProva({ id: 'u1', email: 'primo@esempio.it' })
 const SECONDO = utenteDiProva({ id: 'u2', email: 'secondo@esempio.it' })
 const GIULIA = utenteDiProva({ id: 'u3', email: 'giulia.conti@esempio.it', nome: 'Giulia Conti' })
 const SESSIONE_SCADUTA = new ErroreDati('sessione', 'La sessione è scaduta. Accedi di nuovo.')
+const FOTO = 'data:image/jpeg;base64,AAAA'
+const ENTRAMBI = { password: true, google: true }
+
+/** Lascia arrivare le letture di foto e metodi partite senza await. */
+const lettureFinite = () => new Promise<void>((risolvi) => setTimeout(risolvi, 0))
 
 function lettureDalSeed(): void {
   vi.mocked(elencaFondi).mockImplementation(async () => archivioDalSeed().fondi)
@@ -76,6 +87,8 @@ beforeEach(() => {
   vi.mocked(accedi).mockResolvedValue(PRIMO)
   vi.mocked(esci).mockResolvedValue(undefined)
   vi.mocked(sessioneCorrente).mockResolvedValue(null)
+  vi.mocked(leggiFoto).mockResolvedValue(null)
+  vi.mocked(metodiDiAccesso).mockResolvedValue(ENTRAMBI)
 })
 
 describe('sessione (R8)', () => {
@@ -334,6 +347,164 @@ describe('account (R5, R6, R15)', () => {
       tipo: 'sessione',
     })
     expect(verificaPassword).not.toHaveBeenCalled()
+  })
+})
+
+describe('foto, metodi e cancellazione (R5, R6)', () => {
+  it('accedi → foto e metodi caricati una volta ciascuno', async () => {
+    vi.mocked(leggiFoto).mockResolvedValueOnce(FOTO)
+    const sessione = useSessioneStore()
+    await sessione.accedi(PRIMO.email, 'segreta')
+    await lettureFinite()
+    expect(sessione.foto).toBe(FOTO)
+    expect(sessione.metodi).toEqual(ENTRAMBI)
+    expect(leggiFoto).toHaveBeenCalledOnce()
+    expect(metodiDiAccesso).toHaveBeenCalledOnce()
+  })
+
+  it('ripristina e verificaCodice riusciti caricano foto e metodi', async () => {
+    vi.mocked(sessioneCorrente).mockResolvedValueOnce(PRIMO)
+    vi.mocked(leggiFoto).mockResolvedValueOnce(FOTO)
+    const sessione = useSessioneStore()
+    await sessione.ripristina()
+    await lettureFinite()
+    expect(sessione.foto).toBe(FOTO)
+    vi.mocked(verificaCodice).mockResolvedValueOnce(GIULIA)
+    await sessione.verificaCodice(GIULIA.email, '123456')
+    expect(sessione.foto).toBeNull()
+    await lettureFinite()
+    expect(sessione.metodi).toEqual(ENTRAMBI)
+    expect(leggiFoto).toHaveBeenCalledTimes(2)
+  })
+
+  it('esci() dopo utente, foto, metodi e archivio → tutto null o vuoto', async () => {
+    vi.mocked(leggiFoto).mockResolvedValueOnce(FOTO)
+    const { sessione, archivio } = await accessoConArchivio()
+    await lettureFinite()
+    expect(sessione.foto).toBe(FOTO)
+    await sessione.esci()
+    expect(sessione.utente).toBeNull()
+    expect(sessione.foto).toBeNull()
+    expect(sessione.metodi).toBeNull()
+    expect(eVuoto(archivio)).toBe(true)
+  })
+
+  it('lettura che arriva dopo esci() → ignorata', async () => {
+    const lettura = inSospeso<string | null>()
+    const conti = inSospeso<{ password: boolean; google: boolean }>()
+    vi.mocked(leggiFoto).mockReturnValueOnce(lettura.promessa)
+    vi.mocked(metodiDiAccesso).mockReturnValueOnce(conti.promessa)
+    const sessione = useSessioneStore()
+    await sessione.accedi(PRIMO.email, 'segreta')
+    await sessione.esci()
+    lettura.risolvi(FOTO)
+    conti.risolvi(ENTRAMBI)
+    await lettureFinite()
+    expect(sessione.foto).toBeNull()
+    expect(sessione.metodi).toBeNull()
+  })
+
+  it('lettura del primo utente che arriva dopo il cambio di account → ignorata', async () => {
+    const lettura = inSospeso<string | null>()
+    vi.mocked(leggiFoto).mockReturnValueOnce(lettura.promessa).mockResolvedValueOnce(null)
+    const sessione = useSessioneStore()
+    await sessione.accedi(PRIMO.email, 'segreta')
+    vi.mocked(accedi).mockResolvedValueOnce(SECONDO)
+    await sessione.accedi(SECONDO.email, 'altra')
+    lettura.risolvi(FOTO)
+    await lettureFinite()
+    expect(sessione.utente).toEqual(SECONDO)
+    expect(sessione.foto).toBeNull()
+  })
+
+  it('errore di lettura → foto e metodi null, accesso riuscito', async () => {
+    vi.mocked(leggiFoto).mockRejectedValueOnce(new ErroreDati('rete', 'Rete giù'))
+    vi.mocked(metodiDiAccesso).mockRejectedValueOnce(new ErroreDati('altro', 'Errore'))
+    const sessione = useSessioneStore()
+    await expect(sessione.accedi(PRIMO.email, 'segreta')).resolves.toEqual(PRIMO)
+    await lettureFinite()
+    expect(sessione.utente).toEqual(PRIMO)
+    expect(sessione.foto).toBeNull()
+    expect(sessione.metodi).toBeNull()
+  })
+
+  it('salvaFoto e rimuoviFoto aggiornano la foto senza rileggerla', async () => {
+    const sessione = useSessioneStore()
+    await sessione.accedi(PRIMO.email, 'segreta')
+    await lettureFinite()
+    vi.mocked(salvaFoto).mockResolvedValueOnce(undefined)
+    await sessione.salvaFoto(FOTO)
+    expect(salvaFoto).toHaveBeenCalledWith(FOTO)
+    expect(sessione.foto).toBe(FOTO)
+    vi.mocked(eliminaFoto).mockResolvedValueOnce(undefined)
+    await sessione.rimuoviFoto()
+    expect(sessione.foto).toBeNull()
+    expect(leggiFoto).toHaveBeenCalledOnce()
+  })
+
+  it('salvaFoto che fallisce lascia la foto di prima', async () => {
+    vi.mocked(leggiFoto).mockResolvedValueOnce(FOTO)
+    const sessione = useSessioneStore()
+    await sessione.accedi(PRIMO.email, 'segreta')
+    await lettureFinite()
+    vi.mocked(salvaFoto).mockRejectedValueOnce(new ErroreDati('rete', 'Rete giù'))
+    await expect(sessione.salvaFoto('data:image/jpeg;base64,BBBB')).rejects.toMatchObject({
+      tipo: 'rete',
+    })
+    expect(sessione.foto).toBe(FOTO)
+  })
+
+  it('cancellaAccount con password errata → «Password non corretta.», RPC non chiamata', async () => {
+    const sessione = useSessioneStore()
+    vi.mocked(accedi).mockResolvedValueOnce(GIULIA)
+    await sessione.accedi(GIULIA.email, 'segreta')
+    vi.mocked(verificaPassword).mockRejectedValueOnce(
+      new ErroreDati('vincolo', 'Password non corretta.'),
+    )
+    await expect(sessione.cancellaAccount('sbagliata', true)).rejects.toMatchObject({
+      messaggio: 'Password non corretta.',
+    })
+    expect(cancellaAccount).not.toHaveBeenCalled()
+    expect(sessione.utente).toEqual(GIULIA)
+  })
+
+  it('cancellaAccount Google con spazi e maiuscole → RPC chiamata, poi esci e store vuoti', async () => {
+    vi.mocked(accedi).mockResolvedValueOnce(GIULIA)
+    vi.mocked(leggiFoto).mockResolvedValueOnce(FOTO)
+    const sessione = useSessioneStore()
+    const archivio = useArchivioStore()
+    await sessione.accedi(GIULIA.email, 'segreta')
+    await archivio.carica()
+    await lettureFinite()
+    vi.mocked(cancellaAccount).mockResolvedValueOnce(undefined)
+    await sessione.cancellaAccount(' Giulia.Conti@Esempio.it ', false)
+    expect(cancellaAccount).toHaveBeenCalledOnce()
+    expect(esci).toHaveBeenCalledOnce()
+    expect(sessione.utente).toBeNull()
+    expect(sessione.foto).toBeNull()
+    expect(sessione.metodi).toBeNull()
+    expect(eVuoto(archivio)).toBe(true)
+  })
+
+  it('cancellaAccount con signOut remoto che fallisce → risolve comunque, fuori', async () => {
+    vi.mocked(accedi).mockResolvedValueOnce(GIULIA)
+    const sessione = useSessioneStore()
+    await sessione.accedi(GIULIA.email, 'segreta')
+    vi.mocked(cancellaAccount).mockResolvedValueOnce(undefined)
+    vi.mocked(esci).mockRejectedValueOnce(SESSIONE_SCADUTA)
+    await expect(sessione.cancellaAccount(GIULIA.email, false)).resolves.toBeUndefined()
+    expect(sessione.utente).toBeNull()
+  })
+
+  it('RPC che rifiuta → rifiuta con lo stesso errore e l’utente resta dentro', async () => {
+    vi.mocked(accedi).mockResolvedValueOnce(GIULIA)
+    const sessione = useSessioneStore()
+    await sessione.accedi(GIULIA.email, 'segreta')
+    const rete = new ErroreDati('rete', 'Rete giù')
+    vi.mocked(cancellaAccount).mockRejectedValueOnce(rete)
+    await expect(sessione.cancellaAccount(GIULIA.email, false)).rejects.toBe(rete)
+    expect(esci).not.toHaveBeenCalled()
+    expect(sessione.utente).toEqual(GIULIA)
   })
 })
 
