@@ -72,3 +72,44 @@ describe('index.html, meta della PWA', () => {
     expect(documento.head.querySelector('link[rel="manifest"]')).toBeNull()
   })
 })
+
+describe('index.html, immagini di avvio', () => {
+  // R9: punti × densità degli iPhone in verticale.
+  const schermi: [number, number, number][] = [
+    [375, 667, 2],
+    [414, 736, 3],
+    [375, 812, 3],
+    [414, 896, 2],
+    [414, 896, 3],
+    [390, 844, 3],
+    [428, 926, 3],
+    [393, 852, 3],
+    [430, 932, 3],
+    [402, 874, 3],
+    [440, 956, 3],
+  ]
+  const link = [...documento.head.querySelectorAll('link[rel="apple-touch-startup-image"]')]
+
+  it('ha un apple-touch-startup-image per ogni schermo', () => {
+    expect(link).toHaveLength(schermi.length)
+  })
+
+  it.each(schermi)('%i×%i @%i ha media query e PNG giusti', (larghezza, altezza, densita) => {
+    const media =
+      `(device-width: ${larghezza}px) and (device-height: ${altezza}px)` +
+      ` and (-webkit-device-pixel-ratio: ${densita}) and (orientation: portrait)`
+    const trovati = link.filter((l) => l.getAttribute('media') === media)
+    expect(trovati).toHaveLength(1)
+
+    const href = trovati[0]?.getAttribute('href') ?? ''
+    expect(href).toMatch(/^\/icons\/avvio\/[^/]+\.png$/)
+    const file = join(radice, href.replace(/^\//, ''))
+    expect(existsSync(file)).toBe(true)
+    // Larghezza e altezza dall'IHDR, ai byte 16–23.
+    const png = readFileSync(file)
+    expect({ larghezza: png.readUInt32BE(16), altezza: png.readUInt32BE(20) }).toEqual({
+      larghezza: larghezza * densita,
+      altezza: altezza * densita,
+    })
+  })
+})

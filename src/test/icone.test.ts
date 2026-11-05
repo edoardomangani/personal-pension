@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
@@ -65,5 +65,29 @@ describe('icone PNG', () => {
     const png = readFileSync(join(cartella, nome))
     expect(png.subarray(12, 16).toString('ascii')).toBe('IHDR')
     expect(misura(nome)).toEqual({ larghezza: lato, altezza: lato })
+  })
+})
+
+// R9: punti × densità degli iPhone in verticale.
+const SCHERMI_AVVIO: [number, number, number][] = [
+  [375, 667, 2],
+  [414, 736, 3],
+  [375, 812, 3],
+  [414, 896, 2],
+  [414, 896, 3],
+  [390, 844, 3],
+  [428, 926, 3],
+  [393, 852, 3],
+  [430, 932, 3],
+  [402, 874, 3],
+  [440, 956, 3],
+]
+
+describe('immagini di avvio', () => {
+  it.each(SCHERMI_AVVIO)('%i×%i @%i ha il PNG in pixel reali', (larghezza, altezza, densita) => {
+    const px = { larghezza: larghezza * densita, altezza: altezza * densita }
+    const nome = `avvio/avvio-${px.larghezza}x${px.altezza}.png`
+    expect(existsSync(join(cartella, nome))).toBe(true)
+    expect(misura(nome)).toEqual(px)
   })
 })

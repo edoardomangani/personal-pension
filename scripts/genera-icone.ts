@@ -1,15 +1,16 @@
-import { readFileSync, writeFileSync } from 'node:fs'
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { Resvg } from '@resvg/resvg-js'
+import { SCHERMI, estraiSegno, nomeFile, pixel, svgAvvio } from './lib/avvio'
 import { scrivi } from './lib/output'
 
 const CARTELLA = join(import.meta.dirname, '..', 'icons')
 const RAGGIO_FONDO = ' rx="40"'
 
-function rendi(svg: string, lato: number, nome: string): void {
+function rendi(svg: string, lato: number, nome: string, altezza = lato): void {
   const png = new Resvg(svg, { fitTo: { mode: 'width', value: lato } }).render().asPng()
   writeFileSync(join(CARTELLA, nome), png)
-  scrivi(`${nome} ${lato}×${lato}`)
+  scrivi(`${nome} ${lato}×${altezza}`)
 }
 
 function main(): void {
@@ -25,6 +26,13 @@ function main(): void {
   const maskable = readFileSync(join(CARTELLA, 'icon-maskable.svg'), 'utf8')
   if (maskable.includes(' rx=')) throw new Error('icon-maskable.svg: il fondo non va arrotondato.')
   rendi(maskable, 512, 'icon-maskable-512.png')
+
+  const segno = estraiSegno(readFileSync(join(CARTELLA, 'icon.svg'), 'utf8'))
+  mkdirSync(join(CARTELLA, 'avvio'), { recursive: true })
+  for (const schermo of SCHERMI) {
+    const { larghezza, altezza } = pixel(schermo)
+    rendi(svgAvvio(schermo, segno), larghezza, join('avvio', nomeFile(schermo)), altezza)
+  }
 }
 
 try {
