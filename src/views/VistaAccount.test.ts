@@ -388,7 +388,7 @@ describe('VistaAccount: cancellazione (R23)', () => {
     const { router } = await apriCancella()
     await conferma('altra@esempio.it')
     expect(campoConferma().closest('[data-slot="field"]')?.textContent).toContain(
-      "L'email non è quella del tuo account.",
+      'L’email non è quella del tuo account.',
     )
     expect(cancellaAccount).not.toHaveBeenCalled()
     expect(router.currentRoute.value.path).toBe('/account')

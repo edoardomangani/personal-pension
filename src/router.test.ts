@@ -31,6 +31,12 @@ vi.mock('./data/sessione', () => ({
 }))
 vi.mock('./data/foto', () => ({ leggiFoto: vi.fn() }))
 vi.mock('./data/fondi', () => ({ elencaFondi: vi.fn() }))
+// Il carico dell'archivio resta in volo: se fallisse a test finito, segnerebbe scaduta la sessione della pinia del test dopo.
+const { inVolo } = vi.hoisted(() => ({ inVolo: () => new Promise<never>(() => {}) }))
+vi.mock('./data/buste', () => ({ elencaBuste: vi.fn(inVolo) }))
+vi.mock('./data/movimenti', () => ({ elencaMovimenti: vi.fn(inVolo) }))
+vi.mock('./data/estratti', () => ({ elencaEstratti: vi.fn(inVolo) }))
+vi.mock('./data/impostazioni', () => ({ leggiImpostazioni: vi.fn(inVolo) }))
 
 const UTENTE = utenteDiProva()
 const FONDO = { id: 'f1', nome: 'Amundi Seconda Pensione' }

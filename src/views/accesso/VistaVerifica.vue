@@ -85,7 +85,7 @@ onUnmounted(fermaConto)
   <div class="flex flex-col gap-6">
     <TestaAccesso class="mb-2" titolo="Controlla la posta">
       Ti abbiamo mandato un codice a <span class="text-foreground">{{ email }}</span
-      >. Scrivilo qui per attivare l'account.
+      >. Scrivilo qui per attivare l’account.
     </TestaAccesso>
 
     <Alert v-if="reinviato" data-avviso>
@@ -144,14 +144,14 @@ onUnmounted(fermaConto)
           to="/registrati"
           class="text-foreground underline underline-offset-4 relative touch-target"
         >
-          Crea di nuovo l'account
+          Crea di nuovo l’account
         </RouterLink>
       </p>
       <RouterLink
         to="/accedi"
         class="text-sm text-foreground underline underline-offset-4 relative touch-target"
       >
-        Torna all'accesso
+        Torna all’accesso
       </RouterLink>
     </div>
   </div>

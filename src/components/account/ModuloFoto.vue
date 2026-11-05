@@ -102,7 +102,7 @@ async function rimuoviFoto(): Promise<void> {
           :disabled="inInvio"
           @click="apriSelettore"
         >
-          Scegline un'altra
+          Scegline un’altra
         </Button>
       </template>
       <template v-else>

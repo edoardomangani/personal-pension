@@ -122,12 +122,12 @@ describe('VistaVerifica (R15)', () => {
 
   it('«Email sbagliata?» porta a /registrati', async () => {
     const { wrapper } = await apri()
-    expect(wrapper.find('a[href="/registrati"]').text()).toContain("Crea di nuovo l'account")
+    expect(wrapper.find('a[href="/registrati"]').text()).toContain('Crea di nuovo l’account')
   })
 })
 
 describe('VistaVerifica: area di tocco (R2)', () => {
-  it.each(["Crea di nuovo l'account", "Torna all'accesso"])(
+  it.each(['Crea di nuovo l’account', 'Torna all’accesso'])(
     '«%s» ha relative e touch-target',
     async (testo) => {
       const { wrapper } = await apri()

@@ -347,7 +347,7 @@ describe('account (R5, R6, R15)', () => {
     await sessione.accedi(GIULIA.email, 'segreta')
     await expect(sessione.confermaCancellazione('altra@esempio.it', false)).rejects.toMatchObject({
       tipo: 'vincolo',
-      messaggio: "L'email non è quella del tuo account.",
+      messaggio: 'L’email non è quella del tuo account.',
     })
   })
 

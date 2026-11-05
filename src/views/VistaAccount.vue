@@ -189,7 +189,7 @@ const fotoAperta = ref(false)
   <ResponsiveSheet v-model:open="passwordAperto" title="Cambia password">
     <ModuloCambiaPassword @chiudi="passwordAperto = false" />
   </ResponsiveSheet>
-  <ResponsiveSheet v-model:open="cancellaAperto" title="Cancellare l'account?">
+  <ResponsiveSheet v-model:open="cancellaAperto" title="Cancellare l’account?">
     <ModuloCancellaAccount :con-password="conPassword" @chiudi="cancellaAperto = false" />
   </ResponsiveSheet>
   <FotoProfiloSheet v-model:open="fotoAperta" />

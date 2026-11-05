@@ -203,7 +203,7 @@ export const useSessioneStore = defineStore('sessione', () => {
       return
     }
     if (conferma.trim().toLowerCase() !== attuale.email.trim().toLowerCase()) {
-      throw new ErroreDati('vincolo', "L'email non è quella del tuo account.")
+      throw new ErroreDati('vincolo', 'L’email non è quella del tuo account.')
     }
   }
 

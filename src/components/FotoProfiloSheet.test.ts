@@ -66,7 +66,7 @@ describe('FotoProfiloSheet (R25)', () => {
     await scegliFile(fileDiProva())
 
     expect(document.body.textContent).toContain('Così la vedranno il menu e la testata.')
-    expect(bottone("Scegline un'altra")).toBeDefined()
+    expect(bottone('Scegline un’altra')).toBeDefined()
     // L'input si azzera: la stessa foto si può scegliere di nuovo.
     expect(document.querySelector<HTMLInputElement>('input[type="file"]')?.value).toBe('')
 

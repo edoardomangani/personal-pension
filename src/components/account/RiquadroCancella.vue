@@ -12,7 +12,7 @@ defineEmits<{ cancella: [] }>()
       class="flex flex-col items-start rounded-2xl border-[0.75px] border-border bg-card p-4 text-sm text-destructive shadow-glass"
     >
       <p class="font-medium">Attenzione</p>
-      <p>Cancelli l'account con il fondo, i movimenti e i valori. Non si può annullare.</p>
+      <p>Cancelli l’account con il fondo, i movimenti e i valori. Non si può annullare.</p>
       <Button type="button" variant="destructive" class="mt-4" @click="$emit('cancella')">
         <PhTrash />
         Cancella account

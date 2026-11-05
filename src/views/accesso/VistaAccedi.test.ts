@@ -66,7 +66,7 @@ describe('VistaAccedi (R13)', () => {
   it.each([
     ['sessione', 'Sessione scaduta', 'Accedi di nuovo per tornare dove eri.'],
     ['password', 'Password aggiornata', 'Accedi con la nuova password.'],
-    ['cancellato', 'Account cancellato', "L'account e tutti i dati del piano non ci sono più."],
+    ['cancellato', 'Account cancellato', 'L’account e tutti i dati del piano non ci sono più.'],
   ])('?avviso=%s mostra «%s»', async (avviso, titolo, testo) => {
     const { wrapper } = await apri(`/accedi?avviso=${avviso}`)
     const alert = wrapper.get('[data-avviso]')

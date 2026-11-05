@@ -60,7 +60,7 @@ async function cancella(): Promise<void> {
   <form class="flex flex-col gap-4" novalidate @submit.prevent="cancella">
     <DescrizioneSheet>
       Cancelliamo subito buste paga, movimenti, estratti conto, impostazioni e la foto, poi
-      l'account. Non si può annullare: se ti serve, scarica prima un backup dalle Impostazioni.
+      l’account. Non si può annullare: se ti serve, scarica prima un backup dalle Impostazioni.
       {{ istruzione }}
     </DescrizioneSheet>
     <InsetGroup>

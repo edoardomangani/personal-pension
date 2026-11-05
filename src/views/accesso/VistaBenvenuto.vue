@@ -76,7 +76,7 @@ onMounted(() => document.getElementById(ID.fondo)?.focus())
     <TestaAccesso
       class="mb-2"
       titolo="Prepariamo il tuo piano"
-      descrizione="Ci servono il fondo e l'anno di nascita: li cambi quando vuoi dalle Impostazioni"
+      descrizione="Ci servono il fondo e l’anno di nascita: li cambi quando vuoi dalle Impostazioni"
     />
 
     <form class="flex flex-col gap-6" novalidate @submit.prevent="inizia">

@@ -47,7 +47,7 @@ const AVVISI: Readonly<Record<string, Avviso>> = {
   cancellato: {
     icona: PhCheckCircle,
     titolo: 'Account cancellato',
-    testo: "L'account e tutti i dati del piano non ci sono più.",
+    testo: 'L’account e tutti i dati del piano non ci sono più.',
   },
 }
 
