@@ -25,12 +25,13 @@ begin
   end if;
 
   -- I controlli dei residui girano col ruolo dei delete: sotto RLS vedrebbero zero righe come loro.
+  -- USAGE: RLS la scavalcano solo i privilegi ereditati del proprietario, non l'appartenenza NOINHERIT.
   if not (select rolbypassrls from pg_roles where rolname = current_user) then
     select c.relname into v_tabella
       from pg_class c
      where c.oid in ('buste_paga'::regclass, 'movimenti'::regclass, 'estratti_conto'::regclass,
                      'fondi'::regclass, 'impostazioni'::regclass, 'foto_profilo'::regclass)
-       and (not pg_has_role(current_user, c.relowner, 'MEMBER') or c.relforcerowsecurity)
+       and (not pg_has_role(current_user, c.relowner, 'USAGE') or c.relforcerowsecurity)
      limit 1;
     if v_tabella is not null then
       raise exception 'cancella_account: il proprietario della funzione non scavalca RLS su %', v_tabella

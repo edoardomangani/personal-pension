@@ -264,6 +264,19 @@ describe('004_account_controlli.sql', () => {
     }
   })
 
+  it('la precondizione chiede i privilegi ereditati (USAGE) sul proprietario delle tabelle', () => {
+    const i = sql.indexOf("pg_has_role(current_user, c.relowner, 'USAGE')")
+    expect(i).toBeGreaterThanOrEqual(0)
+    expect(i).toBeLessThan(primoDelete)
+    expect(sql).not.toContain("'MEMBER'")
+  })
+
+  it('senza sessione la funzione si ferma prima del primo delete', () => {
+    const i = sql.search(/if v_utente is null then\s+raise exception 'Sessione mancante';/)
+    expect(i).toBeGreaterThanOrEqual(0)
+    expect(i).toBeLessThan(primoDelete)
+  })
+
   it('il controllo dei residui sulle sei tabelle viene prima di cancellare l’utente', () => {
     const tabelle = [
       'buste_paga',
