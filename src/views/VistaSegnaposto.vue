@@ -4,7 +4,7 @@ import PlaceholderPattern from '@/components/PlaceholderPattern.vue'
 
 <template>
   <!-- Il titolo della sezione sta nella testata della shell, letto da meta.titolo. -->
-  <div data-segnaposto class="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
+  <div data-segnaposto class="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl">
     <div class="grid auto-rows-min gap-4 md:grid-cols-3">
       <div class="relative aspect-video overflow-hidden rounded-xl border-[0.75px] border-border">
         <PlaceholderPattern />

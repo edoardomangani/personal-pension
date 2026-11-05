@@ -152,3 +152,28 @@ describe('Esci in Profilo (R11)', () => {
     expect(useSessioneStore().utente).toBeNull()
   })
 })
+
+describe('Margini di «Profilo» (DS-03-C2 R5)', () => {
+  it('radice senza padding esterno (DS-03-C2 R5)', async () => {
+    const wrapper = await montaProfilo()
+    const radice = wrapper.get('nav[aria-label="Profilo"]').element.parentElement
+    const classi = [...(radice?.classList ?? [])]
+    expect(classi).toContain('max-w-140')
+    expect(classi.some((c) => /^(lg:)?p[xytb]?-/.test(c))).toBe(false)
+  })
+})
+
+describe('Tile di «Profilo» (DS-03-C2 R6)', () => {
+  it('tile delle righe con raggio 12 (DS-03-C2 R6)', async () => {
+    const wrapper = await montaProfilo()
+    const tile = [
+      ...wrapper.get('nav').findAll('a'),
+      ...wrapper.findAll('button').filter((b) => b.text() === 'Esci'),
+    ].map((riga) => riga.get('span'))
+    expect(tile).toHaveLength(4)
+    for (const t of tile) {
+      expect(t.classes()).toContain('rounded-tile')
+      expect(t.classes()).not.toContain('rounded-xl')
+    }
+  })
+})

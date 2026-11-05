@@ -18,10 +18,14 @@ import { Toaster } from '@/components/ui/sonner'
       <AppMobileHeader class="lg:hidden" />
       <!-- max-lg:hidden batte il flex della testata, che hidden da solo non batterebbe. -->
       <AppTopBar class="max-lg:hidden" />
+      <!-- Il padding sta fuori: il limite di 1180px vale per il contenuto dentro. -->
       <div
-        class="mx-auto flex w-full max-w-content flex-1 flex-col pb-[calc(var(--bottom-bar-height)+env(safe-area-inset-bottom))] lg:px-12 lg:pt-6 lg:pb-12"
+        data-contenuto
+        class="flex flex-1 flex-col px-4 pt-3 pb-[calc(var(--bottom-bar-height)+env(safe-area-inset-bottom))] lg:px-12 lg:pt-6 lg:pb-12"
       >
-        <slot />
+        <div class="mx-auto flex w-full max-w-content flex-1 flex-col">
+          <slot />
+        </div>
       </div>
       <div class="lg:hidden">
         <AppBottomBar />

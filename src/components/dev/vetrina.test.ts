@@ -392,3 +392,19 @@ describe('token di R1', () => {
     expect(testo).not.toContain('bg-white/18')
   })
 })
+
+describe('token del tile (DS-03-C2 R6)', () => {
+  const RADICE = fileURLToPath(new URL('../../../', import.meta.url))
+
+  it('app.css ha --radius-tile: 12px in @theme inline', () => {
+    const css = readFileSync(`${RADICE}src/styles/app.css`, 'utf8')
+    const tema = /@theme inline\s*\{([\s\S]*?)\n\}/.exec(css)?.[1] ?? ''
+    expect(tema).toMatch(/--radius-tile:\s*12px;/)
+  })
+
+  it('DESIGN.md ha il raggio del tile nel frontmatter rounded', () => {
+    const design = readFileSync(`${RADICE}DESIGN.md`, 'utf8')
+    const rounded = /^rounded:\n((?: {2}.*\n)+)/m.exec(design)?.[1] ?? ''
+    expect(rounded).toMatch(/^ {2}tile: "12px"$/m)
+  })
+})

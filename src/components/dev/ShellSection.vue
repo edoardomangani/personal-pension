@@ -229,8 +229,8 @@ const vociMobiliCampione = computed(() => conHomeAttiva(vociMobili.value))
         <RottaCampione percorso="/profilo">
           <PhoneFrame>
             <AppMobileHeader />
-            <!-- La vista toglie il padding da lg in su: nella cornice lo rimette questo involucro. -->
-            <div class="pb-[calc(var(--bottom-bar-height)+16px)] lg:px-4 lg:pt-3">
+            <!-- Il padding sta nella shell, non nella vista: nella cornice lo rimette l'involucro. -->
+            <div class="px-4 pt-3 pb-[calc(var(--bottom-bar-height)+16px)]">
               <VistaProfilo />
             </div>
             <AppBottomBar />

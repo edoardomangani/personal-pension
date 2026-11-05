@@ -122,6 +122,7 @@ rounded:
   md: "8px"
   lg: "10px"
   xl: "14px"
+  tile: "12px"
   2xl: "18px"
   3xl: "22px"
   card-mobile: "24px"
@@ -310,7 +311,7 @@ Le sole misure con nome in `app.css` sono quelle che la scala di Tailwind non ha
 
 ## Layout
 
-Il confine fra telefono e desktop è `lg` (1024px): sotto, testata e barra in basso; da `lg`, sidebar e barra in alto. Telefono: testata sticky di vetro, contenuto a scorrimento sotto il bagliore, margini laterali 16px, 36px tra sezioni, barra in basso ancorata a tutta larghezza (84px circa) con il «+» al centro. Desktop: sidebar fissa a sinistra (232px, non riducibile) col piede utente in fondo, barra in alto sticky con il titolo della schermata e «Registra» dove serve, contenuto con padding 24px 48px 48px e 32px tra sezioni, largo al massimo 1180px.
+Il confine fra telefono e desktop è `lg` (1024px): sotto, testata e barra in basso; da `lg`, sidebar e barra in alto. Telefono: testata sticky di vetro, contenuto a scorrimento sotto il bagliore con padding 12px 16px (sopra e ai lati), 36px tra sezioni, barra in basso ancorata a tutta larghezza (84px circa) con il «+» al centro. Desktop: sidebar fissa a sinistra (232px, non riducibile) col piede utente in fondo, barra in alto sticky con il titolo della schermata e «Registra» dove serve, contenuto con padding 24px 48px 48px e 32px tra sezioni. Il padding sta nella shell, non nelle viste; il limite di 1180px vale per il contenuto dentro il padding.
 
 Controlli alti uguali su telefono e desktop (36px di norma, vedi Buttons); cambiano solo le righe delle liste (52px su desktop, 56px su telefono). L'area di tocco è sempre almeno 44px. Spaziatura su una scala da 4px (4, 8, 10, 12, 16, 20, 24, 32).
 
@@ -330,7 +331,7 @@ La profondità è vetro, non ombra. Le superfici sono strati di bianco velato so
 
 ## Shapes
 
-I controlli sono pill: bottoni, input, badge, segmenti. Il resto cresce col contenitore: 6px per piccoli contenitori, 8px per i tile icona, 10px (la base `--radius`) per voci di menu e sidebar, 14px per tabelle e tooltip ricchi, 18px per i dialog, 22px per le card su desktop e lo Sheet dal basso, 24px per le card su telefono. Bordi sempre da un filo (0,75px).
+I controlli sono pill: bottoni, input, badge, segmenti. Il resto cresce col contenitore: 6px per piccoli contenitori, 8px per i tile icona, 12px (`rounded-tile`, `--radius-tile`) per i tile da 36px delle righe di «Profilo», 10px (la base `--radius`) per voci di menu e sidebar, 14px per tabelle e tooltip ricchi, 18px per i dialog, 22px per le card su desktop e lo Sheet dal basso, 24px per le card su telefono. Bordi sempre da un filo (0,75px).
 
 ## Components
 

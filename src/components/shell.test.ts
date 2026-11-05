@@ -18,6 +18,7 @@ import AppTopBar from './AppTopBar.vue'
 import AppLogoIcon from './AppLogoIcon.vue'
 import NewMovementButton from './NewMovementButton.vue'
 import sorgenteShellSection from './dev/ShellSection.vue?raw'
+import VistaSegnaposto from '@/views/VistaSegnaposto.vue'
 
 enableAutoUnmount(afterEach)
 
@@ -152,6 +153,16 @@ describe('marchio (DS-02 R2-R4)', () => {
     expect(campione).not.toBeNull()
     expect(campione).toContain('<AppLogo />')
     expect(campione).not.toMatch(/h-8|gap-2\.5/)
+  })
+
+  it('SHL-profilo-mobile rimette il padding della shell a ogni larghezza', () => {
+    const campione = /code="SHL-profilo-mobile"[^>]*>([\s\S]*?)<\/Specimen>/.exec(
+      sorgenteShellSection,
+    )?.[1]
+    const involucro = /<div class="([^"]*)">\s*<VistaProfilo \/>/.exec(campione ?? '')?.[1]
+    const classi = involucro?.split(/\s+/) ?? []
+    expect(classi).toEqual(expect.arrayContaining(['px-4', 'pt-3']))
+    expect(classi.some((c) => c.startsWith('lg:'))).toBe(false)
   })
 
   it('SHL-logo: la cattura si ferma al campione', () => {
@@ -366,5 +377,32 @@ describe('AppLayout (R3)', () => {
     const etichetta = wrapper.get('section[aria-live]').attributes('aria-label')
     expect(etichetta).toMatch(/^Notifiche/)
     expect(etichetta).not.toContain('Notifications')
+  })
+
+  it('padding del contenuto nella shell (DS-03-C2 R4)', async () => {
+    const wrapper = mount(AppLayout, {
+      slots: { default: '<p data-slot-prova>contenuto</p>' },
+      global: { plugins: [await routerSu('/')] },
+      attachTo: document.body,
+    })
+    await flushPromises()
+    const interno = wrapper.get('[data-slot-prova]').element.parentElement
+    expect(interno?.classList.contains('max-w-content')).toBe(true)
+    const classiInterno = [...(interno?.classList ?? [])]
+    expect(classiInterno.some((c) => /^(lg:)?p[xtb]?-/.test(c))).toBe(false)
+
+    const esterno = interno?.closest('[data-contenuto]')
+    expect(esterno).not.toBeNull()
+    expect(esterno).not.toBe(interno)
+    for (const classe of ['px-4', 'pt-3', 'lg:px-12', 'lg:pt-6', 'lg:pb-12']) {
+      expect(esterno?.classList.contains(classe)).toBe(true)
+    }
+  })
+})
+
+describe('VistaSegnaposto (DS-03-C2 R5)', () => {
+  it('segnaposto senza padding esterno (DS-03-C2 R5)', () => {
+    const radice = mount(VistaSegnaposto).get('[data-segnaposto]')
+    expect(radice.classes().some((c) => /^p[xytb]?-/.test(c))).toBe(false)
   })
 })

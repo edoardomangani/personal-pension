@@ -26,11 +26,11 @@ const collegamenti = computed<Collegamento[]>(() => [
 // Il filo fra le righe parte dal testo, non dal tile.
 const riga =
   'relative flex min-h-14 w-full items-center gap-3 px-4 text-left text-sm font-medium transition-colors duration-200 not-first:before:absolute not-first:before:top-0 not-first:before:right-0 not-first:before:left-16 not-first:before:h-[0.75px] not-first:before:bg-divider hover:bg-accent focus-visible:bg-accent focus-visible:outline-none motion-reduce:transition-none disabled:opacity-50'
-const tile = 'grid size-9 shrink-0 place-items-center rounded-xl bg-secondary text-foreground'
+const tile = 'grid size-9 shrink-0 place-items-center rounded-tile bg-secondary text-foreground'
 </script>
 
 <template>
-  <div class="mx-auto flex w-full max-w-140 flex-col gap-6 px-4 py-3 lg:px-0 lg:py-0">
+  <div class="mx-auto flex w-full max-w-140 flex-col gap-6">
     <section class="flex flex-col items-center pt-2 pb-2 text-center">
       <div class="relative">
         <Avatar class="size-20">
