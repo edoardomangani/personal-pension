@@ -285,7 +285,7 @@ describe('messaggi (R6, R9)', () => {
     expect(MESSAGGIO_SOLO_GOOGLE).toBe('U5 ora è solo Google.')
   })
 
-  it("R6: l'errore nomina l'utente e il motivo, senza password", () => {
+  it("R6: l'errore nomina sigla, ruolo e motivo, senza email né password", () => {
     const u4: UtenteAggiuntivo = {
       sigla: 'U4',
       ruolo: 'password',
@@ -293,8 +293,20 @@ describe('messaggi (R6, R9)', () => {
       password: 'password-di-u4-segreta',
     }
     const riga = messaggioErroreUtente(u4, new Error('email già registrata'))
-    expect(riga).toBe('U4 (password, collaudo-password@esempio.it): email già registrata')
+    expect(riga).toBe('U4 (password): email già registrata')
+    expect(riga).not.toContain('collaudo-password@esempio.it')
+    expect(riga).not.toContain('password-di-u4-segreta')
     for (const p of password) expect(riga).not.toContain(p)
+  })
+
+  it("R6: un errore che non è un Error si stampa com'è", () => {
+    const u3: UtenteAggiuntivo = {
+      sigla: 'U3',
+      ruolo: 'senza fondo',
+      email: 'collaudo-senza-fondo@esempio.it',
+      password: 'password-di-u3-segreta',
+    }
+    expect(messaggioErroreUtente(u3, 'rete giù')).toBe('U3 (senza fondo): rete giù')
   })
 })
 

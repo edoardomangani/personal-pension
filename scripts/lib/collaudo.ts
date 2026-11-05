@@ -191,13 +191,10 @@ export function istruzioneSoloGoogle(idUtente: string): Istruzione {
   }
 }
 
-export function descriviUtente(utente: UtenteAggiuntivo): string {
-  return `${utente.sigla} (${utente.ruolo}, ${utente.email})`
-}
-
-/** R6: `db:collaudo: ` lo aggiunge chi stampa l'errore. */
+/** R6: niente email né password; `db:collaudo: ` lo aggiunge chi stampa l'errore. */
 export function messaggioErroreUtente(utente: UtenteAggiuntivo, errore: unknown): string {
-  return `${descriviUtente(utente)}: ${errore instanceof Error ? errore.message : String(errore)}`
+  const motivo = errore instanceof Error ? errore.message : String(errore)
+  return `${utente.sigla} (${utente.ruolo}): ${motivo}`
 }
 
 /** R9: niente password, solo i ruoli. */
