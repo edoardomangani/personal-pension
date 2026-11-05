@@ -16,4 +16,9 @@ describe('cn', () => {
       'text-tab-label text-muted-foreground',
     )
   })
+
+  it('tratta text-avatar-lg come taglia del testo', () => {
+    expect(cn('text-xs font-semibold', 'text-avatar-lg')).toBe('font-semibold text-avatar-lg')
+    expect(cn('text-avatar-lg', 'text-foreground')).toBe('text-avatar-lg text-foreground')
+  })
 })

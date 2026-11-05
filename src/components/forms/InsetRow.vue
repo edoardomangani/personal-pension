@@ -35,7 +35,12 @@ function activateControl(event: MouseEvent): void {
 </script>
 
 <template>
-  <Field :data-invalid="error ? true : undefined" :class="insetRowClass" @click="activateControl">
+  <Field
+    data-inset-row
+    :data-invalid="error ? true : undefined"
+    :class="insetRowClass"
+    @click="activateControl"
+  >
     <div class="flex min-h-12 items-center gap-3 px-4">
       <FieldLabel
         :for="controlId"

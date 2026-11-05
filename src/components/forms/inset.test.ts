@@ -1,7 +1,8 @@
 import { mount } from '@vue/test-utils'
 import { afterEach, describe, expect, it } from 'vitest'
 import { defineComponent, h, nextTick, ref } from 'vue'
-import { insetGroupClass } from './inset'
+import PasswordInput from '@/components/PasswordInput.vue'
+import { insetGroupClass, insetPasswordClass } from './inset'
 import InsetChoiceRow from './InsetChoiceRow.vue'
 import InsetGroup from './InsetGroup.vue'
 import InsetInput from './InsetInput.vue'
@@ -158,5 +159,46 @@ describe('InsetGroup con l’aiuto che compare dopo un errore (R1)', () => {
 
     await card.get('#anno').setValue('1994')
     expect(valore.value).toBe('1994')
+  })
+})
+
+describe('PasswordInput in una riga inset (R4)', () => {
+  function montaPassword() {
+    const Modulo = defineComponent({
+      setup() {
+        return () =>
+          h(InsetGroup, null, () =>
+            h(InsetRow, { for: 'password', label: 'Password', hideLabel: true }, () =>
+              h(PasswordInput, { id: 'password', class: insetPasswordClass }),
+            ),
+          )
+      },
+    })
+    return mount(Modulo, { attachTo: document.body })
+  }
+
+  it('l’occhio sborda nel padding della riga e il toggle funziona', async () => {
+    const wrapper = montaPassword()
+    expect(wrapper.get('[data-slot="field"]').attributes()).toHaveProperty('data-inset-row')
+    const occhio = wrapper.get('button')
+    expect(occhio.classes()).toContain('in-data-inset-row:-right-3')
+    expect(wrapper.get('input').classes()).toContain('pr-10')
+    await occhio.trigger('click')
+    expect(wrapper.get('input').attributes('type')).toBe('text')
+    expect(occhio.attributes('aria-label')).toBe('Nascondi password')
+  })
+})
+
+describe('Titolo di InsetGroup (R7)', () => {
+  it('con titolo la legenda sta 8px sopra la card', () => {
+    const legenda = montaRiga({ label: 'Importo TFR' }).get('legend')
+    expect(legenda.text()).toBe('Movimento')
+    expect(legenda.classes()).toContain('mb-2')
+    expect(legenda.classes()).not.toContain('mb-0')
+  })
+
+  it('senza titolo niente legenda', () => {
+    const wrapper = mount(InsetGroup, { slots: { default: 'riga' } })
+    expect(wrapper.find('legend').exists()).toBe(false)
   })
 })

@@ -6,7 +6,14 @@ import { extendTailwindMerge } from 'tailwind-merge'
 const twMerge = extendTailwindMerge({
   extend: {
     theme: {
-      text: ['balance-md', 'balance-md-decimals', 'balance-lg', 'balance-lg-decimals', 'tab-label'],
+      text: [
+        'balance-md',
+        'balance-md-decimals',
+        'balance-lg',
+        'balance-lg-decimals',
+        'tab-label',
+        'avatar-lg',
+      ],
     },
   },
 })

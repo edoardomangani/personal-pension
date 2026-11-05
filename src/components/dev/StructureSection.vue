@@ -44,6 +44,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
+import { FieldSeparator } from '@/components/ui/field'
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Spinner } from '@/components/ui/spinner'
@@ -258,6 +259,9 @@ const movementDays = [
             <Separator orientation="vertical" />
             <span>Spese</span>
           </div>
+        </Specimen>
+        <Specimen code="SEP-label">
+          <FieldSeparator class="w-80">oppure con la tua email</FieldSeparator>
         </Specimen>
       </div>
     </ShowcaseBlock>

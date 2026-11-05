@@ -90,4 +90,17 @@ describe('AvatarUtente', () => {
       true,
     )
   })
+
+  it('le iniziali grandi sostituiscono text-xs, senza classe resta text-xs', async () => {
+    const grande = mount(AvatarUtente, {
+      props: { foto: null, iniziali: 'GC', classeIniziali: 'text-avatar-lg' },
+    })
+    await flushPromises()
+    const classi = grande.get('[data-slot="avatar-fallback"]').classes()
+    expect(classi).toContain('text-avatar-lg')
+    expect(classi).not.toContain('text-xs')
+
+    const piccolo = await monta(null, 'GC')
+    expect(piccolo.get('[data-slot="avatar-fallback"]').classes()).toContain('text-xs')
+  })
 })

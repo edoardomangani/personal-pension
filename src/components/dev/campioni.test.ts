@@ -129,6 +129,18 @@ describe('StructureSection: lista dei movimenti (R5)', () => {
   })
 })
 
+describe('StructureSection: separatore delle pagine di accesso (ACC-01-C6 R13)', () => {
+  it('SEP-label ha due tratti ai lati dell’etichetta, senza fondo', () => {
+    const router = createRouter({ history: createMemoryHistory(), routes: rotte })
+    const wrapper = mount(StructureSection, { global: { plugins: [router] } })
+    const campione = wrapper.get('[data-specimen="SEP-label"]')
+    const etichetta = campione.get('[data-slot="field-separator-content"]')
+    expect(etichetta.text()).toBe('oppure con la tua email')
+    expect(etichetta.classes()).not.toContain('bg-background')
+    expect(campione.findAll('[data-slot="separator"]')).toHaveLength(2)
+  })
+})
+
 describe('FormsSection: righe del modulo (R4)', () => {
   // Selettore del campo a cui punta l'etichetta.
   function campoDi(gruppo: Pick<DOMWrapper<Element>, 'findAll'>, etichetta: string): string {
