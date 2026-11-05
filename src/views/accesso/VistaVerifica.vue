@@ -138,21 +138,24 @@ onUnmounted(fermaConto)
       <p v-if="erroreReinvio" role="alert" class="text-xs text-destructive">
         {{ erroreReinvio }}
       </p>
-      <p class="text-center text-sm text-muted-foreground">
-        Email sbagliata?
+      <!-- 24px: le aree di tocco di 44px dei due link non si sovrappongono. -->
+      <div class="flex flex-col items-center gap-6">
+        <p class="text-center text-sm text-muted-foreground">
+          Email sbagliata?
+          <RouterLink
+            to="/registrati"
+            class="text-foreground underline underline-offset-4 relative touch-target"
+          >
+            Crea di nuovo l’account
+          </RouterLink>
+        </p>
         <RouterLink
-          to="/registrati"
-          class="text-foreground underline underline-offset-4 relative touch-target"
+          to="/accedi"
+          class="text-sm text-foreground underline underline-offset-4 relative touch-target"
         >
-          Crea di nuovo l’account
+          Torna all’accesso
         </RouterLink>
-      </p>
-      <RouterLink
-        to="/accedi"
-        class="text-sm text-foreground underline underline-offset-4 relative touch-target"
-      >
-        Torna all’accesso
-      </RouterLink>
+      </div>
     </div>
   </div>
 </template>

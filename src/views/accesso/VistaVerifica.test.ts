@@ -135,4 +135,50 @@ describe('VistaVerifica: area di tocco (R2)', () => {
       expect(link?.classes()).toEqual(expect.arrayContaining(['relative', 'touch-target']))
     },
   )
+
+  function contenitoreDeiLink(wrapper: VueWrapper): Element | null | undefined {
+    return wrapper.get('a[href="/accedi"]').element.parentElement
+  }
+
+  it('i due link stanno nel contenitore dei link, con gap-6 (R1)', async () => {
+    const { wrapper } = await apri()
+    const contenitore = contenitoreDeiLink(wrapper)
+    const paragrafo = wrapper.get('a[href="/registrati"]').element.parentElement
+    expect(paragrafo?.tagName).toBe('P')
+    expect(paragrafo?.parentElement).toBe(contenitore)
+    expect(contenitore?.classList.contains('gap-6')).toBe(true)
+  })
+
+  it('il bottone di reinvio resta fuori dal contenitore dei link, nella colonna gap-4 (R1)', async () => {
+    const { wrapper } = await apri()
+    const contenitore = contenitoreDeiLink(wrapper)
+    const bottone = wrapper.get('[data-reinvia]').element
+    expect(contenitore?.contains(bottone)).toBe(false)
+    expect(bottone.parentElement?.classList.contains('gap-4')).toBe(true)
+    expect(bottone.parentElement).toBe(contenitore?.parentElement)
+  })
+
+  it('l’errore di reinvio resta fuori dal contenitore dei link (R1)', async () => {
+    vi.mocked(reinviaCodice).mockRejectedValueOnce(
+      new ErroreDati('rete', 'Non riesco a raggiungere il server.'),
+    )
+    const { wrapper } = await apri()
+    await wrapper.get('[data-reinvia]').trigger('click')
+    await flushPromises()
+    const errore = wrapper
+      .findAll('[role="alert"]')
+      .find((nodo) => nodo.text() === 'Non riesco a raggiungere il server.')
+    expect(errore).toBeDefined()
+    const contenitore = contenitoreDeiLink(wrapper)
+    expect(contenitore?.contains(errore?.element ?? null)).toBe(false)
+    expect(errore?.element.parentElement).toBe(contenitore?.parentElement)
+  })
+
+  it.each([
+    ['/registrati', 'Crea di nuovo l’account'],
+    ['/accedi', 'Torna all’accesso'],
+  ])('il link verso %s resta «%s» (R4)', async (destinazione, testo) => {
+    const { wrapper } = await apri()
+    expect(wrapper.get(`a[href="${destinazione}"]`).text()).toBe(testo)
+  })
 })
