@@ -4,6 +4,7 @@ import {
   validaAccesso,
   validaCambioPassword,
   validaCodice,
+  validaConfermaCancellazione,
   validaNome,
   validaNuovaPassword,
   validaOnboarding,
@@ -128,6 +129,34 @@ describe('validaNome', () => {
   it('valido e non valido (R29)', () => {
     expect(eValida(validaNome({ nome: ' Giulia ' }))).toBe(true)
     expect(validaNome({ nome: '   ' })).toEqual({ nome: 'Scrivi il tuo nome.' })
+  })
+})
+
+describe('validaConfermaCancellazione', () => {
+  it('con la password: valida se scritta, anche con spazi', () => {
+    expect(eValida(validaConfermaCancellazione({ conferma: 'segreta12' }, true))).toBe(true)
+    expect(eValida(validaConfermaCancellazione({ conferma: ' ' }, true))).toBe(true)
+  })
+
+  it('con la password: vuota → «Scrivi la password.»', () => {
+    expect(validaConfermaCancellazione({ conferma: '' }, true)).toEqual({
+      conferma: 'Scrivi la password.',
+    })
+  })
+
+  it('con l’email: valida con la forma giusta, spazi ai lati compresi', () => {
+    expect(
+      eValida(validaConfermaCancellazione({ conferma: ' Giulia.Conti@Esempio.it ' }, false)),
+    ).toBe(true)
+  })
+
+  it('con l’email: vuota o senza forma → messaggio dell’email', () => {
+    expect(validaConfermaCancellazione({ conferma: '' }, false)).toEqual({
+      conferma: EMAIL_NON_VALIDA,
+    })
+    expect(validaConfermaCancellazione({ conferma: 'giulia.conti' }, false)).toEqual({
+      conferma: EMAIL_NON_VALIDA,
+    })
   })
 })
 

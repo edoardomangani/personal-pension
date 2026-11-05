@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { computed } from 'vue'
+import { useRoute } from 'vue-router'
 import AppBottomBar from '@/components/AppBottomBar.vue'
 import AppContent from '@/components/AppContent.vue'
 import AppMobileHeader from '@/components/AppMobileHeader.vue'
@@ -6,6 +8,15 @@ import AppShell from '@/components/AppShell.vue'
 import AppSidebar from '@/components/AppSidebar.vue'
 import AppTopBar from '@/components/AppTopBar.vue'
 import { Toaster } from '@/components/ui/sonner'
+import { fornisciAzioneTestata } from '@/composables/useAzioneTestata'
+
+fornisciAzioneTestata()
+
+const route = useRoute()
+// Il pannello di destra è fisso: testata e contenuto finiscono dove comincia.
+const classeContenuto = computed(() =>
+  route.meta.pannello ? 'min-w-0 overflow-x-clip lg:pr-100' : 'min-w-0 overflow-x-clip',
+)
 </script>
 
 <template>
@@ -14,7 +25,7 @@ import { Toaster } from '@/components/ui/sonner'
     <div class="hidden shrink-0 lg:block">
       <AppSidebar />
     </div>
-    <AppContent variant="sidebar" class="min-w-0 overflow-x-clip">
+    <AppContent variant="sidebar" :class="classeContenuto">
       <AppMobileHeader class="lg:hidden" />
       <!-- max-lg:hidden batte il flex della testata, che hidden da solo non batterebbe. -->
       <AppTopBar class="max-lg:hidden" />

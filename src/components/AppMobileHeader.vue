@@ -4,7 +4,9 @@ import { computed } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
+import AzioneTestata from '@/components/AzioneTestata.vue'
 import { formatoGiorno } from '@/calc/formato'
+import { useAzioneTestata } from '@/composables/useAzioneTestata'
 import { useIndietro } from '@/composables/useIndietro'
 import { useProfilo } from '@/composables/useProfilo'
 import { useShellHeading } from '@/composables/useShellHeading'
@@ -15,6 +17,7 @@ const archivio = useArchivioStore()
 const { titolo } = useShellHeading()
 const { iniziali, saluto } = useProfilo()
 const { indietro } = useIndietro()
+const azione = useAzioneTestata()
 
 const secondaria = computed(() => route.meta.testata === 'secondaria')
 const inHome = computed(() => route.name === 'home')
@@ -27,13 +30,19 @@ const giorno = computed(() => formatoGiorno(archivio.oggi))
       aria-hidden="true"
       class="pointer-events-none absolute inset-x-0 top-0 -bottom-(--glass-fade) -z-10 glass-header"
     />
-    <!-- Secondaria: lo spazio a destra pareggia la freccia, così il titolo resta al centro della testata. -->
+    <!-- Secondaria: a destra l'azione della pagina o uno spazio largo quanto la freccia. -->
     <div v-if="secondaria" class="flex min-h-9 items-center gap-3">
-      <Button variant="outline" size="icon" aria-label="Indietro" @click="indietro">
-        <PhCaretLeft class="size-4.5" />
-      </Button>
-      <h1 class="min-w-0 flex-1 truncate text-center text-base font-semibold">{{ titolo }}</h1>
-      <span aria-hidden="true" class="size-9 shrink-0" />
+      <!-- I due lati crescono uguali: il titolo resta al centro anche con «Salva», più largo della freccia. -->
+      <div class="flex flex-1 basis-0">
+        <Button variant="outline" size="icon" aria-label="Indietro" @click="indietro">
+          <PhCaretLeft class="size-4.5" />
+        </Button>
+      </div>
+      <h1 class="min-w-0 truncate text-center text-base font-semibold">{{ titolo }}</h1>
+      <div class="flex flex-1 basis-0 justify-end">
+        <AzioneTestata v-if="azione" :azione="azione" variante="mobile" />
+        <span v-else aria-hidden="true" class="size-9 shrink-0" />
+      </div>
     </div>
     <!-- min-h-11: la riga tiene saluto e data, così la testata è alta uguale con e senza data. -->
     <div v-else class="flex min-h-11 items-center gap-3">

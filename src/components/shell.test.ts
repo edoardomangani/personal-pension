@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { defineComponent, h, nextTick, type Component } from 'vue'
+import { defineComponent, h, nextTick, reactive, type Component } from 'vue'
 import { enableAutoUnmount, flushPromises, mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import { TooltipProvider } from 'reka-ui'
@@ -21,6 +21,7 @@ import NewMovementButton from './NewMovementButton.vue'
 import sorgenteShellSection from './dev/ShellSection.vue?raw'
 import VistaSegnaposto from '@/views/VistaSegnaposto.vue'
 import { utenteDiProva } from '@/test/utenti'
+import { fornisciAzioneTestata, type AzioneTestata } from '@/composables/useAzioneTestata'
 
 enableAutoUnmount(afterEach)
 
@@ -450,9 +451,113 @@ describe('AppLayout (R3)', () => {
   })
 })
 
+describe('pannello di destra (ACC-01 R20)', () => {
+  async function contenutoSu(percorso: string) {
+    const wrapper = mount(AppLayout, {
+      global: { plugins: [await routerSu(percorso)] },
+      attachTo: document.body,
+    })
+    await flushPromises()
+    return wrapper.get('[data-contenuto]').element.parentElement
+  }
+
+  it('su /account il contenuto, testata compresa, lascia lg:pr-100', async () => {
+    const contenuto = await contenutoSu('/account')
+    expect(contenuto?.classList.contains('lg:pr-100')).toBe(true)
+    expect(contenuto?.querySelector('header')).not.toBeNull()
+  })
+
+  it('su / no', async () => {
+    const contenuto = await contenutoSu('/')
+    expect(contenuto?.classList.contains('lg:pr-100')).toBe(false)
+  })
+})
+
 describe('VistaSegnaposto (DS-03-C2 R5)', () => {
   it('segnaposto senza padding esterno (DS-03-C2 R5)', () => {
     const radice = mount(VistaSegnaposto).get('[data-segnaposto]')
     expect(radice.classes().some((c) => /^p[xytb]?-/.test(c))).toBe(false)
+  })
+})
+
+describe('azione della testata (ACC-01 R21)', () => {
+  function azioneDiProva(): AzioneTestata {
+    return reactive({
+      etichetta: 'Salva',
+      attiva: false,
+      inCorso: false,
+      modificato: false,
+      esegui: vi.fn(),
+    })
+  }
+
+  // Fa la parte di AppLayout: fornisce il contenitore e ci mette l'azione.
+  function conAzione(componente: Component, azione: AzioneTestata): Component {
+    return defineComponent({
+      setup() {
+        fornisciAzioneTestata().value = () => azione
+        return () => h(TooltipProvider, null, () => h(componente))
+      },
+    })
+  }
+
+  it('testata mobile su /account: «Salva» spento, poi acceso col pallino', async () => {
+    const azione = azioneDiProva()
+    const wrapper = mount(conAzione(AppMobileHeader, azione), {
+      global: { plugins: [await routerSu('/account')] },
+    })
+    const salva = wrapper.findAll('button').find((b) => b.text() === 'Salva')
+    expect(salva?.attributes('disabled')).toBeDefined()
+    expect(salva?.classes()).toContain('h-8')
+    expect(wrapper.find('[data-modifiche] .bg-warning').exists()).toBe(false)
+
+    azione.attiva = true
+    azione.modificato = true
+    await nextTick()
+    expect(salva?.attributes('disabled')).toBeUndefined()
+    const stato = wrapper.get('[data-modifiche]')
+    expect(stato.attributes('role')).toBe('status')
+    expect(stato.find('.bg-warning').exists()).toBe(true)
+    expect(stato.get('.sr-only').text()).toBe('Modifiche non salvate')
+    expect(wrapper.find('span.size-9').exists()).toBe(false)
+  })
+
+  it('con l’invio in corso «Salva» resta spento con lo spinner', async () => {
+    const azione = azioneDiProva()
+    azione.attiva = true
+    azione.inCorso = true
+    const wrapper = mount(conAzione(AppMobileHeader, azione), {
+      global: { plugins: [await routerSu('/account')] },
+    })
+    const salva = wrapper.findAll('button').find((b) => b.text() === 'Salva')
+    expect(salva?.attributes('disabled')).toBeDefined()
+    expect(salva?.find('svg.animate-spin').exists()).toBe(true)
+  })
+
+  it('barra desktop: «Modifiche non salvate» e «Salva», il clic chiama esegui', async () => {
+    const azione = azioneDiProva()
+    azione.attiva = true
+    azione.modificato = true
+    const wrapper = mount(conAzione(AppTopBar, azione), {
+      global: { plugins: [await routerSu('/account')] },
+    })
+    const stato = wrapper.get('[data-modifiche]')
+    expect(stato.text()).toBe('Modifiche non salvate')
+    expect(stato.find('.sr-only').exists()).toBe(false)
+    const salva = wrapper.get('button')
+    expect(salva.text()).toBe('Salva')
+    expect(salva.classes()).toContain('h-9')
+    await salva.trigger('click')
+    expect(azione.esegui).toHaveBeenCalledOnce()
+  })
+
+  it('senza provider /fisco resta con lo spazio vuoto e /futuro senza bottoni', async () => {
+    const mobile = mount(AppMobileHeader, { global: { plugins: [await routerSu('/fisco')] } })
+    expect(mobile.find('span.size-9[aria-hidden="true"]').exists()).toBe(true)
+    expect(mobile.findAll('button').map((b) => b.attributes('aria-label'))).toEqual(['Indietro'])
+
+    const barra = mount(conTooltip(AppTopBar), { global: { plugins: [await routerSu('/futuro')] } })
+    expect(barra.find('button').exists()).toBe(false)
+    expect(barra.find('[data-modifiche]').exists()).toBe(false)
   })
 })

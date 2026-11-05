@@ -8,6 +8,7 @@ import {
 } from 'vue-router'
 import { useArchivioStore } from './stores/archivio'
 import { useSessioneStore } from './stores/sessione'
+import VistaAccount from './views/VistaAccount.vue'
 import VistaProfilo from './views/VistaProfilo.vue'
 import VistaSegnaposto from './views/VistaSegnaposto.vue'
 import VistaAccedi from './views/accesso/VistaAccedi.vue'
@@ -30,6 +31,8 @@ declare module 'vue-router' {
     accesso?: boolean
     /** Onboarding: fuori dalla shell, con la sessione e senza fondo. */
     primoAvvio?: boolean
+    /** Pannello fisso a destra su desktop: il contenuto della shell gli lascia lo spazio. */
+    pannello?: boolean
   }
 }
 
@@ -69,8 +72,8 @@ export const rotte: RouteRecordRaw[] = [
   {
     path: '/account',
     name: 'account',
-    component: VistaSegnaposto,
-    meta: { titolo: 'Account', testata: 'secondaria', madre: '/profilo' },
+    component: VistaAccount,
+    meta: { titolo: 'Account', testata: 'secondaria', madre: '/profilo', pannello: true },
   },
   {
     path: '/fisco',

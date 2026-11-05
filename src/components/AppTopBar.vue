@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import { useRoute } from 'vue-router'
+import AzioneTestata from '@/components/AzioneTestata.vue'
 import NewMovementButton from '@/components/NewMovementButton.vue'
+import { useAzioneTestata } from '@/composables/useAzioneTestata'
 import { useShellHeading } from '@/composables/useShellHeading'
 
 const route = useRoute()
 const { titolo } = useShellHeading()
+const azione = useAzioneTestata()
 </script>
 
 <template>
@@ -16,6 +19,7 @@ const { titolo } = useShellHeading()
     <h1 class="min-w-0 flex-1 truncate text-xl leading-6 font-semibold tracking-[-0.015em]">
       {{ titolo }}
     </h1>
+    <AzioneTestata v-if="azione" :azione="azione" variante="desktop" />
     <NewMovementButton v-if="route.meta.registra" testo="Registra" />
   </header>
 </template>

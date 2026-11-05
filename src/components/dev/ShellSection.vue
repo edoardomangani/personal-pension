@@ -11,6 +11,7 @@ import AppSidebar from '@/components/AppSidebar.vue'
 import AppTopBar from '@/components/AppTopBar.vue'
 import MenuUtentePreview from '@/components/dev/MenuUtentePreview.vue'
 import PhoneFrame from '@/components/dev/PhoneFrame.vue'
+import AzioneTestataCampione from '@/components/dev/AzioneTestataCampione.vue'
 import RottaCampione from '@/components/dev/RottaCampione.vue'
 import ShowcaseBlock from '@/components/dev/ShowcaseBlock.vue'
 import ShowcaseSection from '@/components/dev/ShowcaseSection.vue'
@@ -106,8 +107,8 @@ const vociMobiliCampione = computed(() => conHomeAttiva(vociMobili.value))
 
     <ShowcaseBlock id="shell-barra-alta">
       <p class="text-xs text-subtle-foreground">
-        Alta 64, titolo a sinistra; Registra solo in Home, Movimenti e Valori. Nessuna freccia
-        indietro su desktop.
+        Alta 64, titolo a sinistra; Registra solo in Home, Movimenti e Valori, l'azione della pagina
+        («Salva» in Account) a destra del titolo. Nessuna freccia indietro su desktop.
       </p>
       <div class="flex flex-col gap-6">
         <Specimen code="SHL-topbar-desktop" note="Home">
@@ -118,6 +119,13 @@ const vociMobiliCampione = computed(() => conHomeAttiva(vociMobili.value))
         <Specimen code="SHL-topbar-desktop-senza-registra" note="Futuro">
           <RottaCampione percorso="/futuro">
             <AppTopBar class="w-[720px]" />
+          </RottaCampione>
+        </Specimen>
+        <Specimen code="SHL-topbar-desktop-azione" note="Account, nome modificato">
+          <RottaCampione percorso="/account">
+            <AzioneTestataCampione>
+              <AppTopBar class="w-[720px]" />
+            </AzioneTestataCampione>
           </RottaCampione>
         </Specimen>
         <Specimen code="SHL-navmenu-desktop">
@@ -173,7 +181,8 @@ const vociMobiliCampione = computed(() => conHomeAttiva(vociMobili.value))
     <ShowcaseBlock id="shell-testata-mobile">
       <p class="text-xs text-subtle-foreground">
         Sotto il breakpoint lg, in una cornice di telefono da 390px. Principale: titolo a sinistra e
-        avatar verso Profilo, in Home il saluto e la data. Secondaria: indietro e titolo al centro.
+        avatar verso Profilo, in Home il saluto e la data. Secondaria: indietro e titolo al centro,
+        a destra l'azione della pagina se c'è.
       </p>
       <div class="flex flex-wrap gap-6">
         <Specimen code="SHL-header-mobile" note="Home">
@@ -188,6 +197,15 @@ const vociMobiliCampione = computed(() => conHomeAttiva(vociMobili.value))
             <PhoneFrame size="header">
               <AppMobileHeader />
             </PhoneFrame>
+          </RottaCampione>
+        </Specimen>
+        <Specimen code="SHL-header-secondaria-azione-mobile" note="Account, nome modificato">
+          <RottaCampione percorso="/account">
+            <AzioneTestataCampione>
+              <PhoneFrame size="header">
+                <AppMobileHeader />
+              </PhoneFrame>
+            </AzioneTestataCampione>
           </RottaCampione>
         </Specimen>
       </div>

@@ -8,6 +8,7 @@ import { elencaFondi } from './data/fondi'
 import { metodiDiAccesso, sessioneCorrente } from './data/sessione'
 import { inSospeso } from './test/promesse'
 import { utenteDiProva } from './test/utenti'
+import VistaAccount from './views/VistaAccount.vue'
 import VistaProfilo from './views/VistaProfilo.vue'
 import VistaSegnaposto from './views/VistaSegnaposto.vue'
 import { guardAccesso, rotte, rottaDiRitorno, router, titoloDocumento, urlApp } from './router'
@@ -86,9 +87,12 @@ describe('router', () => {
     ])
   })
 
-  it('/profilo risolve a VistaProfilo, /account al segnaposto', () => {
+  it('/profilo risolve a VistaProfilo, /account a VistaAccount col pannello', () => {
     expect(router.resolve('/profilo').matched[0]?.components?.default).toBe(VistaProfilo)
-    expect(router.resolve('/account').matched[0]?.components?.default).toBe(VistaSegnaposto)
+    const account = router.resolve('/account')
+    expect(account.matched[0]?.components?.default).toBe(VistaAccount)
+    expect(account.meta.pannello).toBe(true)
+    expect(router.resolve('/profilo').meta.pannello).toBeUndefined()
   })
 
   it('/futuro risolve al segnaposto con titolo «Futuro»', async () => {

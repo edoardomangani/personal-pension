@@ -36,6 +36,11 @@ export interface BozzaNome {
   nome: string
 }
 
+export interface BozzaConfermaCancellazione {
+  /** La password, o l'email per un account solo Google. */
+  conferma: string
+}
+
 export interface BozzaOnboarding {
   fondo: string
   annoNascita: string
@@ -122,6 +127,15 @@ export function validaCambioPassword(bozza: BozzaCambioPassword): ErroriDi<Bozza
 
 export function validaNome(bozza: BozzaNome): ErroriDi<BozzaNome> {
   return { nome: erroreNome(bozza.nome) }
+}
+
+/** Solo la forma: il confronto con l'email dell'account lo fa lo store (R6). */
+export function validaConfermaCancellazione(
+  bozza: BozzaConfermaCancellazione,
+  conPassword: boolean,
+): ErroriDi<BozzaConfermaCancellazione> {
+  if (conPassword) return { conferma: bozza.conferma === '' ? 'Scrivi la password.' : undefined }
+  return { conferma: erroreEmail(bozza.conferma) }
 }
 
 /** `annoCorrente` arriva da fuori: il validatore resta puro. */
