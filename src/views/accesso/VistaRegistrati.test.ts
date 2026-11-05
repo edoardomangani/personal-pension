@@ -99,3 +99,11 @@ describe('VistaRegistrati (R14, R29)', () => {
     expect(wrapper.find('a[href="/accedi"]').exists()).toBe(true)
   })
 })
+
+describe('VistaRegistrati: area di tocco (R2)', () => {
+  it('«Accedi» ha relative e touch-target', async () => {
+    const { wrapper } = await apri()
+    const link = wrapper.findAll('a').find((a) => a.text() === 'Accedi')
+    expect(link?.classes()).toEqual(expect.arrayContaining(['relative', 'touch-target']))
+  })
+})

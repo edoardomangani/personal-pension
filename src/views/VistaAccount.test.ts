@@ -201,6 +201,16 @@ describe('VistaAccount: nome (R21)', () => {
     expect(aggiornaNome).toHaveBeenCalledWith('Giulia Ferri')
   })
 
+  it('Invio con il nome invariato non salva', async () => {
+    const { wrapper } = await apri()
+    const campo = wrapper.get('#account-nome')
+    await campo.setValue('  Giulia Conti ')
+    await campo.trigger('keydown', { key: 'Enter' })
+    await flushPromises()
+    expect(aggiornaNome).not.toHaveBeenCalled()
+    expect(toast.success).not.toHaveBeenCalled()
+  })
+
   it('nome vuoto → «Scrivi il tuo nome.» e nessuna chiamata', async () => {
     const { wrapper, azione } = await apri()
     await wrapper.get('#account-nome').setValue('   ')

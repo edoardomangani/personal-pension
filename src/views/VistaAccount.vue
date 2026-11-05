@@ -57,6 +57,7 @@ const {
 })
 
 async function salvaNome(): Promise<void> {
+  if (!modificato.value) return
   if (await inviaNome()) return
   if (erroreGenerale.value !== null) toast.error(erroreGenerale.value)
   else if (errori.value.nome !== undefined) document.getElementById(ID_NOME)?.focus()

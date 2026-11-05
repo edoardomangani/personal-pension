@@ -138,7 +138,10 @@ onMounted(() => focalizza('nome'))
 
     <p class="text-center text-sm text-muted-foreground">
       Hai già un account?
-      <RouterLink to="/accedi" class="text-foreground underline underline-offset-4">
+      <RouterLink
+        to="/accedi"
+        class="text-foreground underline underline-offset-4 relative touch-target"
+      >
         Accedi
       </RouterLink>
     </p>

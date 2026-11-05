@@ -140,11 +140,17 @@ onUnmounted(fermaConto)
       </p>
       <p class="text-center text-sm text-muted-foreground">
         Email sbagliata?
-        <RouterLink to="/registrati" class="text-foreground underline underline-offset-4">
+        <RouterLink
+          to="/registrati"
+          class="text-foreground underline underline-offset-4 relative touch-target"
+        >
           Crea di nuovo l'account
         </RouterLink>
       </p>
-      <RouterLink to="/accedi" class="text-sm text-foreground underline underline-offset-4">
+      <RouterLink
+        to="/accedi"
+        class="text-sm text-foreground underline underline-offset-4 relative touch-target"
+      >
         Torna all'accesso
       </RouterLink>
     </div>

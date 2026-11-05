@@ -125,3 +125,14 @@ describe('VistaVerifica (R15)', () => {
     expect(wrapper.find('a[href="/registrati"]').text()).toContain("Crea di nuovo l'account")
   })
 })
+
+describe('VistaVerifica: area di tocco (R2)', () => {
+  it.each(["Crea di nuovo l'account", "Torna all'accesso"])(
+    '«%s» ha relative e touch-target',
+    async (testo) => {
+      const { wrapper } = await apri()
+      const link = wrapper.findAll('a').find((a) => a.text() === testo)
+      expect(link?.classes()).toEqual(expect.arrayContaining(['relative', 'touch-target']))
+    },
+  )
+})

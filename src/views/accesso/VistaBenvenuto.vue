@@ -127,7 +127,7 @@ onMounted(() => document.getElementById(ID.fondo)?.focus())
       Account {{ sessione.utente?.email }} ·
       <button
         type="button"
-        class="text-foreground underline underline-offset-4"
+        class="text-foreground underline underline-offset-4 relative touch-target"
         :disabled="uscitaInCorso"
         @click="esci"
       >

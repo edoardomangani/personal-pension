@@ -167,3 +167,14 @@ describe('VistaAccedi dagli indirizzi reali (ACC-01-C1 R7)', () => {
     expect(wrapper.get('[data-avviso]').text()).toContain('Accesso con Google non riuscito')
   })
 })
+
+describe('VistaAccedi: area di tocco (R2)', () => {
+  it.each(['Hai dimenticato la password?', 'Registrati'])(
+    '«%s» ha relative e touch-target',
+    async (testo) => {
+      const { wrapper } = await apri('/accedi')
+      const link = wrapper.findAll('a').find((a) => a.text() === testo)
+      expect(link?.classes()).toEqual(expect.arrayContaining(['relative', 'touch-target']))
+    },
+  )
+})

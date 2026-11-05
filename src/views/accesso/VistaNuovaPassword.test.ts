@@ -113,3 +113,11 @@ describe('VistaNuovaPassword dagli indirizzi reali (ACC-01-C1 R6)', () => {
     expect(titolo(wrapper)).toBe('Il link è scaduto')
   })
 })
+
+describe('VistaNuovaPassword: area di tocco (R2)', () => {
+  it('«Torna all’accesso» col link scaduto ha relative e touch-target', async () => {
+    const { wrapper } = await apri('/nuova-password?error=INVALID_TOKEN')
+    const link = wrapper.findAll('a').find((a) => a.text() === "Torna all'accesso")
+    expect(link?.classes()).toEqual(expect.arrayContaining(['relative', 'touch-target']))
+  })
+})

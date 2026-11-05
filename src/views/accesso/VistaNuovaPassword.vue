@@ -67,7 +67,7 @@ onMounted(() => {
   >
     <RouterLink
       to="/accedi"
-      class="self-center text-sm text-foreground underline underline-offset-4"
+      class="self-center text-sm text-foreground underline underline-offset-4 relative touch-target"
     >
       Torna all'accesso
     </RouterLink>

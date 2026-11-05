@@ -69,3 +69,11 @@ describe('VistaPasswordDimenticata (R16)', () => {
     expect(wrapper.get('form [role="alert"]').text()).toBe('Rete giù')
   })
 })
+
+describe('VistaPasswordDimenticata: area di tocco (R2)', () => {
+  it('«pagina di accesso» ha relative e touch-target', async () => {
+    const wrapper = await apri()
+    const link = wrapper.findAll('a').find((a) => a.text() === 'pagina di accesso')
+    expect(link?.classes()).toEqual(expect.arrayContaining(['relative', 'touch-target']))
+  })
+})

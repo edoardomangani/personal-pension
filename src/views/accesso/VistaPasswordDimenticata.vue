@@ -13,7 +13,10 @@ import ModuloRichiestaReset from '@/components/ModuloRichiestaReset.vue'
   >
     <p class="text-center text-sm text-muted-foreground">
       Oppure torna alla
-      <RouterLink to="/accedi" class="text-foreground underline underline-offset-4">
+      <RouterLink
+        to="/accedi"
+        class="text-foreground underline underline-offset-4 relative touch-target"
+      >
         pagina di accesso
       </RouterLink>
     </p>

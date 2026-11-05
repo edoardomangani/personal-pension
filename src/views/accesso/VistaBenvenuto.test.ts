@@ -181,3 +181,11 @@ describe('VistaBenvenuto: correzione dopo un «Inizia» fallito (ACC-01-C2, R2, 
     campiNellaCard(wrapper)
   })
 })
+
+describe('VistaBenvenuto: area di tocco (R2)', () => {
+  it('«Esci» ha relative e touch-target', async () => {
+    const { wrapper } = await apri()
+    const bottone = wrapper.findAll('button').find((b) => b.text() === 'Esci')
+    expect(bottone?.classes()).toEqual(expect.arrayContaining(['relative', 'touch-target']))
+  })
+})

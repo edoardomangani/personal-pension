@@ -161,7 +161,7 @@ onMounted(() => focalizza(bozza.email === '' ? 'email' : 'password'))
         </InsetGroup>
         <RouterLink
           to="/password-dimenticata"
-          class="self-end text-sm text-foreground underline underline-offset-4"
+          class="self-end text-sm text-foreground underline underline-offset-4 relative touch-target"
         >
           Hai dimenticato la password?
         </RouterLink>
@@ -180,7 +180,10 @@ onMounted(() => focalizza(bozza.email === '' ? 'email' : 'password'))
 
     <p class="text-center text-sm text-muted-foreground">
       Non hai un account?
-      <RouterLink to="/registrati" class="text-foreground underline underline-offset-4">
+      <RouterLink
+        to="/registrati"
+        class="text-foreground underline underline-offset-4 relative touch-target"
+      >
         Registrati
       </RouterLink>
     </p>
