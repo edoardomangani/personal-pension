@@ -9,8 +9,8 @@ Lingua dell'interfaccia e del codice visibile: italiano, dando del tu. Formati i
 ## Decisioni prese (4 nov 2026)
 
 - **Stack**: Vue 3 + Vite + TypeScript, SPA statica su GitHub Pages; dati su Neon (Auth + Data API + RLS).
-- **Base dal prototipo: solo la logica** (modello dati e calcoli). Le sezioni "Interfaccia attuale" qui sotto e `DESIGN.md` descrivono il prototipo, non sono un riferimento.
-- **Stile: il design system di Wallet per intero** (artefatto "Wallet Design System" su claude.ai, `8a927ced-bc93-4c84-9ffa-725362ec1474`: `project/tokens.json` e i README dei componenti), lime compreso: un solo stile per le due app. Il lime fa ciò che fa in Wallet: cifre positive (crescita, versato, rendimento: il ruolo «entrata»), pulsante +, focus, bagliore. Da versare e spese nel colore del testo; campi a righe come il «Nuovo movimento» di Wallet. shadcn-vue + Tailwind come Wallet.
+- **Base dal prototipo: solo la logica** (modello dati e calcoli). La sezione "Interfaccia attuale" qui sotto descrive il prototipo, non è un riferimento.
+- **Stile: il design system di Wallet per intero** (artefatto "Wallet Design System" su claude.ai, `8a927ced-bc93-4c84-9ffa-725362ec1474`: `project/tokens.json` e i README dei componenti), lime compreso: un solo stile per le due app. Il lime fa le cifre positive (crescita, versato, rendimento: il ruolo «entrata»), la proiezione, il bagliore e i tile di crescita e versamenti; ciò che si preme è bianco, cioè il «+», «Registra» e l'anello del focus (The White Acts Rule di `DESIGN.md`). Spese nel colore del testo (`foreground`), da versare in `subtle-foreground`; campi a righe come il «Nuovo movimento» di Wallet. shadcn-vue + Tailwind come Wallet.
 - **Modello dati rivisto** (supera § Modello dati attuale): buste paga con righe TFR/Datore/Personale, movimenti con righe TFR/Datore/Personale/Volontario/Spesa, estratti conto; le buste versate si collegano al movimento. Multiutente con piani separati. Dettagli nel brief di DAT-01.
 - **Lavoro col ciclo kit** (`ciclo/`, profilo in `ciclo/PROFILO.md`): dati e design si rivedono come voci, con brief e specifiche.
 
@@ -84,7 +84,7 @@ Le leggono chi scrive le specifiche, chi pianifica, chi esegue e chi fa la revie
 |---|---|
 | `prototype/index.html` | L'app com'è oggi: un solo file, HTML+CSS+JS, Chart.js da cdnjs, icone Phosphor inline in uno sprite SVG. Usa `claude.use("db")` (archivio dell'artefatto): è la parte da sostituire. |
 | `PRODUCT.md` | Chi la usa, a cosa serve, principi (formato Impeccable). |
-| `DESIGN.md` | Sistema visivo attuale: colori, tipo, misure. Deriva dal design system "Wallet" di Edoardo, con colori propri. |
+| `DESIGN.md` | Il design system di Next oggi: tema scuro, colori, tipo, misure, componenti. Deriva dal design system "Wallet" di Edoardo. |
 | `db/schema.sql` | Bozza di schema Postgres con RLS per Neon. Da verificare sulla doc Neon (vedi sotto). |
 | `data/seed.json` | Dati reali al 4 nov 2026, da importare. |
 | `icons/` | Icona app col marchio Next (pillola e punto bianchi su fondo quasi nero): svg, 512, 192, 180 (apple-touch). |
@@ -137,7 +137,7 @@ Chiedile una alla volta o a gruppi piccoli, proponendo un'opzione consigliata; n
 3. **Login.** Un solo utente (Edoardo) ma con login vero: nessun dato leggibile senza token. Niente chiavi segrete nel bundle.
 4. **Livello dati.** Sostituire `claude.use("db")` con chiamate alla Data API (stile PostgREST). Tenere la stessa interfaccia interna (liste in memoria + funzioni di calcolo) per riusare viste e calcoli del prototipo. Gestire stati: caricamento, errore di rete, sessione scaduta, primo avvio vuoto.
 5. **Import** di `data/seed.json`: creare il fondo, poi versamenti, poi TFR (mappando gli id `v-…` ai nuovi uuid), poi estratti conto, poi impostazioni. Controllo finale: totale TFR 2.659,15 €; versato 1.591,91 €; da versare 1.067,24 €; spese 15,00 €; ultimo valore 1.641,45 € al 03/11/2026.
-6. **PWA.** `manifest.webmanifest` (name "Next", short_name "Next", display standalone, theme/background #0e0e0d, icone di `icons/`), `apple-touch-icon`, meta `apple-mobile-web-app-*`, service worker che mette in cache la shell (dati sempre dalla rete, con messaggio chiaro se offline). Togliere dal prototipo il codice specifico dell'artefatto: `claude.use`, downloads, il controllo `isOwner`.
+6. **PWA.** `manifest.webmanifest` (name "Next", short_name "Next", display standalone, theme/background #060708, icone di `icons/`), `apple-touch-icon`, meta `apple-mobile-web-app-*`, service worker che mette in cache la shell (dati sempre dalla rete, con messaggio chiaro se offline). Togliere dal prototipo il codice specifico dell'artefatto: `claude.use`, downloads, il controllo `isOwner`.
 7. **Export** CSV/JSON come backup (download normale, ora che non c'è la sandbox).
 8. **Verifica** su iPhone (Aggiungi a Home → si apre standalone con l'icona giusta) e desktop.
 
