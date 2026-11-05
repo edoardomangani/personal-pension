@@ -195,6 +195,7 @@ describe('marchio (DS-02 R2-R4)', () => {
     const classi = involucro?.split(/\s+/) ?? []
     expect(classi).toEqual(expect.arrayContaining(['px-4', 'pt-3', PADDING_SOTTO_CORNICE]))
     expect(classi.some((c) => c.startsWith('lg:'))).toBe(false)
+    expect(classi.filter((c) => c.startsWith('pb-'))).toEqual([PADDING_SOTTO_CORNICE])
   })
 
   it('SHL-phone-mobile rimette sotto la barra lo stesso padding della shell', () => {
@@ -206,6 +207,7 @@ describe('marchio (DS-02 R2-R4)', () => {
     expect(classi).toEqual(
       expect.arrayContaining(['flex', 'flex-col', 'gap-3', 'px-4', 'pt-7', PADDING_SOTTO_CORNICE]),
     )
+    expect(classi.filter((c) => c.startsWith('pb-'))).toEqual([PADDING_SOTTO_CORNICE])
   })
 
   it('SHL-logo: la cattura si ferma al campione', () => {
