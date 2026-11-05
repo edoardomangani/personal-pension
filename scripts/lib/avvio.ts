@@ -39,13 +39,6 @@ export function nomeFile(s: Schermo): string {
   return `avvio-${larghezza}x${altezza}.png`
 }
 
-export function mediaQuery(s: Schermo): string {
-  return (
-    `(device-width: ${s.punti.larghezza}px) and (device-height: ${s.punti.altezza}px)` +
-    ` and (-webkit-device-pixel-ratio: ${s.densita}) and (orientation: portrait)`
-  )
-}
-
 export function latoSegno(larghezza: number): number {
   return Math.round(QUOTA_SEGNO * larghezza)
 }

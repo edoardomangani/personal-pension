@@ -2,16 +2,7 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import {
-  SCHERMI,
-  estraiSegno,
-  latoSegno,
-  mediaQuery,
-  nomeFile,
-  pixel,
-  svgAvvio,
-  type Schermo,
-} from './avvio'
+import { SCHERMI, estraiSegno, latoSegno, nomeFile, pixel, svgAvvio, type Schermo } from './avvio'
 
 const iconSvg = readFileSync(join(import.meta.dirname, '..', '..', 'icons', 'icon.svg'), 'utf8')
 const PILLOLA = 'M60 102 L130 102 A26 26 0 0 1 130 154 L60 154 A26 26 0 0 1 60 102 Z'
@@ -51,12 +42,6 @@ describe('SCHERMI', () => {
 
   it('il nome del file porta i pixel', () => {
     expect(nomeFile(iphone15)).toBe('avvio-1170x2532.png')
-  })
-
-  it('la media query è in verticale con punti e densità', () => {
-    expect(mediaQuery(iphone15)).toBe(
-      '(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)',
-    )
   })
 })
 
