@@ -26,7 +26,7 @@ const emit = defineEmits<{ riprova: [] }>()
     <!-- Testo e Riprova in un solo figlio della colonna del testo: l'icona resta in alto. -->
     <div class="col-start-2 flex items-center gap-3">
       <div class="min-w-0 flex-1">
-        <AlertTitle class="font-medium">{{ titolo }}</AlertTitle>
+        <AlertTitle class="font-medium line-clamp-none">{{ titolo }}</AlertTitle>
         <AlertDescription>{{ descrizione }}</AlertDescription>
       </div>
       <Button variant="outline" size="sm" :disabled="inCorso" @click="emit('riprova')">

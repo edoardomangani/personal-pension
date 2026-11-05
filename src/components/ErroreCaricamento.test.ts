@@ -1,5 +1,6 @@
 import { mount } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
+import { AlertTitle } from '@/components/ui/alert'
 import ErroreCaricamento from './ErroreCaricamento.vue'
 
 describe('ErroreCaricamento (PWA-01 R15)', () => {
@@ -37,5 +38,34 @@ describe('ErroreCaricamento (PWA-01 R15)', () => {
     expect(bottone.attributes('disabled')).toBeDefined()
     await bottone.trigger('click')
     expect(wrapper.emitted('riprova')).toBeUndefined()
+  })
+})
+
+describe('ErroreCaricamento, titolo che va a capo (PWA-01-C2)', () => {
+  it('il titolo non è limitato a una riga (T1)', () => {
+    const titolo = mount(ErroreCaricamento).get('[data-slot="alert-title"]')
+    expect(titolo.classes()).toContain('line-clamp-none')
+    expect(titolo.classes()).not.toContain('line-clamp-1')
+  })
+
+  it('un titolo lungo per prop resta intero e senza limite di righe (T2)', () => {
+    const lungo = 'Un titolo molto lungo che non sta in una riga'
+    const titolo = mount(ErroreCaricamento, { props: { titolo: lungo } }).get(
+      '[data-slot="alert-title"]',
+    )
+    expect(titolo.classes()).toContain('line-clamp-none')
+    expect(titolo.classes()).not.toContain('line-clamp-1')
+    expect(titolo.text()).toBe(lungo)
+  })
+
+  it('il titolo mantiene font-medium (T3)', () => {
+    const titolo = mount(ErroreCaricamento).get('[data-slot="alert-title"]')
+    expect(titolo.classes()).toContain('font-medium')
+    expect(titolo.classes()).not.toContain('font-semibold')
+  })
+
+  it('AlertTitle senza classi in più resta su una riga (T4)', () => {
+    const titolo = mount(AlertTitle, { slots: { default: 'Titolo' } })
+    expect(titolo.classes()).toContain('line-clamp-1')
   })
 })
