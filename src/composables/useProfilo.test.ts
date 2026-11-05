@@ -64,6 +64,16 @@ describe('useProfilo sullo store della sessione', () => {
     expect(saluto.value).toBe('Ciao')
   })
 
+  it('R28: la foto segue lo store', () => {
+    const profilo = useProfilo()
+    const sessione = useSessioneStore()
+    expect(profilo.foto.value).toBeNull()
+    sessione.foto = 'data:image/jpeg;base64,AAAA'
+    expect(profilo.foto.value).toBe('data:image/jpeg;base64,AAAA')
+    sessione.foto = null
+    expect(profilo.foto.value).toBeNull()
+  })
+
   it('segue l’utente dello store', () => {
     const profilo = useProfilo()
     useSessioneStore().utente = utenteDiProva({ email: EMAIL })

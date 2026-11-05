@@ -12,6 +12,7 @@ import {
 import { RouterLink } from 'vue-router'
 import iconaApp from '../../../icons/apple-touch-icon.png'
 import { formatoData, formatoEuro } from '@/calc/formato'
+import AvatarUtente from '@/components/AvatarUtente.vue'
 import MovementDaySample from '@/components/dev/MovementDaySample.vue'
 import MovementRowSample from '@/components/dev/MovementRowSample.vue'
 import PhoneFrame from '@/components/dev/PhoneFrame.vue'
@@ -186,6 +187,12 @@ const movementDays = [
           <Avatar class="size-9">
             <AvatarFallback class="text-xs">EM</AvatarFallback>
           </Avatar>
+        </Specimen>
+        <Specimen code="AVT-utente-foto" note="36px">
+          <AvatarUtente :foto="iconaApp" iniziali="EM" class="size-9" />
+        </Specimen>
+        <Specimen code="AVT-utente-iniziali" note="36px">
+          <AvatarUtente :foto="null" iniziali="EM" class="size-9" />
         </Specimen>
         <Specimen code="AVT-icon">
           <Avatar class="size-10 rounded-xl">

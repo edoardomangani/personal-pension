@@ -6,6 +6,7 @@ import { createMemoryHistory, createRouter, type Router } from 'vue-router'
 import { esci as esciDb } from '@/data/sessione'
 import { rotte } from '@/router'
 import { useSessioneStore } from '@/stores/sessione'
+import { AvatarImage } from '@/components/ui/avatar'
 import { SidebarProvider } from '@/components/ui/sidebar'
 import NavUtente from './NavUtente.vue'
 import { utenteDiProva } from '@/test/utenti'
@@ -136,5 +137,24 @@ describe('NavUtente: piede della sidebar (DS-03-C2)', () => {
     expect(wrapper.get('button[aria-haspopup="menu"]').attributes('data-state')).toBe('open')
     const voci = Array.from(menu()?.querySelectorAll('[role="menuitem"]') ?? [])
     expect(voci.map((voce) => voce.textContent?.trim())).toEqual(['Account', 'Esci'])
+  })
+})
+
+describe('NavUtente: foto del profilo (R28)', () => {
+  it('con la foto nello store l’avatar del piede usa AvatarImage con quella src', async () => {
+    const sessione = useSessioneStore()
+    sessione.utente = utenteDiProva({ nome: 'Giulia Conti' })
+    sessione.foto = 'data:image/jpeg;base64,AAAA'
+    const wrapper = montaPiede(await routerSu('/'))
+    await flushPromises()
+    expect(wrapper.getComponent(AvatarImage).props('src')).toBe('data:image/jpeg;base64,AAAA')
+  })
+
+  it('senza foto: niente AvatarImage, le iniziali', async () => {
+    useSessioneStore().utente = utenteDiProva({ nome: 'Giulia Conti' })
+    const wrapper = montaPiede(await routerSu('/'))
+    await flushPromises()
+    expect(wrapper.findComponent(AvatarImage).exists()).toBe(false)
+    expect(wrapper.get('[data-slot="avatar-fallback"]').text()).toBe('GC')
   })
 })

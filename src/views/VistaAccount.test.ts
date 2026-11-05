@@ -28,7 +28,7 @@ vi.mock('@/data/foto', () => ({ leggiFoto: vi.fn(async () => null) }))
 vi.mock('@/data/account', () => ({ cancellaAccount: vi.fn() }))
 vi.mock('vue-sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }))
 
-// Il tooltip di «Cambia foto» misura la freccia con ResizeObserver, che jsdom non ha.
+// Gli overlay di Reka misurano con ResizeObserver, che jsdom non ha.
 vi.stubGlobal(
   'ResizeObserver',
   class {
@@ -133,17 +133,34 @@ describe('VistaAccount (R20)', () => {
     expect(bottone(wrapper, 'Cambia password')?.classes()).toContain('w-full')
   })
 
-  it('su desktop c’è il pannello con nome, email e «Cambia foto» in arrivo', async () => {
+  it('su desktop c’è il pannello con nome, email e «Cambia foto»', async () => {
     finestraDesktop()
     const { wrapper } = await apri()
     const pannello = wrapper.get('[data-pannello]')
     expect(pannello.text()).toContain('Giulia Conti')
     expect(pannello.text()).toContain('giulia.conti@esempio.it')
     expect(pannello.text()).toContain('12 set 2026')
-    expect(bottone(wrapper, 'Cambia foto')?.attributes('aria-disabled')).toBe('true')
+    expect(bottone(wrapper, 'Cambia foto')?.attributes('aria-disabled')).toBeUndefined()
     expect(bottone(wrapper, 'Cambia password')).toBeDefined()
     // I gruppi Account e Accesso stanno solo nel pannello, non doppi.
     expect(wrapper.text().match(/Registrato/g)).toHaveLength(1)
+  })
+})
+
+describe('VistaAccount: «Cambia foto» nel pannello (R24)', () => {
+  it('account solo Google: «Cambia foto» attivo, da solo, apre «Foto del profilo»', async () => {
+    finestraDesktop()
+    metodi({ password: false, google: true })
+    const { wrapper } = await apri()
+    const pulsante = bottone(wrapper, 'Cambia foto')
+    expect(pulsante?.attributes('aria-disabled')).toBeUndefined()
+    expect(bottone(wrapper, 'Cambia password')).toBeUndefined()
+    expect(document.body.textContent).not.toContain('Foto del profilo')
+
+    await pulsante?.trigger('click')
+    await flushPromises()
+    expect(document.body.textContent).toContain('Foto del profilo')
+    expect(document.body.textContent).toContain('Scegli una foto')
   })
 })
 

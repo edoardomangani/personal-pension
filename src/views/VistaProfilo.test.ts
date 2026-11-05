@@ -1,8 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { defineComponent, h, nextTick } from 'vue'
 import { enableAutoUnmount, flushPromises, mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
-import { TooltipProvider } from 'reka-ui'
 import { createMemoryHistory, createRouter, type Router } from 'vue-router'
 import { insetGroupClass } from '@/components/forms/inset'
 import { esci as esciDb } from '@/data/sessione'
@@ -24,7 +22,7 @@ beforeEach(() => {
   vi.mocked(esciDb).mockReset()
 })
 
-// Il tooltip aperto misura la freccia con ResizeObserver, che jsdom non ha.
+// Gli overlay di Reka misurano con ResizeObserver, che jsdom non ha.
 vi.stubGlobal(
   'ResizeObserver',
   class {
@@ -41,22 +39,11 @@ async function routerSu(percorso: string): Promise<Router> {
   return router
 }
 
-// TooltipRoot vuole un TooltipProvider antenato: in app lo dà SidebarProvider.
 async function montaProfilo(router?: Router) {
-  const Contenitore = defineComponent({
-    setup: () => () => h(TooltipProvider, null, () => h(VistaProfilo)),
-  })
-  return mount(Contenitore, {
+  return mount(VistaProfilo, {
     global: { plugins: [router ?? (await routerSu('/profilo'))] },
     attachTo: document.body,
   })
-}
-
-// jsdom non ha PointerEvent: l'evento si costruisce a mano col solo pointerType.
-function tocco(el: Element): void {
-  const evento = new Event('pointerdown', { bubbles: true })
-  Object.defineProperty(evento, 'pointerType', { value: 'touch' })
-  el.dispatchEvent(evento)
 }
 
 describe('VistaProfilo (R10)', () => {
@@ -120,18 +107,17 @@ describe('Gruppi di «Profilo» (DS-03-C1 R5, R6)', () => {
   })
 })
 
-describe('Cambia foto (R18)', () => {
-  it('è aria-disabled con aria-label «Cambia foto» e al tocco dice «In arrivo»', async () => {
+describe('Cambia foto (R18, R24)', () => {
+  it('è attivo con aria-label «Cambia foto» e apre «Foto del profilo»', async () => {
     const wrapper = await montaProfilo()
     const pulsante = wrapper.get('button[aria-label="Cambia foto"]')
-    expect(pulsante.attributes('aria-disabled')).toBe('true')
-    expect(document.body.textContent).not.toContain('In arrivo')
+    expect(pulsante.attributes('aria-disabled')).toBeUndefined()
+    expect(document.body.textContent).not.toContain('Foto del profilo')
 
-    tocco(pulsante.element)
     await pulsante.trigger('click')
-    await nextTick()
     await flushPromises()
-    expect(document.body.textContent).toContain('In arrivo')
+    expect(document.body.textContent).toContain('Foto del profilo')
+    expect(document.body.textContent).not.toContain('In arrivo')
   })
 })
 

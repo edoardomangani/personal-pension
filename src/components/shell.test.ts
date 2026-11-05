@@ -8,6 +8,7 @@ import { formatoGiorno } from '@/calc/formato'
 import { rotte } from '@/router'
 import { useArchivioStore } from '@/stores/archivio'
 import { useSessioneStore } from '@/stores/sessione'
+import { AvatarImage } from '@/components/ui/avatar'
 import { buttonVariants } from '@/components/ui/button'
 import { SidebarProvider, sidebarMenuButtonVariants } from '@/components/ui/sidebar'
 import AppBottomBar from './AppBottomBar.vue'
@@ -344,6 +345,26 @@ describe('testata mobile (R5-R7)', () => {
     useSessioneStore().utente = utenteDiProva()
     const wrapper = montaTestata(await routerSu('/'))
     await flushPromises()
+    expect(wrapper.get('a').text()).toBe('E')
+  })
+
+  // AvatarImage monta l'img solo dopo il load, che jsdom non manda: si guarda il componente.
+  it('R28: con la foto nello store l’avatar usa AvatarImage con quella src', async () => {
+    const sessione = useSessioneStore()
+    sessione.utente = utenteDiProva()
+    sessione.foto = 'data:image/jpeg;base64,AAAA'
+    const wrapper = montaTestata(await routerSu('/'))
+    await flushPromises()
+    expect(wrapper.getComponent(AvatarImage).props('src')).toBe('data:image/jpeg;base64,AAAA')
+    // Finché la foto non carica, restano le iniziali.
+    expect(wrapper.get('[data-slot="avatar-fallback"]').text()).toBe('E')
+  })
+
+  it('R28: senza foto niente AvatarImage, le iniziali', async () => {
+    useSessioneStore().utente = utenteDiProva()
+    const wrapper = montaTestata(await routerSu('/'))
+    await flushPromises()
+    expect(wrapper.findComponent(AvatarImage).exists()).toBe(false)
     expect(wrapper.get('a').text()).toBe('E')
   })
 

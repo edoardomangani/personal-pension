@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { PhCamera, PhCaretRight, PhSignOut, PhUser } from '@phosphor-icons/vue'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { RouterLink } from 'vue-router'
-import ComingSoonTooltip from '@/components/ComingSoonTooltip.vue'
+import FotoProfiloSheet from '@/components/FotoProfiloSheet.vue'
 import { insetGroupClass } from '@/components/forms/inset'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import AvatarUtente from '@/components/AvatarUtente.vue'
 import { Button } from '@/components/ui/button'
 import { useEsci } from '@/composables/useEsci'
 import { useNavigazione, type PhosphorIcon } from '@/composables/useNavigazione'
@@ -12,9 +12,10 @@ import { useProfilo } from '@/composables/useProfilo'
 
 type Collegamento = { chiave: string; titolo: string; percorso: string; icona: PhosphorIcon }
 
-const { rigaPrincipale, emailSecondaria, iniziali } = useProfilo()
+const { rigaPrincipale, emailSecondaria, iniziali, foto } = useProfilo()
 const { vociDesktop } = useNavigazione()
 const { esci, inCorso } = useEsci()
+const fotoAperta = ref(false)
 
 // Impostazioni e Fisco con titolo e icona della sidebar: una sola fonte.
 const collegamenti = computed<Collegamento[]>(() => [
@@ -33,23 +34,21 @@ const tile = 'grid size-9 shrink-0 place-items-center rounded-tile bg-secondary 
   <div class="mx-auto flex w-full max-w-140 flex-col gap-6">
     <section class="flex flex-col items-center pt-2 pb-2 text-center">
       <div class="relative">
-        <Avatar class="size-20">
-          <AvatarFallback class="text-2xl font-semibold">
-            <template v-if="iniziali">{{ iniziali }}</template>
-            <PhUser v-else class="size-4.5" />
-          </AvatarFallback>
-        </Avatar>
-        <ComingSoonTooltip>
-          <Button
-            type="button"
-            size="icon-sm"
-            aria-disabled="true"
-            aria-label="Cambia foto"
-            class="absolute -right-0.5 -bottom-0.5 border-2 border-background aria-disabled:opacity-100"
-          >
-            <PhCamera class="size-4" />
-          </Button>
-        </ComingSoonTooltip>
+        <AvatarUtente
+          :foto="foto"
+          :iniziali="iniziali"
+          class="size-20"
+          classe-iniziali="text-2xl font-semibold"
+        />
+        <Button
+          type="button"
+          size="icon-sm"
+          aria-label="Cambia foto"
+          class="absolute -right-0.5 -bottom-0.5 border-2 border-background"
+          @click="fotoAperta = true"
+        >
+          <PhCamera class="size-4" />
+        </Button>
       </div>
       <p class="mt-3 max-w-full truncate text-lg font-semibold tracking-[-0.01em]">
         {{ rigaPrincipale }}
@@ -73,5 +72,7 @@ const tile = 'grid size-9 shrink-0 place-items-center rounded-tile bg-secondary 
         <span class="flex-1 truncate">Esci</span>
       </button>
     </div>
+
+    <FotoProfiloSheet v-model:open="fotoAperta" />
   </div>
 </template>

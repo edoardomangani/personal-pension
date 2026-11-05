@@ -9,6 +9,8 @@ export type UseProfiloReturn = {
   emailSecondaria: ComputedRef<string | null>
   iniziali: ComputedRef<string | null>
   saluto: ComputedRef<string>
+  /** La foto come data URL; null senza foto o senza sessione. */
+  foto: ComputedRef<string | null>
 }
 
 const RIGA_SENZA_SESSIONE = 'Account'
@@ -53,5 +55,6 @@ export function useProfilo(): UseProfiloReturn {
     emailSecondaria: computed(() => emailSecondariaDi(sessione.utente)),
     iniziali: computed(() => inizialiDi(sessione.utente)),
     saluto: computed(() => salutoDi(sessione.utente)),
+    foto: computed(() => sessione.foto),
   }
 }

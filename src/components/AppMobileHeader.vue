@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { PhCaretLeft, PhUser } from '@phosphor-icons/vue'
+import { PhCaretLeft } from '@phosphor-icons/vue'
 import { computed } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import AvatarUtente from '@/components/AvatarUtente.vue'
 import { Button } from '@/components/ui/button'
 import AzioneTestata from '@/components/AzioneTestata.vue'
 import { formatoGiorno } from '@/calc/formato'
@@ -15,7 +15,7 @@ import { useArchivioStore } from '@/stores/archivio'
 const route = useRoute()
 const archivio = useArchivioStore()
 const { titolo } = useShellHeading()
-const { iniziali, saluto } = useProfilo()
+const { iniziali, saluto, foto } = useProfilo()
 const { indietro } = useIndietro()
 const azione = useAzioneTestata()
 
@@ -54,12 +54,7 @@ const giorno = computed(() => formatoGiorno(archivio.oggi))
       </div>
       <Button as-child variant="ghost" size="icon" class="shrink-0 hover:bg-transparent">
         <RouterLink to="/profilo" aria-label="Profilo: account e impostazioni">
-          <Avatar class="size-9">
-            <AvatarFallback>
-              <template v-if="iniziali">{{ iniziali }}</template>
-              <PhUser v-else class="size-4.5" />
-            </AvatarFallback>
-          </Avatar>
+          <AvatarUtente :foto="foto" :iniziali="iniziali" class="size-9" />
         </RouterLink>
       </Button>
     </div>

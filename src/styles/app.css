@@ -30,6 +30,10 @@
   --text-tab-label: 10px;
   --text-tab-label--line-height: 1;
   --text-tab-label--font-weight: 600;
+  /* Initials in the 160px photo preview. */
+  --text-avatar-lg: 40px;
+  --text-avatar-lg--line-height: 1;
+  --text-avatar-lg--font-weight: 600;
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);

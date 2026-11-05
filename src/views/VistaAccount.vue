@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import { PhCamera, PhKey, PhUser } from '@phosphor-icons/vue'
+import { PhCamera, PhKey } from '@phosphor-icons/vue'
 import { computed, reactive, ref, watch } from 'vue'
 import { toast } from 'vue-sonner'
 import { formatoDataBreve } from '@/calc/formato'
 import { validaNome, type BozzaNome } from '@/calc/validaAccesso'
-import ComingSoonTooltip from '@/components/ComingSoonTooltip.vue'
 import GruppoAccount from '@/components/account/GruppoAccount.vue'
 import ModuloCambiaPassword from '@/components/account/ModuloCambiaPassword.vue'
 import ModuloCancellaAccount from '@/components/account/ModuloCancellaAccount.vue'
@@ -15,8 +14,9 @@ import InsetGroup from '@/components/forms/InsetGroup.vue'
 import InsetInput from '@/components/forms/InsetInput.vue'
 import InsetRow from '@/components/forms/InsetRow.vue'
 import { insetRowClass } from '@/components/forms/inset'
+import FotoProfiloSheet from '@/components/FotoProfiloSheet.vue'
 import ResponsiveSheet from '@/components/ResponsiveSheet.vue'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import AvatarUtente from '@/components/AvatarUtente.vue'
 import { Button } from '@/components/ui/button'
 import { registraAzioneTestata } from '@/composables/useAzioneTestata'
 import { useIsDesktop } from '@/composables/useIsDesktop'
@@ -29,7 +29,7 @@ const VUOTO = '—'
 
 const sessione = useSessioneStore()
 const isDesktop = useIsDesktop()
-const { rigaPrincipale, emailSecondaria, iniziali } = useProfilo()
+const { rigaPrincipale, emailSecondaria, iniziali, foto } = useProfilo()
 
 // Dopo la cancellazione lo store è vuoto prima che la rotta cambi: tutto regge `utente` null.
 const email = computed(() => sessione.utente?.email ?? '')
@@ -97,6 +97,7 @@ const righeAccesso = computed<RigaLettura[]>(() => {
 
 const passwordAperto = ref(false)
 const cancellaAperto = ref(false)
+const fotoAperta = ref(false)
 </script>
 
 <template>
@@ -149,12 +150,7 @@ const cancellaAperto = ref(false)
     data-pannello
   >
     <div class="flex items-center gap-3 px-6 pt-7">
-      <Avatar class="size-9">
-        <AvatarFallback>
-          <template v-if="iniziali">{{ iniziali }}</template>
-          <PhUser v-else class="size-4.5" />
-        </AvatarFallback>
-      </Avatar>
+      <AvatarUtente :foto="foto" :iniziali="iniziali" class="size-9" />
       <div class="min-w-0">
         <p class="truncate text-base font-semibold">{{ rigaPrincipale }}</p>
         <p v-if="emailSecondaria" class="truncate text-xs text-subtle-foreground">
@@ -164,13 +160,10 @@ const cancellaAperto = ref(false)
     </div>
     <div class="flex flex-col gap-6 px-6 pt-5 pb-6">
       <div :class="['grid gap-2', conPassword ? 'grid-cols-2' : 'grid-cols-1']">
-        <!-- R24 è della fase della foto: fino ad allora «Cambia foto» resta in arrivo come in «Profilo». -->
-        <ComingSoonTooltip>
-          <Button type="button" variant="outline" aria-disabled="true" class="w-full">
-            <PhCamera />
-            Cambia foto
-          </Button>
-        </ComingSoonTooltip>
+        <Button type="button" variant="outline" class="w-full" @click="fotoAperta = true">
+          <PhCamera />
+          Cambia foto
+        </Button>
         <Button
           v-if="conPassword"
           type="button"
@@ -198,4 +191,5 @@ const cancellaAperto = ref(false)
   <ResponsiveSheet v-model:open="cancellaAperto" title="Cancellare l'account?">
     <ModuloCancellaAccount :con-password="conPassword" @chiudi="cancellaAperto = false" />
   </ResponsiveSheet>
+  <FotoProfiloSheet v-model:open="fotoAperta" />
 </template>

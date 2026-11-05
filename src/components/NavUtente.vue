@@ -2,7 +2,7 @@
 import { PhCaretUpDown, PhSignOut, PhUser } from '@phosphor-icons/vue'
 import { ref, watch } from 'vue'
 import { RouterLink } from 'vue-router'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import AvatarUtente from '@/components/AvatarUtente.vue'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,7 +16,7 @@ import { useEsci } from '@/composables/useEsci'
 import { useIsDesktop } from '@/composables/useIsDesktop'
 import { useProfilo } from '@/composables/useProfilo'
 
-const { rigaPrincipale, emailSecondaria, iniziali } = useProfilo()
+const { rigaPrincipale, emailSecondaria, iniziali, foto } = useProfilo()
 const { esci, inCorso } = useEsci()
 const isDesktop = useIsDesktop()
 const aperto = ref(false)
@@ -36,12 +36,7 @@ watch(isDesktop, (desktop) => {
             size="lg"
             class="h-12 gap-2.5 rounded-xl px-2 text-foreground data-[state=open]:bg-sidebar-accent [&>svg]:size-4"
           >
-            <Avatar>
-              <AvatarFallback>
-                <template v-if="iniziali">{{ iniziali }}</template>
-                <PhUser v-else class="size-4.5" />
-              </AvatarFallback>
-            </Avatar>
+            <AvatarUtente :foto="foto" :iniziali="iniziali" />
             <span class="flex min-w-0 flex-1 flex-col leading-tight">
               <span class="truncate text-sm font-medium">{{ rigaPrincipale }}</span>
               <span v-if="emailSecondaria" class="truncate text-xs text-subtle-foreground">
