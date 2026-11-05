@@ -18,7 +18,7 @@ export const buttonVariants = cva(
       },
       size: {
         default: 'h-9 px-4 text-sm touch-target has-[>svg]:px-3.5',
-        sm: 'h-8 gap-1.5 px-3 text-xs touch-target has-[>svg]:px-2.5',
+        sm: 'h-8 px-3 text-xs touch-target',
         lg: 'h-10 px-5 text-sm has-[>svg]:px-4',
         icon: 'size-9 text-sm touch-target',
         'icon-sm': 'size-8 text-sm touch-target',

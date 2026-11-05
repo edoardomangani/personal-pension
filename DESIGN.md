@@ -152,6 +152,7 @@ components:
     rounded: "{rounded.full}"
     height: "32px"
     padding: "0 12px"
+    gap: "8px"
   button-lg:
     rounded: "{rounded.full}"
     height: "40px"
@@ -339,14 +340,14 @@ La profondità è vetro, non ombra. Le superfici sono strati di bianco velato so
 
 ## Shapes
 
-I controlli sono pill: bottoni, input, badge, segmenti. Il resto cresce col contenitore: 6px per piccoli contenitori; i tile con icona in proporzione alla misura, 12px (`rounded-tile`, `--radius-tile`) per i tile da 36px (`size-9`: righe su telefono, «Profilo», tile della crescita) e 10px (`rounded-lg`, la base `--radius`) per quelli da 32px (`size-8`: righe su desktop); 10px anche per voci di menu e sidebar, 14px per tabelle e tooltip ricchi, 18px per i dialog, 22px per le card su desktop, 24px (`rounded-card-mobile`, `--radius-card-mobile`) per le card su telefono e lo Sheet dal basso. Bordi sempre da un filo (0,75px).
+I controlli sono pill: bottoni, input, badge, segmenti. Il resto cresce col contenitore: 6px per piccoli contenitori; i tile con icona in proporzione alla misura, 12px (`rounded-tile`, `--radius-tile`) per i tile da 36px (`size-9`: righe su telefono, «Profilo», tile della crescita) e 10px (`rounded-lg`, la base `--radius`) per quelli da 32px (`size-8`: righe su desktop); 10px anche per voci di menu e sidebar, 14px per avvisi, tabelle e tooltip ricchi, 18px per i dialog, 22px per le card su desktop, 24px (`rounded-card-mobile`, `--radius-card-mobile`) per le card su telefono e lo Sheet dal basso. Bordi sempre da un filo (0,75px).
 
 ## Components
 
 ### Buttons
 - **Shape:** pill (999px), testo in 600. Tre altezze, uguali su telefono e desktop: la misura dipende dal contesto, non dal dispositivo.
 - **36px (`default`, `icon`):** ogni bottone normale e ogni bottone a icona: la X degli sheet, «Registra» nella barra in alto. Testo `text-sm`, padding 16px.
-- **32px (`sm`, `icon-sm`):** solo nei contesti densi: righe, card. Testo `text-xs`, padding 12px.
+- **32px (`sm`, `icon-sm`):** solo nei contesti densi: righe, card. Testo `text-xs`, padding 12px anche con l'icona, 8px fra icona e testo.
 - **40px (`lg`, `icon-lg`):** solo la CTA principale a tutta larghezza in fondo a uno sheet o a un modulo e la CTA degli stati vuoti. Testo `text-sm`, padding 20px.
 - **48px:** solo il «+» della barra in basso.
 - **Area di tocco:** sui dispositivi touch i bottoni da 32 e 36px hanno un'area invisibile da 44px (utility `touch-target`, uno `::before` centrato), senza cambiare l'aspetto; si usa dove non si sovrappone ai vicini.
@@ -364,7 +365,7 @@ I controlli sono pill: bottoni, input, badge, segmenti. Il resto cresce col cont
 - **Badge con icona:** icona Phosphor da 12px prima del testo, a 4px (il `Badge` lo prevede già), per uno stato come «Da versare».
 
 ### Avvisi
-- **Default (`ALR-default`):** vetro, testo e icona nel colore del testo; padding 12px 16px, titolo 14px, descrizione 14px in `muted-foreground`. Per un'informazione neutra.
+- **Default (`ALR-default`):** vetro, testo e icona nel colore del testo; raggio 14px (`rounded-xl`), padding 12px 16px, titolo 14px, descrizione 14px in `muted-foreground`, senza spazio fra titolo e descrizione. Per un'informazione neutra.
 - **Destructive (`ALR-destructive`):** velo corallo, icona corallo. Solo per un errore.
 - **Offline (`ALR-offline`):** il default con `PhWifiSlash`, titolo «Sei offline» in 500 e descrizione «I dati si aggiornano quando torna la rete.»; ruolo `status` (annuncio cortese), non `alert`. Si vede solo senza rete, in ogni pagina della shell e in nessuna fuori (accesso, onboarding). Sul telefono sta dentro la testata sticky, 12px sotto la riga del titolo, e resta visibile scorrendo; da `lg` è la prima cosa del contenuto, sotto la barra in alto, largo quanto il contenuto e con 32px sotto. Un solo avviso alla volta: offline c'è solo il banner, anche se la vista non ha i dati.
 - **Errore di caricamento (`ALR-errore-caricamento`):** il destructive con `PhWarningCircle`, titolo «Non riesco a caricare i dati» in 500 e descrizione «Controlla la connessione e riprova.»; Riprova (`outline` `sm` con `PhArrowClockwise` 16) in linea a destra del testo, a 12px, centrato in verticale, mentre l'icona d'errore resta in alto; sul telefono il testo va a capo e il bottone non si stringe. Sta dove sta il banner su desktop (prima cosa del contenuto, largo quanto il contenuto, 32px sotto) e sul telefono è la prima cosa del contenuto, 12px sotto la testata. Si vede solo online, mai insieme al banner; durante il caricamento lanciato da Riprova il bottone è spento e l'avviso resta finché il caricamento non finisce.

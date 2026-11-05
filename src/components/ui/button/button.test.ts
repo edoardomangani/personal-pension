@@ -1,5 +1,6 @@
 import { mount } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
+import { PhArrowClockwise } from '@phosphor-icons/vue'
 import { h } from 'vue'
 import { Button } from '.'
 
@@ -38,6 +39,33 @@ describe('Button', () => {
     expect(classi(wrapper)).toContain('size-9')
     expect(classi(wrapper)).not.toContain('h-9')
     expect(classi(wrapper)).not.toContain('px-4')
+  })
+
+  it('sm ha padding 12px e 8px fra icona e testo', () => {
+    const wrapper = mount(Button, { props: { size: 'sm' } })
+    expect(classi(wrapper)).toEqual(expect.arrayContaining(['h-8', 'px-3', 'gap-2', 'text-xs']))
+    expect(classi(wrapper)).not.toContain('gap-1.5')
+    expect(classi(wrapper)).not.toContain('has-[>svg]:px-2.5')
+  })
+
+  it('sm con icona tiene lo stesso padding', () => {
+    const wrapper = mount(Button, {
+      props: { size: 'sm' },
+      slots: { default: () => [h(PhArrowClockwise), 'Riprova'] },
+    })
+    expect(wrapper.find('svg').exists()).toBe(true)
+    expect(classi(wrapper)).toEqual(expect.arrayContaining(['h-8', 'px-3', 'gap-2', 'text-xs']))
+    expect(classi(wrapper)).not.toContain('gap-1.5')
+    expect(classi(wrapper).some((c) => c.startsWith('has-[>svg]:px-'))).toBe(false)
+  })
+
+  it('default e lg non cambiano', () => {
+    expect(classi(mount(Button))).toEqual(
+      expect.arrayContaining(['h-9', 'px-4', 'has-[>svg]:px-3.5']),
+    )
+    expect(classi(mount(Button, { props: { size: 'lg' } }))).toEqual(
+      expect.arrayContaining(['h-10', 'px-5', 'has-[>svg]:px-4']),
+    )
   })
 
   it('as rende l’elemento richiesto', () => {
