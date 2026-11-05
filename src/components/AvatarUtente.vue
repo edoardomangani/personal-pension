@@ -15,7 +15,8 @@ const props = defineProps<{
 </script>
 
 <template>
-  <Avatar :class="props.class">
+  <!-- La chiave rimonta la radice a ogni foto: lo stato `loaded` di quella vecchia non sopravvive. -->
+  <Avatar :key="foto ?? 'senza-foto'" :class="props.class">
     <!-- R28: finché la foto non carica (o se non si decodifica) restano le iniziali. -->
     <AvatarImage v-if="foto" :src="foto" alt="" class="object-cover" />
     <AvatarFallback :class="classeIniziali">
