@@ -14,6 +14,7 @@ import iconaApp from '../../../icons/apple-touch-icon.png'
 import { formatoData, formatoEuro } from '@/calc/formato'
 import AvatarUtente from '@/components/AvatarUtente.vue'
 import BannerOffline from '@/components/BannerOffline.vue'
+import ErroreCaricamento from '@/components/ErroreCaricamento.vue'
 import MovementDaySample from '@/components/dev/MovementDaySample.vue'
 import MovementRowSample from '@/components/dev/MovementRowSample.vue'
 import PhoneFrame from '@/components/dev/PhoneFrame.vue'
@@ -170,6 +171,12 @@ const movementDays = [
         </Specimen>
         <Specimen code="ALR-offline" note="role status · nella testata o in cima al contenuto">
           <BannerOffline class="w-96 max-w-full" />
+        </Specimen>
+        <Specimen
+          code="ALR-errore-caricamento"
+          note="Riprova in linea · solo online, mai col banner"
+        >
+          <ErroreCaricamento class="w-96 max-w-full" />
         </Specimen>
       </div>
     </ShowcaseBlock>

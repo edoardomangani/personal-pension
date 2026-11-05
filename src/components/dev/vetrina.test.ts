@@ -668,9 +668,10 @@ describe('raggi dei tile in DESIGN.md (DS-04 R3)', () => {
   })
 })
 
-describe('campioni del banner offline (PWA-01 R26)', () => {
-  it('ALR-offline e SHL-header-mobile-offline sono codici letterali (T22)', () => {
+describe('campioni del banner offline e dell’errore di caricamento (PWA-01 R26)', () => {
+  it('ALR-offline, ALR-errore-caricamento e SHL-header-mobile-offline sono codici letterali (T22)', () => {
     expect(codiciScritti(sorgente('StructureSection.vue'))).toContain('ALR-offline')
+    expect(codiciScritti(sorgente('StructureSection.vue'))).toContain('ALR-errore-caricamento')
     expect(codiciScritti(sorgente('ShellSection.vue'))).toContain('SHL-header-mobile-offline')
   })
 })

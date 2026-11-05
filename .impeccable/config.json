@@ -1,0 +1,26 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "low-contrast",
+        "value": "*",
+        "files": [
+          "/private/tmp/claude-501/-Users-edoardomangani-Developer-personal-pension/87508544-3c1b-43e8-a01b-d4887126ad81/scratchpad/src/mov-01-04-movimenti-desktop-scuro.dc.html"
+        ],
+        "createdAt": "2026-11-05T13:55:02.986Z",
+        "reason": "tavola di scratch: testi solo nei token del DS (Grigio Nebbia #9a9f9b su vetro sopra #060708, >4.5:1); il rilevatore non risolve gli sfondi rgba"
+      },
+      {
+        "rule": "low-contrast",
+        "value": "*",
+        "files": [
+          "/private/tmp/claude-501/-Users-edoardomangani-Developer-personal-pension/87508544-3c1b-43e8-a01b-d4887126ad81/scratchpad/src/_coda.html"
+        ],
+        "createdAt": "2026-11-05T13:57:59.639Z",
+        "reason": "frammento di tavola senza il fondo: testi nei token del DS (Grigio Nebbia su vetro sopra #060708)"
+      }
+    ]
+  }
+}

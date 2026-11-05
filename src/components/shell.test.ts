@@ -1,11 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { defineComponent, h, nextTick, reactive, type Component } from 'vue'
-import { enableAutoUnmount, flushPromises, mount } from '@vue/test-utils'
+import { enableAutoUnmount, flushPromises, mount, type VueWrapper } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import { TooltipProvider } from 'reka-ui'
 import { createMemoryHistory, createRouter, type Router } from 'vue-router'
 import { formatoGiorno } from '@/calc/formato'
 import { rotte } from '@/router'
+import { ErroreDati, type TipoErroreDati } from '@/data/errori'
 import { useArchivioStore } from '@/stores/archivio'
 import { useSessioneStore } from '@/stores/sessione'
 import { AvatarImage } from '@/components/ui/avatar'
@@ -29,6 +30,8 @@ enableAutoUnmount(afterEach)
 // Testate e layout leggono la sessione e la data di oggi dagli store.
 beforeEach(() => {
   setActivePinia(createPinia())
+  // Con un utente la shell lancia il primo carico: niente chiamate a src/data/.
+  vi.spyOn(useArchivioStore(), 'carica').mockResolvedValue()
 })
 
 // Il tooltip aperto misura la freccia con ResizeObserver, che jsdom non ha.
@@ -538,6 +541,140 @@ describe('banner offline (PWA-01 R12-R13)', () => {
     expect(wrapper.get('[data-contenuto] > div.max-w-content').element.firstElementChild).toBe(
       wrapper.get('[data-slot-prova]').element,
     )
+  })
+})
+
+describe('errore di caricamento (PWA-01 R14-R18)', () => {
+  function conRete(online: boolean): void {
+    vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(online)
+  }
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  function conErrore(tipo: TipoErroreDati): ReturnType<typeof useArchivioStore> {
+    const archivio = useArchivioStore()
+    archivio.errore = new ErroreDati(tipo, 'messaggio')
+    return archivio
+  }
+
+  async function layoutSu(percorso: string) {
+    const wrapper = mount(AppLayout, {
+      slots: { default: '<p data-slot-prova>contenuto</p>' },
+      global: { plugins: [await routerSu(percorso)] },
+      attachTo: document.body,
+    })
+    await flushPromises()
+    return wrapper
+  }
+
+  const avviso = (wrapper: VueWrapper) => wrapper.find('[role="alert"]')
+
+  it('offline con errore di rete c’è solo il banner (T14)', async () => {
+    conRete(false)
+    conErrore('rete')
+    const wrapper = await layoutSu('/')
+    expect(wrapper.text()).toContain('Sei offline')
+    expect(avviso(wrapper).exists()).toBe(false)
+  })
+
+  it.each(['rete', 'altro'] as const)(
+    'online con errore %s: avviso primo nel contenuto e Riprova chiama carica una volta (T15)',
+    async (tipo) => {
+      conRete(true)
+      const archivio = conErrore(tipo)
+      const carica = vi.spyOn(archivio, 'carica').mockResolvedValue()
+      const wrapper = await layoutSu('/')
+      const alert = avviso(wrapper)
+      expect(alert.text()).toContain('Non riesco a caricare i dati')
+      expect(alert.text()).toContain('Controlla la connessione e riprova.')
+      const interno = wrapper.get('[data-contenuto] > div.max-w-content').element
+      expect(interno.firstElementChild).toBe(alert.element)
+      expect(alert.classes()).not.toContain('max-lg:hidden')
+      await alert.get('button').trigger('click')
+      expect(carica).toHaveBeenCalledTimes(1)
+    },
+  )
+
+  it('con errore di sessione nessun avviso (T16)', async () => {
+    conRete(true)
+    conErrore('sessione')
+    const wrapper = await layoutSu('/')
+    expect(avviso(wrapper).exists()).toBe(false)
+  })
+
+  it.each([
+    ['riuscita', null, false],
+    ['fallita', 'rete', true],
+  ] as const)(
+    'durante Riprova il bottone è spento e l’avviso resta; carica %s (T17)',
+    async (_esito, erroreDopo, restaAvviso) => {
+      conRete(true)
+      const archivio = conErrore('rete')
+      let finisci: () => void = () => {}
+      vi.spyOn(archivio, 'carica').mockImplementation(() => {
+        archivio.errore = null
+        archivio.stato = 'caricamento'
+        return new Promise<void>((risolvi) => {
+          finisci = () => {
+            archivio.errore = erroreDopo === null ? null : new ErroreDati(erroreDopo, 'messaggio')
+            archivio.stato = erroreDopo === null ? 'pronto' : 'vuoto'
+            risolvi()
+          }
+        })
+      })
+      const wrapper = await layoutSu('/')
+      await avviso(wrapper).get('button').trigger('click')
+      expect(avviso(wrapper).exists()).toBe(true)
+      expect(avviso(wrapper).get('button').attributes('disabled')).toBeDefined()
+
+      finisci()
+      await flushPromises()
+      expect(avviso(wrapper).exists()).toBe(restaAvviso)
+      if (restaAvviso) {
+        expect(avviso(wrapper).get('button').attributes('disabled')).toBeUndefined()
+      }
+    },
+  )
+
+  it('con utente e archivio vuoto parte un carica()', async () => {
+    conRete(true)
+    useSessioneStore().utente = utenteDiProva()
+    const carica = vi.mocked(useArchivioStore().carica)
+    await layoutSu('/')
+    expect(carica).toHaveBeenCalledTimes(1)
+  })
+
+  it('senza utente (vetrina) nessun carica()', async () => {
+    conRete(true)
+    const carica = vi.mocked(useArchivioStore().carica)
+    await layoutSu('/dev/ui')
+    expect(carica).not.toHaveBeenCalled()
+  })
+
+  it('in errore di rete, al ritorno della rete carica() parte una volta (T18)', async () => {
+    const getter = vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false)
+    const archivio = conErrore('rete')
+    const carica = vi.mocked(archivio.carica)
+    await layoutSu('/')
+    expect(carica).not.toHaveBeenCalled()
+
+    getter.mockReturnValue(true)
+    window.dispatchEvent(new Event('online'))
+    await flushPromises()
+    expect(carica).toHaveBeenCalledTimes(1)
+  })
+
+  it('senza errore, al ritorno della rete nessun carica() (T19)', async () => {
+    const getter = vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false)
+    const carica = vi.mocked(useArchivioStore().carica)
+    await layoutSu('/')
+
+    getter.mockReturnValue(true)
+    window.dispatchEvent(new Event('online'))
+    await flushPromises()
+    expect(carica).not.toHaveBeenCalled()
   })
 })
 

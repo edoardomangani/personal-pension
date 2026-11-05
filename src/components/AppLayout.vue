@@ -8,12 +8,15 @@ import AppShell from '@/components/AppShell.vue'
 import AppSidebar from '@/components/AppSidebar.vue'
 import AppTopBar from '@/components/AppTopBar.vue'
 import BannerOffline from '@/components/BannerOffline.vue'
+import ErroreCaricamento from '@/components/ErroreCaricamento.vue'
 import { Toaster } from '@/components/ui/sonner'
+import { useAvvisoArchivio } from '@/composables/useAvvisoArchivio'
 import { fornisciAzioneTestata } from '@/composables/useAzioneTestata'
 import { useRete } from '@/composables/useRete'
 
 fornisciAzioneTestata()
 const { online } = useRete()
+const { visibile: erroreVisibile, inCorso: riprovaInCorso, riprova } = useAvvisoArchivio()
 
 const route = useRoute()
 // Il pannello di destra è fisso: testata e contenuto finiscono dove comincia.
@@ -40,6 +43,13 @@ const classeContenuto = computed(() =>
         <div class="mx-auto flex w-full max-w-content flex-1 flex-col">
           <!-- Sotto lg il banner sta nella testata mobile. -->
           <BannerOffline v-if="!online" class="mb-8 max-lg:hidden" />
+          <!-- Solo online: non compare mai insieme al banner. -->
+          <ErroreCaricamento
+            v-if="erroreVisibile"
+            class="mb-8"
+            :in-corso="riprovaInCorso"
+            @riprova="riprova"
+          />
           <slot />
         </div>
       </div>
