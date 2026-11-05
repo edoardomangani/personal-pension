@@ -59,6 +59,7 @@ describe('icone PNG', () => {
   it.each([
     ['icon-512.png', 512],
     ['icon-192.png', 192],
+    ['icon-maskable-512.png', 512],
     ['apple-touch-icon.png', 180],
   ])('%s è quadrato di lato %i', (nome, lato) => {
     const png = readFileSync(join(cartella, nome))

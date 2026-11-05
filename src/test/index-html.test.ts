@@ -31,11 +31,44 @@ describe('index.html', () => {
     expect(html).toContain('<html lang="it" class="dark">')
     expect(html).toContain('<meta charset="UTF-8" />')
     expect(html).toContain(
-      '<meta name="viewport" content="width=device-width, initial-scale=1.0" />',
+      '<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />',
     )
     expect(html).toContain('background-color: #060708;')
     expect(html).toContain('<title>Next</title>')
     expect(html).toContain('<div id="app"></div>')
     expect(html).toContain('src="/src/main.ts"')
+  })
+})
+
+describe('index.html, meta della PWA', () => {
+  const meta = (nome: string) =>
+    documento.head.querySelector(`meta[name="${nome}"]`)?.getAttribute('content')
+
+  it('la viewport copre le safe area', () => {
+    expect(meta('viewport')).toContain('viewport-fit=cover')
+  })
+
+  it.each([
+    ['theme-color', '#060708'],
+    ['apple-mobile-web-app-capable', 'yes'],
+    ['mobile-web-app-capable', 'yes'],
+    ['apple-mobile-web-app-status-bar-style', 'black-translucent'],
+    ['apple-mobile-web-app-title', 'Next'],
+  ])('%s vale %s', (nome, valore) => {
+    expect(documento.head.querySelectorAll(`meta[name="${nome}"]`)).toHaveLength(1)
+    expect(meta(nome)).toBe(valore)
+  })
+
+  it('apple-touch-icon punta a icons/apple-touch-icon.png, che esiste', () => {
+    const link = documento.head.querySelectorAll('link[rel="apple-touch-icon"]')
+    expect(link).toHaveLength(1)
+    const href = link[0]?.getAttribute('href') ?? ''
+    // Assoluto dalla radice: Vite lo riscrive con la base.
+    expect(href).toBe('/icons/apple-touch-icon.png')
+    expect(existsSync(join(radice, href.replace(/^\//, '')))).toBe(true)
+  })
+
+  it('non scrive a mano il link al manifest: lo inietta il plugin', () => {
+    expect(documento.head.querySelector('link[rel="manifest"]')).toBeNull()
   })
 })

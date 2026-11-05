@@ -20,6 +20,11 @@ function main(): void {
   rendi(app, 192, 'icon-192.png')
   // iOS arrotonda da sé: il PNG va a fondo pieno fino ai bordi.
   rendi(app.replace(RAGGIO_FONDO, ''), 180, 'apple-touch-icon.png')
+
+  // La maskable è già a pieno quadro: il ritaglio lo fa il sistema.
+  const maskable = readFileSync(join(CARTELLA, 'icon-maskable.svg'), 'utf8')
+  if (maskable.includes(' rx=')) throw new Error('icon-maskable.svg: il fondo non va arrotondato.')
+  rendi(maskable, 512, 'icon-maskable-512.png')
 }
 
 try {
