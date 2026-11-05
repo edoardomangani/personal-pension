@@ -1,6 +1,6 @@
 import { mount } from '@vue/test-utils'
 import { afterEach, describe, expect, it } from 'vitest'
-import { defineComponent, h, ref } from 'vue'
+import { defineComponent, h, nextTick, ref } from 'vue'
 import { insetGroupClass } from './inset'
 import InsetChoiceRow from './InsetChoiceRow.vue'
 import InsetGroup from './InsetGroup.vue'
@@ -116,5 +116,47 @@ describe('insetGroupClass (R4, R5)', () => {
     })
     await wrapper.get('#fondo').trigger('click')
     expect(wrapper.get('[role="listbox"]').classes()).toEqual(expect.arrayContaining(classiGruppo))
+  })
+})
+
+describe('InsetGroup con l’aiuto che compare dopo un errore (R1)', () => {
+  it('la card resta intera e non comprimibile, l’aiuto sta sotto', async () => {
+    const description = ref<string | undefined>(undefined)
+    const errore = ref<string | undefined>('Scrivi un anno valido.')
+    const valore = ref('')
+    const Modulo = defineComponent({
+      setup() {
+        return () =>
+          h(InsetGroup, { description: description.value }, () =>
+            h(InsetRow, { for: 'anno', label: 'Anno', error: errore.value }, () =>
+              h(InsetInput, {
+                id: 'anno',
+                modelValue: valore.value,
+                'onUpdate:modelValue': (v: string | number) => {
+                  valore.value = String(v)
+                },
+              }),
+            ),
+          )
+      },
+    })
+    const wrapper = mount(Modulo, { attachTo: document.body })
+    expect(wrapper.find('[data-slot="field-description"]').exists()).toBe(false)
+
+    description.value = 'Con questi dati vai in pensione nel 2061.'
+    errore.value = undefined
+    await nextTick()
+
+    const card = wrapper.get('[data-slot="field-group"]')
+    const aiuto = wrapper.get('[data-slot="field-description"]')
+    expect(aiuto.text()).toBe('Con questi dati vai in pensione nel 2061.')
+    expect(card.element.nextElementSibling).toBe(aiuto.element)
+    expect(card.find('[data-slot="field"]').exists()).toBe(true)
+    expect(card.find('#anno').exists()).toBe(true)
+    expect(wrapper.find('[role="alert"]').exists()).toBe(false)
+    expect(card.classes()).toContain('shrink-0')
+
+    await card.get('#anno').setValue('1994')
+    expect(valore.value).toBe('1994')
   })
 })

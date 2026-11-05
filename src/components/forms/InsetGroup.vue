@@ -17,7 +17,8 @@ const { title, description } = defineProps<{
       class="mb-0 px-1 text-xs font-semibold text-muted-foreground data-[variant=label]:text-xs"
       >{{ title }}</FieldLegend
     >
-    <FieldGroup :class="`gap-0 ${insetGroupClass}`">
+    <!-- shrink-0: con overflow-hidden la card nel fieldset flex poteva schiacciarsi al solo bordo quando compare l'aiuto. -->
+    <FieldGroup :class="`shrink-0 gap-0 ${insetGroupClass}`">
       <slot />
     </FieldGroup>
     <FieldDescription v-if="description" class="px-1 text-xs text-subtle-foreground">{{

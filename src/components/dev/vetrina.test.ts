@@ -675,3 +675,13 @@ describe('campioni del banner offline e dell’errore di caricamento (PWA-01 R26
     expect(codiciScritti(sorgente('ShellSection.vue'))).toContain('SHL-header-mobile-offline')
   })
 })
+
+describe('campione dell’aiuto che compare dopo un errore (ACC-01-C2 R5)', () => {
+  it('FRM-error-help è un codice letterale nel blocco form-errore', () => {
+    const testo = sorgente('FormsSection.vue')
+    expect(codiciScritti(testo)).toContain('FRM-error-help-${density}')
+    const blocco =
+      /<ShowcaseBlock id="form-errore">([\s\S]*?)<\/ShowcaseBlock>/.exec(testo)?.[1] ?? ''
+    expect(codiciScritti(blocco)).toEqual(['FRM-error-${density}', 'FRM-error-help-${density}'])
+  })
+})

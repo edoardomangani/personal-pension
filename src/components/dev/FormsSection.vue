@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
+import { leggiImporto } from '@/calc/importi'
 import DensityFrame from '@/components/dev/DensityFrame.vue'
 import { useShowcaseDensity } from '@/components/dev/showcase'
 import ShowcaseBlock from '@/components/dev/ShowcaseBlock.vue'
@@ -18,6 +19,10 @@ const density = useShowcaseDensity()
 
 const busta = ref<string | null>('2026-09')
 const altroMovimento = ref(false)
+
+// Campione dell'aiuto che compare correggendo: la riga parte in errore e si corregge scrivendo.
+const importoAiuto = ref('0,00')
+const importoAiutoValido = computed(() => (leggiImporto(importoAiuto.value) ?? 0) > 0)
 
 const busteOptions = [
   { value: '2026-10', label: 'Ottobre 2026' },
@@ -91,6 +96,38 @@ const busteOptions = [
             <InsetRow :for="`frm-${density}-error-voluntary`" label="Volontario">
               <InsetInput
                 :id="`frm-${density}-error-voluntary`"
+                inputmode="decimal"
+                default-value="50,00"
+              />
+            </InsetRow>
+          </InsetGroup>
+        </DensityFrame>
+      </Specimen>
+      <Specimen
+        :code="`FRM-error-help-${density}`"
+        note="L'aiuto che compare non schiaccia la card"
+      >
+        <DensityFrame>
+          <InsetGroup
+            :description="
+              importoAiutoValido ? 'Gli importi contano dalla data sul fondo.' : undefined
+            "
+          >
+            <InsetRow
+              :for="`frm-${density}-error-help-amount`"
+              label="Importo TFR"
+              :error="importoAiutoValido ? undefined : 'Scrivi un importo maggiore di zero.'"
+            >
+              <InsetInput
+                :id="`frm-${density}-error-help-amount`"
+                v-model="importoAiuto"
+                inputmode="decimal"
+                :aria-invalid="importoAiutoValido ? undefined : true"
+              />
+            </InsetRow>
+            <InsetRow :for="`frm-${density}-error-help-voluntary`" label="Volontario">
+              <InsetInput
+                :id="`frm-${density}-error-help-voluntary`"
                 inputmode="decimal"
                 default-value="50,00"
               />

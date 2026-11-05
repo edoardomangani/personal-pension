@@ -155,6 +155,23 @@ describe('FormsSection: righe del modulo (R4)', () => {
 
     expect(wrapper.text()).not.toContain('Versamento volontario')
   })
+
+  it('FRM-error-help: correggendo la riga in errore l’aiuto compare sotto la card (ACC-01-C2 R5)', async () => {
+    const wrapper = mount(FormsSection, { attachTo: document.body })
+    const campione = wrapper.get('[data-specimen="FRM-error-help-desktop"]')
+    expect(campione.find('[role="alert"]').exists()).toBe(true)
+    expect(campione.find('[data-slot="field-description"]').exists()).toBe(false)
+
+    await campione.get(campoDi(campione, 'Importo TFR')).setValue('180,95')
+
+    const card = campione.get('[data-slot="field-group"]')
+    const aiuto = campione.get('[data-slot="field-description"]')
+    expect(aiuto.text()).toBe('Gli importi contano dalla data sul fondo.')
+    expect(card.element.nextElementSibling).toBe(aiuto.element)
+    expect(campione.find('[role="alert"]').exists()).toBe(false)
+    expect(card.find(campoDi(campione, 'Importo TFR')).exists()).toBe(true)
+    expect(card.find(campoDi(campione, 'Volontario')).exists()).toBe(true)
+  })
 })
 
 describe('SheetSampleBody: id unici (R7)', () => {

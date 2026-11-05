@@ -114,3 +114,70 @@ describe('VistaBenvenuto (R18)', () => {
     expect(router.currentRoute.value.fullPath).toBe('/accedi')
   })
 })
+
+describe('VistaBenvenuto: correzione dopo un «Inizia» fallito (ACC-01-C2, R2, R3)', () => {
+  const ERRORE_FONDO = 'Scrivi il nome del tuo fondo pensione.'
+  const ERRORE_ANNO = "Scrivi l'anno con quattro cifre, es. 1994."
+
+  function card(wrapper: VueWrapper) {
+    return wrapper.get('[data-slot="field-group"]')
+  }
+
+  function campiNellaCard(wrapper: VueWrapper): void {
+    for (const id of ['#benvenuto-fondo', '#benvenuto-anno', '#benvenuto-eta']) {
+      expect(card(wrapper).find(id).exists()).toBe(true)
+    }
+  }
+
+  it('campi vuoti, poi anno 1994 → frase sotto la card, campi nella card, errore del fondo resta', async () => {
+    const { wrapper } = await apri()
+    await inizia(wrapper)
+    expect(wrapper.text()).toContain(ERRORE_ANNO)
+
+    await wrapper.get('#benvenuto-anno').setValue('1994')
+    expect(wrapper.text()).toContain('Con questi dati vai in pensione nel 2061.')
+    campiNellaCard(wrapper)
+    expect(wrapper.text()).toContain(ERRORE_FONDO)
+    expect(wrapper.text()).not.toContain(ERRORE_ANNO)
+
+    const aiuto = wrapper.get('[data-slot="field-description"]')
+    expect(aiuto.text()).toBe('Con questi dati vai in pensione nel 2061.')
+    expect(card(wrapper).element.nextElementSibling).toBe(aiuto.element)
+  })
+
+  it('stesso giro, poi fondo e «Inizia» → salva e va in Home', async () => {
+    const { wrapper, router } = await apri()
+    await inizia(wrapper)
+    await wrapper.get('#benvenuto-anno').setValue('1994')
+    await wrapper.get('#benvenuto-fondo').setValue('Amundi Seconda Pensione')
+    expect(wrapper.text()).not.toContain(ERRORE_FONDO)
+    await inizia(wrapper)
+    expect(salvaFondo).toHaveBeenCalledWith({ nome: 'Amundi Seconda Pensione' })
+    expect(salvaImpostazioni).toHaveBeenCalledWith(
+      expect.objectContaining({ annoNascita: 1994, etaPensione: 67 }),
+    )
+    expect(router.currentRoute.value.path).toBe('/')
+  })
+
+  it('1939 e 81, poi età 70 e anno 1994 → «…nel 2064.»; anno di nuovo non valido → frase via, errore di nuovo', async () => {
+    const { wrapper } = await apri()
+    await compila(wrapper, '', '1939', '81')
+    await inizia(wrapper)
+
+    await wrapper.get('#benvenuto-eta').setValue('70')
+    expect(wrapper.text()).toContain(ERRORE_ANNO)
+    expect(wrapper.text()).not.toContain('vai in pensione')
+
+    await wrapper.get('#benvenuto-anno').setValue('1994')
+    expect(wrapper.text()).toContain('Con questi dati vai in pensione nel 2064.')
+    expect(wrapper.text()).not.toContain(ERRORE_ANNO)
+    expect(wrapper.text()).not.toContain("Un'età fra 40 e 80 anni.")
+    campiNellaCard(wrapper)
+
+    await wrapper.get('#benvenuto-anno').setValue('19')
+    expect(wrapper.text()).not.toContain('vai in pensione')
+    expect(wrapper.find('[data-slot="field-description"]').exists()).toBe(false)
+    expect(wrapper.text()).toContain(ERRORE_ANNO)
+    campiNellaCard(wrapper)
+  })
+})
