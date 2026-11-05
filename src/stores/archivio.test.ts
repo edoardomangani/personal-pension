@@ -105,6 +105,29 @@ describe('archivio: carica', () => {
     expect(s.stato).toBe('vuoto')
     expect(s.errore?.tipo).toBe('rete')
   })
+
+  it('con sessione scaduta esce una volta e non imposta errore', async () => {
+    vi.mocked(elencaFondi).mockRejectedValueOnce(new ErroreDati('sessione', 'Sessione scaduta.'))
+    const s = useArchivioStore()
+    await expect(s.carica()).resolves.toBeUndefined()
+    expect(esci).toHaveBeenCalledOnce()
+    expect(s.errore).toBeNull()
+    expect(s.stato).toBe('vuoto')
+  })
+
+  it('con sessione scaduta dopo un reset non esce', async () => {
+    const fondi = inSospeso<ReturnType<typeof archivioDalSeed>['fondi']>()
+    vi.mocked(elencaFondi).mockReturnValueOnce(fondi.promessa)
+    const s = useArchivioStore()
+    const carico = s.carica()
+    s.reset()
+    fondi.rifiuta(new ErroreDati('sessione', 'Sessione scaduta.'))
+    await carico
+    expect(esci).not.toHaveBeenCalled()
+    expect(s.errore).toBeNull()
+    expect(s.stato).toBe('vuoto')
+    expect(s.fondi).toEqual([])
+  })
 })
 
 type FondiFinti = ReturnType<typeof archivioDalSeed>['fondi']
@@ -565,6 +588,24 @@ describe('archivio: rilettura e sessione', () => {
     s.reset()
     buste.rifiuta(RETE())
     await expect(scrittura).resolves.toBe('m-nuovo')
+    expect(s.errore).toBeNull()
+    expect(s.buste).toEqual([])
+    expect(s.movimenti).toEqual([])
+  })
+
+  it('T7: un reset con la rilettura in volo, poi fallita con sessione, non esce', async () => {
+    const s = useArchivioStore()
+    await s.carica()
+    const esciSessione = vi.spyOn(useSessioneStore(), 'esci')
+    const buste = inSospeso<ReturnType<typeof archivioDalSeed>['buste']>()
+    vi.mocked(salvaMovimento).mockResolvedValueOnce('m-nuovo')
+    vi.mocked(elencaBuste).mockReturnValueOnce(buste.promessa)
+    const scrittura = s.salvaMovimento(BOZZA_MOVIMENTO, [])
+    await vi.waitFor(() => expect(elencaBuste).toHaveBeenCalledTimes(2))
+    s.reset()
+    buste.rifiuta(new ErroreDati('sessione', 'Sessione scaduta.'))
+    await expect(scrittura).resolves.toBe('m-nuovo')
+    expect(esciSessione).not.toHaveBeenCalled()
     expect(s.errore).toBeNull()
     expect(s.buste).toEqual([])
     expect(s.movimenti).toEqual([])
