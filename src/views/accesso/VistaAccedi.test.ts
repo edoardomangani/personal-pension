@@ -3,8 +3,9 @@ import { enableAutoUnmount, flushPromises, mount, type VueWrapper } from '@vue/t
 import { createPinia, setActivePinia } from 'pinia'
 import { createMemoryHistory, createRouter, createWebHashHistory, type Router } from 'vue-router'
 import { ErroreDati } from '@/data/errori'
-import { accedi, accediConGoogle, reinviaCodice } from '@/data/sessione'
+import { accedi, accediConGoogle, reinviaCodice, sessioneCorrente } from '@/data/sessione'
 import { rotte, spostaSearchNelFrammento, urlApp } from '@/router'
+import { useSessioneStore } from '@/stores/sessione'
 import { utenteDiProva } from '@/test/utenti'
 import VistaAccedi from './VistaAccedi.vue'
 
@@ -177,4 +178,117 @@ describe('VistaAccedi: area di tocco (R2)', () => {
       expect(link?.classes()).toEqual(expect.arrayContaining(['relative', 'touch-target']))
     },
   )
+})
+
+/** Come all'avvio vero: il ripristino fallisce con l'errore dato, poi si monta la vista. */
+async function ripristinoFallito(eccezione: unknown): Promise<void> {
+  vi.mocked(sessioneCorrente).mockRejectedValueOnce(eccezione)
+  await useSessioneStore().ripristina()
+}
+
+const reteGiu = () => new TypeError('Failed to fetch')
+
+describe('VistaAccedi: avviso di rete (R4, R5)', () => {
+  it('errore di rete → «Non riesco a collegarmi» con Riprova', async () => {
+    await ripristinoFallito(reteGiu())
+    const { wrapper } = await apri('/accedi')
+    const alert = wrapper.get('[data-avviso="rete"]')
+    expect(alert.text()).toContain('Non riesco a collegarmi')
+    expect(alert.text()).toContain('Controlla la connessione e riprova.')
+    expect(alert.find('button').text()).toBe('Riprova')
+  })
+
+  it.each([
+    ['sessione', new ErroreDati('sessione', 'Sessione scaduta')],
+    ['altro', new ErroreDati('altro', 'Qualcosa non va')],
+  ])('errore di tipo %s → nessun avviso', async (_tipo, errore) => {
+    await ripristinoFallito(errore)
+    const { wrapper } = await apri('/accedi')
+    expect(wrapper.find('[data-avviso]').exists()).toBe(false)
+  })
+
+  it('rete e ?avviso=sessione → solo l’avviso di rete', async () => {
+    await ripristinoFallito(reteGiu())
+    const { wrapper } = await apri('/accedi?avviso=sessione')
+    const avvisi = wrapper.findAll('[data-avviso]')
+    expect(avvisi).toHaveLength(1)
+    expect(avvisi[0]?.attributes('data-avviso')).toBe('rete')
+    expect(wrapper.text()).not.toContain('Sessione scaduta')
+  })
+
+  it('rete e ?error= → solo l’avviso di Google', async () => {
+    await ripristinoFallito(reteGiu())
+    const { wrapper } = await apri('/accedi?error=access_denied')
+    const avvisi = wrapper.findAll('[data-avviso]')
+    expect(avvisi).toHaveLength(1)
+    expect(avvisi[0]?.text()).toContain('Accesso con Google non riuscito')
+    expect(wrapper.find('[data-avviso="rete"]').exists()).toBe(false)
+  })
+})
+
+function bottoneRiprova(wrapper: VueWrapper) {
+  return wrapper.get('[data-avviso="rete"] button')
+}
+
+describe('VistaAccedi: Riprova (R6, R7)', () => {
+  it('sessione ritrovata → la rotta di da', async () => {
+    await ripristinoFallito(reteGiu())
+    const { wrapper, router } = await apri('/accedi?da=/valori')
+    vi.mocked(sessioneCorrente).mockClear()
+    vi.mocked(sessioneCorrente).mockResolvedValueOnce(utenteDiProva())
+    await bottoneRiprova(wrapper).trigger('click')
+    await flushPromises()
+    expect(sessioneCorrente).toHaveBeenCalledTimes(1)
+    expect(router.currentRoute.value.path).toBe('/valori')
+  })
+
+  it('sessione ritrovata con da=//evil.com → /', async () => {
+    await ripristinoFallito(reteGiu())
+    const { wrapper, router } = await apri('/accedi?da=//evil.com')
+    vi.mocked(sessioneCorrente).mockResolvedValueOnce(utenteDiProva())
+    await bottoneRiprova(wrapper).trigger('click')
+    await flushPromises()
+    expect(router.currentRoute.value.path).toBe('/')
+  })
+
+  it('ancora senza rete → resta su /accedi, avviso e bottone attivo', async () => {
+    await ripristinoFallito(reteGiu())
+    const { wrapper, router } = await apri('/accedi')
+    vi.mocked(sessioneCorrente).mockRejectedValueOnce(reteGiu())
+    await bottoneRiprova(wrapper).trigger('click')
+    await flushPromises()
+    expect(router.currentRoute.value.path).toBe('/accedi')
+    expect(wrapper.get('[data-avviso="rete"]').text()).toContain('Non riesco a collegarmi')
+    expect(bottoneRiprova(wrapper).attributes('disabled')).toBeUndefined()
+  })
+
+  it('rete tornata senza sessione → resta su /accedi con «Sessione scaduta»', async () => {
+    await ripristinoFallito(reteGiu())
+    const { wrapper, router } = await apri('/accedi?avviso=sessione')
+    vi.mocked(sessioneCorrente).mockResolvedValueOnce(null)
+    await bottoneRiprova(wrapper).trigger('click')
+    await flushPromises()
+    expect(router.currentRoute.value.path).toBe('/accedi')
+    expect(wrapper.find('[data-avviso="rete"]').exists()).toBe(false)
+    expect(wrapper.get('[data-avviso]').text()).toContain('Sessione scaduta')
+  })
+
+  it('in attesa il bottone è spento e un secondo clic non rifà la chiamata', async () => {
+    await ripristinoFallito(reteGiu())
+    const { wrapper } = await apri('/accedi')
+    vi.mocked(sessioneCorrente).mockClear()
+    let risolvi: (valore: null) => void = () => {}
+    vi.mocked(sessioneCorrente).mockReturnValueOnce(
+      new Promise((resolve) => {
+        risolvi = resolve
+      }),
+    )
+    await bottoneRiprova(wrapper).trigger('click')
+    expect(bottoneRiprova(wrapper).attributes('disabled')).toBeDefined()
+    await bottoneRiprova(wrapper).trigger('click')
+    expect(sessioneCorrente).toHaveBeenCalledTimes(1)
+    risolvi(null)
+    await flushPromises()
+    expect(sessioneCorrente).toHaveBeenCalledTimes(1)
+  })
 })

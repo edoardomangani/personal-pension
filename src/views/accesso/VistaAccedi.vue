@@ -1,6 +1,12 @@
 <script setup lang="ts">
-import { PhCheckCircle, PhInfo, PhWarningCircle } from '@phosphor-icons/vue'
-import { computed, nextTick, onMounted, reactive, type Component } from 'vue'
+import {
+  PhArrowClockwise,
+  PhCheckCircle,
+  PhInfo,
+  PhWarningCircle,
+  PhWifiSlash,
+} from '@phosphor-icons/vue'
+import { computed, nextTick, onMounted, onUnmounted, reactive, ref, type Component } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { validaAccesso, type BozzaAccesso } from '@/calc/validaAccesso'
 import { insetPasswordClass } from '@/components/forms/inset'
@@ -23,6 +29,7 @@ interface Avviso {
   icona: Component
   titolo: string
   testo: string
+  azione?: 'riprova'
 }
 
 // R13: un valore sconosciuto non mostra niente.
@@ -50,6 +57,14 @@ const AVVISO_GOOGLE: Avviso = {
   testo: 'Riprova, o entra con email e password.',
 }
 
+// R4: il ripristino all'avvio non ha raggiunto il server.
+const AVVISO_RETE: Avviso = {
+  icona: PhWifiSlash,
+  titolo: 'Non riesco a collegarmi',
+  testo: 'Controlla la connessione e riprova.',
+  azione: 'riprova',
+}
+
 const ID = { email: 'accedi-email', password: 'accedi-password' } as const
 const ORDINE = ['email', 'password'] as const
 
@@ -60,9 +75,25 @@ const sessione = useSessioneStore()
 const avviso = computed<Avviso | undefined>(() => {
   // Better Auth torna dall'errore di Google con `?error=…`.
   if (route.query.error !== undefined) return AVVISO_GOOGLE
+  if (sessione.errore?.tipo === 'rete') return AVVISO_RETE
   const chiave = route.query.avviso
   return typeof chiave === 'string' && Object.hasOwn(AVVISI, chiave) ? AVVISI[chiave] : undefined
 })
+
+const riprovaInCorso = ref(false)
+let smontata = false
+
+async function riprova(): Promise<void> {
+  if (riprovaInCorso.value) return
+  riprovaInCorso.value = true
+  try {
+    await sessione.ripristina()
+  } finally {
+    riprovaInCorso.value = false
+  }
+  if (smontata || sessione.utente === null) return
+  await router.replace(rottaDiRitorno(route.query.da))
+}
 
 const bozza = reactive<BozzaAccesso>({ email: '', password: '' })
 
@@ -111,6 +142,9 @@ const {
 } = useAccessoGoogle()
 
 onMounted(() => focalizza(bozza.email === '' ? 'email' : 'password'))
+onUnmounted(() => {
+  smontata = true
+})
 </script>
 
 <template>
@@ -121,10 +155,22 @@ onMounted(() => focalizza(bozza.email === '' ? 'email' : 'password'))
       descrizione="Entra con Google o con la tua email e la password"
     />
 
-    <Alert v-if="avviso" data-avviso>
+    <Alert v-if="avviso" :data-avviso="avviso.azione === 'riprova' ? 'rete' : ''">
       <component :is="avviso.icona" />
       <AlertTitle>{{ avviso.titolo }}</AlertTitle>
       <AlertDescription>{{ avviso.testo }}</AlertDescription>
+      <Button
+        v-if="avviso.azione === 'riprova'"
+        variant="outline"
+        size="sm"
+        class="col-start-2 mt-2 justify-self-start"
+        :disabled="riprovaInCorso"
+        @click="riprova"
+      >
+        <Spinner v-if="riprovaInCorso" />
+        <PhArrowClockwise v-else />
+        Riprova
+      </Button>
     </Alert>
 
     <div class="flex flex-col gap-2">
