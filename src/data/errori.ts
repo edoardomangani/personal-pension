@@ -1,15 +1,20 @@
 export type TipoErroreDati = 'rete' | 'sessione' | 'vincolo' | 'altro'
 
-/** Errore unico del livello dati: `messaggio` è già in italiano, pronto per le viste. */
+/**
+ * Errore unico del livello dati: `messaggio` è già in italiano, pronto per le viste.
+ * `codice` distingue gli esiti che la vista tratta a parte (es. `email-da-verificare`).
+ */
 export class ErroreDati extends Error {
   readonly tipo: TipoErroreDati
   readonly messaggio: string
+  readonly codice: string | undefined
 
-  constructor(tipo: TipoErroreDati, messaggio: string) {
+  constructor(tipo: TipoErroreDati, messaggio: string, codice?: string) {
     super(messaggio)
     this.name = 'ErroreDati'
     this.tipo = tipo
     this.messaggio = messaggio
+    this.codice = codice
   }
 }
 

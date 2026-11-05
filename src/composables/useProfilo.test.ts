@@ -2,6 +2,7 @@ import { createPinia, setActivePinia } from 'pinia'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { useSessioneStore } from '@/stores/sessione'
 import { emailSecondariaDi, inizialiDi, rigaPrincipaleDi, salutoDi, useProfilo } from './useProfilo'
+import { utenteDiProva } from '@/test/utenti'
 
 const EMAIL = 'edoardo@esempio.it'
 
@@ -65,10 +66,19 @@ describe('useProfilo sullo store della sessione', () => {
 
   it('segue l’utente dello store', () => {
     const profilo = useProfilo()
-    useSessioneStore().utente = { id: 'u1', email: EMAIL }
+    useSessioneStore().utente = utenteDiProva({ email: EMAIL })
     expect(profilo.rigaPrincipale.value).toBe(EMAIL)
     expect(profilo.emailSecondaria.value).toBeNull()
     expect(profilo.iniziali.value).toBe('E')
     expect(profilo.saluto.value).toBe('Ciao')
+  })
+
+  it('R7: col nome dello store saluta per nome, iniziali e email sotto', () => {
+    const profilo = useProfilo()
+    useSessioneStore().utente = utenteDiProva({ email: EMAIL, nome: 'Giulia Conti' })
+    expect(profilo.saluto.value).toBe('Ciao Giulia')
+    expect(profilo.iniziali.value).toBe('GC')
+    expect(profilo.rigaPrincipale.value).toBe('Giulia Conti')
+    expect(profilo.emailSecondaria.value).toBe(EMAIL)
   })
 })

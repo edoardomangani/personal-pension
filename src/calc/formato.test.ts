@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   formatoData,
+  formatoDataBreve,
   formatoEuro,
   formatoEuroIntero,
   formatoGiorno,
@@ -47,6 +48,42 @@ describe('formatoData e formatoMese', () => {
     expect(formatoData(null)).toBe('—')
     expect(formatoData('2026-11')).toBe('—')
     expect(formatoMese('2026-13')).toBe('—')
+  })
+})
+
+describe('formatoDataBreve', () => {
+  it('giorno, mese abbreviato minuscolo e anno', () => {
+    expect(formatoDataBreve('2026-09-12')).toBe('12 set 2026')
+    expect(formatoDataBreve('2026-11-04')).toBe('4 nov 2026')
+  })
+
+  it('tutte le abbreviazioni dei mesi', () => {
+    const mesi = Array.from(
+      { length: 12 },
+      (_, i) => formatoDataBreve(`2026-${String(i + 1).padStart(2, '0')}-01`).split(' ')[1],
+    )
+    expect(mesi).toEqual([
+      'gen',
+      'feb',
+      'mar',
+      'apr',
+      'mag',
+      'giu',
+      'lug',
+      'ago',
+      'set',
+      'ott',
+      'nov',
+      'dic',
+    ])
+  })
+
+  it('input non valido → —', () => {
+    expect(formatoDataBreve(null)).toBe('—')
+    expect(formatoDataBreve('')).toBe('—')
+    expect(formatoDataBreve('2026-13-01')).toBe('—')
+    expect(formatoDataBreve('2026-02-30')).toBe('—')
+    expect(formatoDataBreve('12/09/2026')).toBe('—')
   })
 })
 

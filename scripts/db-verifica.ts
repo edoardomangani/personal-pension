@@ -1,7 +1,7 @@
 import { BetterAuthVanillaAdapter, createClient } from '@neon/neon-js'
 import pg from 'pg'
 import { elencaBuste, salvaBusta } from '../src/data/buste'
-import { impostaAuthDati, impostaClientDati, type ClientDati } from '../src/data/client'
+import { authDaSdk, impostaAuthDati, impostaClientDati, type ClientDati } from '../src/data/client'
 import { attendi, eErroreDati } from '../src/data/errori'
 import { elencaEstratti } from '../src/data/estratti'
 import { elencaFondi, eliminaFondo, salvaFondo } from '../src/data/fondi'
@@ -81,7 +81,7 @@ function nuovoClient(c: Configurazione): ClientDati {
     dataApi: { url: c.dataApiUrl },
   })
   impostaClientDati(creato)
-  impostaAuthDati(creato.auth)
+  impostaAuthDati(authDaSdk(creato.auth))
   return creato
 }
 

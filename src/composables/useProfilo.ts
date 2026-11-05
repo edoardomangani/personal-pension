@@ -1,7 +1,7 @@
 import { computed, type ComputedRef } from 'vue'
 import { useSessioneStore } from '@/stores/sessione'
 
-/** Ciò che serve della persona: `Utente` vi è assegnabile; il nome lo porterà ACC-01. */
+/** Ciò che serve della persona: `Utente` vi è assegnabile. */
 export type DatiProfilo = { email: string; nome?: string | null }
 
 export type UseProfiloReturn = {

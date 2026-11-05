@@ -7,6 +7,7 @@ import { esci as esciDb } from '@/data/sessione'
 import { rotte } from '@/router'
 import { useSessioneStore } from '@/stores/sessione'
 import { useEsci, type UseEsciReturn } from './useEsci'
+import { utenteDiProva } from '@/test/utenti'
 
 vi.mock('@/data/sessione', () => ({
   sessioneCorrente: vi.fn(),
@@ -58,7 +59,7 @@ describe('useEsci (R11)', () => {
     vi.mocked(esciDb).mockReturnValue(remoto.promessa)
     const router = await routerSu('/profilo')
     const replace = vi.spyOn(router, 'replace')
-    useSessioneStore().utente = { id: 'u1', email: 'edoardo@esempio.it' }
+    useSessioneStore().utente = utenteDiProva()
     const { esci, inCorso } = esciCon(router)
 
     const prima = esci()

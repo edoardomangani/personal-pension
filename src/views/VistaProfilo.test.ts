@@ -9,6 +9,7 @@ import { esci as esciDb } from '@/data/sessione'
 import { rotte } from '@/router'
 import { useSessioneStore } from '@/stores/sessione'
 import VistaProfilo from './VistaProfilo.vue'
+import { utenteDiProva } from '@/test/utenti'
 
 vi.mock('@/data/sessione', () => ({
   sessioneCorrente: vi.fn(),
@@ -60,7 +61,7 @@ function tocco(el: Element): void {
 
 describe('VistaProfilo (R10)', () => {
   it('con utente { email }: riga principale = email, nessuna seconda riga', async () => {
-    useSessioneStore().utente = { id: 'u1', email: 'edoardo@esempio.it' }
+    useSessioneStore().utente = utenteDiProva()
     const wrapper = await montaProfilo()
 
     const righe = wrapper.get('section').findAll('p')
@@ -70,7 +71,7 @@ describe('VistaProfilo (R10)', () => {
   })
 
   it('link Account, Impostazioni e Fisco nell’ordine, ed Esci è un button', async () => {
-    useSessioneStore().utente = { id: 'u1', email: 'edoardo@esempio.it' }
+    useSessioneStore().utente = utenteDiProva()
     const wrapper = await montaProfilo()
 
     const link = wrapper.get('nav').findAll('a')
@@ -136,7 +137,7 @@ describe('Cambia foto (R18)', () => {
 
 describe('Esci in Profilo (R11)', () => {
   it('due clic rapidi: una sola chiamata a sessione.esci, poi /', async () => {
-    useSessioneStore().utente = { id: 'u1', email: 'edoardo@esempio.it' }
+    useSessioneStore().utente = utenteDiProva()
     vi.mocked(esciDb).mockResolvedValue(undefined)
     const router = await routerSu('/profilo')
     const wrapper = await montaProfilo(router)

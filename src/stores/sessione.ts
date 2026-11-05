@@ -1,7 +1,17 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { erroreDaEccezione, type ErroreDati } from '../data/errori'
-import { accedi as accediDb, esci as esciDb, sessioneCorrente, type Utente } from '../data/sessione'
+import { ErroreDati, MESSAGGI, erroreDaEccezione } from '../data/errori'
+import {
+  accedi as accediDb,
+  aggiornaNome as aggiornaNomeDb,
+  cambiaPassword as cambiaPasswordDb,
+  esci as esciDb,
+  registrati as registratiDb,
+  sessioneCorrente,
+  verificaCodice as verificaCodiceDb,
+  verificaPassword,
+  type Utente,
+} from '../data/sessione'
 import { useArchivioStore } from './archivio'
 
 export const useSessioneStore = defineStore('sessione', () => {
@@ -59,5 +69,64 @@ export const useSessioneStore = defineStore('sessione', () => {
     }
   }
 
-  return { utente, pronto, errore, ripristina, accedi, esci }
+  /** Non apre la sessione: con la verifica obbligatoria la apre `verificaCodice`. */
+  async function registrati(dati: {
+    nome: string
+    email: string
+    password: string
+  }): Promise<void> {
+    await registratiDb({ ...dati, nome: dati.nome.trim(), email: dati.email.trim() })
+  }
+
+  /** Codice giusto → sessione aperta; un codice sbagliato rifiuta e non tocca niente. */
+  async function verificaCodice(email: string, codice: string): Promise<Utente> {
+    const nuovo = await verificaCodiceDb(email.trim(), codice.trim())
+    // È un cambio di account: niente dati di chi c'era prima.
+    svuotaStore()
+    utente.value = nuovo
+    errore.value = null
+    pronto.value = true
+    return nuovo
+  }
+
+  async function aggiornaNome(nome: string): Promise<void> {
+    const pulito = nome.trim()
+    await aggiornaNomeDb(pulito)
+    if (utente.value !== null)
+      utente.value = { ...utente.value, nome: pulito === '' ? null : pulito }
+  }
+
+  async function cambiaPassword(attuale: string, nuova: string): Promise<void> {
+    await cambiaPasswordDb(attuale, nuova)
+  }
+
+  /**
+   * Conferma della cancellazione (R6): con la password un nuovo accesso, per un account solo
+   * Google l'email scritta. Rifiuta con un `ErroreDati` se la conferma non va.
+   */
+  async function confermaCancellazione(conferma: string, conPassword: boolean): Promise<void> {
+    const attuale = utente.value
+    if (attuale === null) throw new ErroreDati('sessione', MESSAGGI.sessione)
+    if (conPassword) {
+      await verificaPassword(attuale.email, conferma)
+      return
+    }
+    if (conferma.trim().toLowerCase() !== attuale.email.trim().toLowerCase()) {
+      throw new ErroreDati('vincolo', "L'email non è quella del tuo account.")
+    }
+  }
+
+  return {
+    utente,
+    pronto,
+    errore,
+    ripristina,
+    accedi,
+    esci,
+    registrati,
+    verificaCodice,
+    aggiornaNome,
+    cambiaPassword,
+    confermaCancellazione,
+  }
 })

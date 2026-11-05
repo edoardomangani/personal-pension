@@ -6,9 +6,19 @@ import { elencaEstratti } from '../data/estratti'
 import { elencaFondi } from '../data/fondi'
 import { leggiImpostazioni } from '../data/impostazioni'
 import { elencaMovimenti, salvaMovimento } from '../data/movimenti'
-import { accedi, esci, sessioneCorrente } from '../data/sessione'
+import {
+  accedi,
+  aggiornaNome,
+  cambiaPassword,
+  esci,
+  registrati,
+  sessioneCorrente,
+  verificaCodice,
+  verificaPassword,
+} from '../data/sessione'
 import { inSospeso } from '../test/promesse'
 import { archivioDalSeed } from '../test/seed'
+import { utenteDiProva } from '../test/utenti'
 import { useArchivioStore } from './archivio'
 import { useSessioneStore } from './sessione'
 
@@ -16,6 +26,11 @@ vi.mock('../data/sessione', () => ({
   sessioneCorrente: vi.fn(),
   accedi: vi.fn(),
   esci: vi.fn(),
+  registrati: vi.fn(),
+  verificaCodice: vi.fn(),
+  aggiornaNome: vi.fn(),
+  cambiaPassword: vi.fn(),
+  verificaPassword: vi.fn(),
 }))
 vi.mock('../data/fondi', () => ({ elencaFondi: vi.fn() }))
 vi.mock('../data/buste', () => ({ elencaBuste: vi.fn() }))
@@ -23,8 +38,9 @@ vi.mock('../data/movimenti', () => ({ elencaMovimenti: vi.fn(), salvaMovimento: 
 vi.mock('../data/estratti', () => ({ elencaEstratti: vi.fn() }))
 vi.mock('../data/impostazioni', () => ({ leggiImpostazioni: vi.fn() }))
 
-const PRIMO = { id: 'u1', email: 'primo@esempio.it' }
-const SECONDO = { id: 'u2', email: 'secondo@esempio.it' }
+const PRIMO = utenteDiProva({ id: 'u1', email: 'primo@esempio.it' })
+const SECONDO = utenteDiProva({ id: 'u2', email: 'secondo@esempio.it' })
+const GIULIA = utenteDiProva({ id: 'u3', email: 'giulia.conti@esempio.it', nome: 'Giulia Conti' })
 const SESSIONE_SCADUTA = new ErroreDati('sessione', 'La sessione è scaduta. Accedi di nuovo.')
 
 function lettureDalSeed(): void {
@@ -203,6 +219,121 @@ describe('sessione (R8)', () => {
     await sessione.ripristina()
     expect(sessione.utente).toBeNull()
     expect(sessioneCorrente).toHaveBeenCalledOnce()
+  })
+})
+
+describe('account (R5, R6, R15)', () => {
+  it('registrati non apre la sessione', async () => {
+    const sessione = useSessioneStore()
+    vi.mocked(registrati).mockResolvedValueOnce(undefined)
+    await sessione.registrati({
+      nome: ' Giulia Conti ',
+      email: 'g@esempio.it',
+      password: 'segreta123',
+    })
+    expect(registrati).toHaveBeenCalledWith({
+      nome: 'Giulia Conti',
+      email: 'g@esempio.it',
+      password: 'segreta123',
+    })
+    expect(sessione.utente).toBeNull()
+  })
+
+  it('verificaCodice giusto → utente impostato e store svuotati', async () => {
+    const { sessione, archivio } = await accessoConArchivio()
+    vi.mocked(verificaCodice).mockResolvedValueOnce(GIULIA)
+    await expect(sessione.verificaCodice(GIULIA.email, '123456')).resolves.toEqual(GIULIA)
+    expect(verificaCodice).toHaveBeenCalledWith(GIULIA.email, '123456')
+    expect(sessione.utente).toEqual(GIULIA)
+    expect(sessione.pronto).toBe(true)
+    expect(eVuoto(archivio)).toBe(true)
+  })
+
+  it('verificaCodice sbagliato → rifiuta, utente e archivio invariati', async () => {
+    const { sessione, archivio } = await accessoConArchivio()
+    vi.mocked(verificaCodice).mockRejectedValueOnce(
+      new ErroreDati('vincolo', 'Il codice non è giusto o è scaduto.'),
+    )
+    await expect(sessione.verificaCodice(GIULIA.email, '000000')).rejects.toMatchObject({
+      tipo: 'vincolo',
+    })
+    expect(sessione.utente).toEqual(PRIMO)
+    expect(archivio.movimenti.length).toBeGreaterThan(0)
+  })
+
+  it('aggiornaNome aggiorna il nome in memoria senza rileggere la sessione', async () => {
+    const sessione = useSessioneStore()
+    await sessione.accedi(PRIMO.email, 'segreta')
+    vi.mocked(aggiornaNome).mockResolvedValueOnce(undefined)
+    await sessione.aggiornaNome('  Giulia Conti ')
+    expect(aggiornaNome).toHaveBeenCalledWith('Giulia Conti')
+    expect(sessione.utente).toEqual({ ...PRIMO, nome: 'Giulia Conti' })
+    expect(sessioneCorrente).not.toHaveBeenCalled()
+  })
+
+  it('aggiornaNome che fallisce lascia il nome di prima', async () => {
+    const sessione = useSessioneStore()
+    await sessione.accedi(PRIMO.email, 'segreta')
+    vi.mocked(aggiornaNome).mockRejectedValueOnce(SESSIONE_SCADUTA)
+    await expect(sessione.aggiornaNome('Giulia')).rejects.toBe(SESSIONE_SCADUTA)
+    expect(sessione.utente).toEqual(PRIMO)
+  })
+
+  it('cambiaPassword passa al livello dati', async () => {
+    const sessione = useSessioneStore()
+    vi.mocked(cambiaPassword).mockResolvedValueOnce(undefined)
+    await sessione.cambiaPassword('vecchia', 'nuova12345')
+    expect(cambiaPassword).toHaveBeenCalledWith('vecchia', 'nuova12345')
+  })
+
+  it('conferma con password errata → «Password non corretta.»', async () => {
+    const sessione = useSessioneStore()
+    vi.mocked(accedi).mockResolvedValueOnce(GIULIA)
+    await sessione.accedi(GIULIA.email, 'segreta')
+    vi.mocked(verificaPassword).mockRejectedValueOnce(
+      new ErroreDati('vincolo', 'Password non corretta.'),
+    )
+    await expect(sessione.confermaCancellazione('sbagliata', true)).rejects.toMatchObject({
+      tipo: 'vincolo',
+      messaggio: 'Password non corretta.',
+    })
+    expect(verificaPassword).toHaveBeenCalledWith(GIULIA.email, 'sbagliata')
+  })
+
+  it('conferma con password giusta → risolve', async () => {
+    const sessione = useSessioneStore()
+    vi.mocked(accedi).mockResolvedValueOnce(GIULIA)
+    await sessione.accedi(GIULIA.email, 'segreta')
+    vi.mocked(verificaPassword).mockResolvedValueOnce(undefined)
+    await expect(sessione.confermaCancellazione('segreta', true)).resolves.toBeUndefined()
+  })
+
+  it('conferma Google con l’email scritta con spazi e maiuscole → risolve', async () => {
+    const sessione = useSessioneStore()
+    vi.mocked(accedi).mockResolvedValueOnce(GIULIA)
+    await sessione.accedi(GIULIA.email, 'segreta')
+    await expect(
+      sessione.confermaCancellazione(' Giulia.Conti@Esempio.it ', false),
+    ).resolves.toBeUndefined()
+    expect(verificaPassword).not.toHaveBeenCalled()
+  })
+
+  it('conferma Google con un’altra email → rifiuta', async () => {
+    const sessione = useSessioneStore()
+    vi.mocked(accedi).mockResolvedValueOnce(GIULIA)
+    await sessione.accedi(GIULIA.email, 'segreta')
+    await expect(sessione.confermaCancellazione('altra@esempio.it', false)).rejects.toMatchObject({
+      tipo: 'vincolo',
+      messaggio: "L'email non è quella del tuo account.",
+    })
+  })
+
+  it('conferma senza sessione → sessione scaduta', async () => {
+    const sessione = useSessioneStore()
+    await expect(sessione.confermaCancellazione('x', true)).rejects.toMatchObject({
+      tipo: 'sessione',
+    })
+    expect(verificaPassword).not.toHaveBeenCalled()
   })
 })
 

@@ -106,6 +106,20 @@ export function formatoGiorno(data: string): string {
   return `${settimana} ${giorno} ${nomeMese.toLowerCase()}`
 }
 
+/** `YYYY-MM-DD` → `12 set 2026`: mese abbreviato minuscolo, senza punto. */
+export function formatoDataBreve(data: string | null): string {
+  const parti = data === null ? null : /^(\d{4})-(\d{2})-(\d{2})$/.exec(data)
+  if (parti === null) return VUOTO
+  const anno = Number(parti[1])
+  const mese = Number(parti[2])
+  const giorno = Number(parti[3])
+  const nomeMese = MESI[mese - 1]
+  if (nomeMese === undefined) return VUOTO
+  if (giorno < 1 || giorno > giorniNelMese(anno, mese)) return VUOTO
+  // Le prime tre lettere dei mesi italiani sono le abbreviazioni di it-IT.
+  return `${giorno} ${nomeMese.slice(0, 3).toLowerCase()} ${parti[1]}`
+}
+
 /** Frazione → percentuale con segno esplicito (`0.0475` → `+4,75%`). */
 export function formatoPercentuale(frazione: number | null, decimali = 2): string {
   if (frazione === null || !Number.isFinite(frazione)) return VUOTO

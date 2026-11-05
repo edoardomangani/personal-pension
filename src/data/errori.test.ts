@@ -74,6 +74,15 @@ describe('mappatura degli errori (R6)', () => {
   })
 })
 
+describe('ErroreDati', () => {
+  it('porta il codice facoltativo, assente se non dato', () => {
+    expect(new ErroreDati('sessione', 'x', 'email-da-verificare').codice).toBe(
+      'email-da-verificare',
+    )
+    expect(new ErroreDati('altro', 'x').codice).toBeUndefined()
+  })
+})
+
 describe('attendi', () => {
   it('risolve con i dati', async () => {
     const risposta: RispostaDati<number[]> = { data: [1], error: null, status: 200 }

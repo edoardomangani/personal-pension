@@ -8,6 +8,7 @@ import { rotte } from '@/router'
 import { useSessioneStore } from '@/stores/sessione'
 import { SidebarProvider } from '@/components/ui/sidebar'
 import NavUtente from './NavUtente.vue'
+import { utenteDiProva } from '@/test/utenti'
 
 vi.mock('@/data/sessione', () => ({
   sessioneCorrente: vi.fn(),
@@ -49,7 +50,7 @@ function menu(): HTMLElement | null {
 
 describe('NavUtente (R14)', () => {
   it('con utente { email }: il trigger mostra l’email e apre il menu sopra', async () => {
-    useSessioneStore().utente = { id: 'u1', email: 'edoardo@esempio.it' }
+    useSessioneStore().utente = utenteDiProva()
     const wrapper = montaPiede(await routerSu('/'))
 
     const trigger = wrapper.get('button[aria-haspopup="menu"]')
@@ -62,7 +63,7 @@ describe('NavUtente (R14)', () => {
   })
 
   it('il menu ha Account (link a /account) ed Esci', async () => {
-    useSessioneStore().utente = { id: 'u1', email: 'edoardo@esempio.it' }
+    useSessioneStore().utente = utenteDiProva()
     const wrapper = montaPiede(await routerSu('/'))
     await apri(wrapper)
 
@@ -73,7 +74,7 @@ describe('NavUtente (R14)', () => {
   })
 
   it('Esci chiama sessione.esci una volta e porta a /', async () => {
-    useSessioneStore().utente = { id: 'u1', email: 'edoardo@esempio.it' }
+    useSessioneStore().utente = utenteDiProva()
     vi.mocked(esciDb).mockResolvedValue(undefined)
     const router = await routerSu('/movimenti')
     const wrapper = montaPiede(router)
@@ -128,7 +129,7 @@ describe('NavUtente: piede della sidebar (DS-03-C2)', () => {
   })
 
   it('aperto: data-state open sul trigger (DS-03-C2 R1)', async () => {
-    useSessioneStore().utente = { id: 'u1', email: 'edoardo@esempio.it' }
+    useSessioneStore().utente = utenteDiProva()
     const wrapper = montaPiede(await routerSu('/'))
     await apri(wrapper)
 

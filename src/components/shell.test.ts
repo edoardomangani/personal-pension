@@ -20,6 +20,7 @@ import AppLogoIcon from './AppLogoIcon.vue'
 import NewMovementButton from './NewMovementButton.vue'
 import sorgenteShellSection from './dev/ShellSection.vue?raw'
 import VistaSegnaposto from '@/views/VistaSegnaposto.vue'
+import { utenteDiProva } from '@/test/utenti'
 
 enableAutoUnmount(afterEach)
 
@@ -325,7 +326,7 @@ describe('testata mobile (R5-R7)', () => {
   })
 
   it('su / con utente { email }: l’avatar mostra l’iniziale dell’email', async () => {
-    useSessioneStore().utente = { id: 'u1', email: 'edoardo@esempio.it' }
+    useSessioneStore().utente = utenteDiProva()
     const wrapper = montaTestata(await routerSu('/'))
     await flushPromises()
     expect(wrapper.get('a').text()).toBe('E')
