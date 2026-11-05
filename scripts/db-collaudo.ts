@@ -1,5 +1,12 @@
 import pg from 'pg'
-import { controllaRuoloCollaudo, istruzioniSvuotamento, type TabellaTrovata } from './lib/collaudo'
+import {
+  QUERY_ROUTINE,
+  controllaRuoloCollaudo,
+  istruzioniSvuotamento,
+  messaggioSvuotamento,
+  type FunzioneTrovata,
+  type TabellaTrovata,
+} from './lib/collaudo'
 import {
   SEED_PREDEFINITO,
   applicaMigrazioni,
@@ -20,10 +27,11 @@ async function svuota(client: pg.Client): Promise<void> {
       where n.nspname = 'public' and c.relkind in ('r', 'p')
         and pg_get_userbyid(c.relowner) = current_user`,
   )
+  const { rows: routine } = await client.query<FunzioneTrovata>(QUERY_ROUTINE)
   const { rows: registro } = await client.query<{ esiste: boolean }>(
     `select to_regclass('migrazioni.applicate') is not null as esiste`,
   )
-  const istruzioni = istruzioniSvuotamento(tabelle, registro[0]?.esiste === true)
+  const istruzioni = istruzioniSvuotamento(tabelle, routine, registro[0]?.esiste === true)
   await client.query('begin')
   try {
     for (const sql of istruzioni) await client.query(sql)
@@ -32,7 +40,7 @@ async function svuota(client: pg.Client): Promise<void> {
     await client.query('rollback')
     throw e
   }
-  scrivi(`Svuotate ${tabelle.length} tabelle di public e il registro delle migration.`)
+  scrivi(messaggioSvuotamento(routine.length, tabelle.length))
 }
 
 async function main(): Promise<void> {
