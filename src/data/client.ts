@@ -36,7 +36,11 @@ export interface AuthDati {
   getSession(): Promise<RispostaAuth<ConUtente>>
   signIn: {
     email(credenziali: { email: string; password: string }): Promise<RispostaAuth<ConUtente>>
-    social(dati: { provider: string; callbackURL?: string }): Promise<RispostaAuth<unknown>>
+    social(dati: {
+      provider: string
+      callbackURL?: string
+      errorCallbackURL?: string
+    }): Promise<RispostaAuth<unknown>>
   }
   signUp: {
     email(dati: { name: string; email: string; password: string }): Promise<RispostaAuth<ConUtente>>

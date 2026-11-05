@@ -170,9 +170,18 @@ export async function reinviaCodice(email: string): Promise<void> {
   await chiama(() => authDati().emailOtp.sendVerificationOtp({ email, type: 'email-verification' }))
 }
 
-/** `ritorno` è l'URL dell'app a cui Google rimanda dopo l'accesso. */
-export async function accediConGoogle(ritorno: string): Promise<void> {
-  await chiama(() => authDati().signIn.social({ provider: 'google', callbackURL: ritorno }))
+/**
+ * `ritorno` è l'URL dell'app a cui Google rimanda dopo l'accesso; `ritornoErrore` quello per
+ * un annullamento o un errore, a cui Better Auth aggiunge `?error=…`.
+ */
+export async function accediConGoogle(ritorno: string, ritornoErrore: string): Promise<void> {
+  await chiama(() =>
+    authDati().signIn.social({
+      provider: 'google',
+      callbackURL: ritorno,
+      errorCallbackURL: ritornoErrore,
+    }),
+  )
 }
 
 export async function richiediReset(email: string, ritorno: string): Promise<void> {

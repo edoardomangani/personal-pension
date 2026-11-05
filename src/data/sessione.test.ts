@@ -354,12 +354,13 @@ describe('registrazione e verifica', () => {
 })
 
 describe('Google e password', () => {
-  it('accediConGoogle passa il provider e il ritorno', async () => {
+  it('accediConGoogle passa il provider, il ritorno e il ritorno con errore', async () => {
     const finto = authFinto()
-    await accediConGoogle('http://localhost:5173/#/')
+    await accediConGoogle('http://localhost:5173/#/', 'http://localhost:5173/#/accedi')
     expect(finto.signIn.social).toHaveBeenCalledWith({
       provider: 'google',
       callbackURL: 'http://localhost:5173/#/',
+      errorCallbackURL: 'http://localhost:5173/#/accedi',
     })
   })
 

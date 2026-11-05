@@ -10,6 +10,7 @@ import {
 import ShowcaseBlock from '@/components/dev/ShowcaseBlock.vue'
 import ShowcaseSection from '@/components/dev/ShowcaseSection.vue'
 import Specimen from '@/components/dev/Specimen.vue'
+import GoogleButton from '@/components/GoogleButton.vue'
 import NewMovementButton from '@/components/NewMovementButton.vue'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -102,6 +103,18 @@ const buttonSizes = [
               Tutti i movimenti
               <PhArrowRight />
             </Button>
+          </Specimen>
+        </div>
+        <p class="text-xs text-subtle-foreground">
+          «Continua con Google» delle pagine di accesso: outline 36 a tutta larghezza, logo di
+          Google a colori 16px, unica icona fuori da Phosphor.
+        </p>
+        <div class="flex flex-wrap items-start gap-6">
+          <Specimen code="BTN-outline-md-google">
+            <div class="w-80"><GoogleButton /></div>
+          </Specimen>
+          <Specimen code="BTN-outline-md-google-loading">
+            <div class="w-80"><GoogleButton in-corso /></div>
           </Specimen>
         </div>
       </div>

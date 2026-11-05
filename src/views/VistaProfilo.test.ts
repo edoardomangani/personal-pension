@@ -136,7 +136,7 @@ describe('Cambia foto (R18)', () => {
 })
 
 describe('Esci in Profilo (R11)', () => {
-  it('due clic rapidi: una sola chiamata a sessione.esci, poi /', async () => {
+  it('due clic rapidi: una sola chiamata a sessione.esci, poi /accedi', async () => {
     useSessioneStore().utente = utenteDiProva()
     vi.mocked(esciDb).mockResolvedValue(undefined)
     const router = await routerSu('/profilo')
@@ -149,7 +149,7 @@ describe('Esci in Profilo (R11)', () => {
     await flushPromises()
 
     expect(esciDb).toHaveBeenCalledTimes(1)
-    expect(router.currentRoute.value.path).toBe('/')
+    expect(router.currentRoute.value.path).toBe('/accedi')
     expect(useSessioneStore().utente).toBeNull()
   })
 })

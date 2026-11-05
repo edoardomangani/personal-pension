@@ -134,6 +134,53 @@ type FondiFinti = ReturnType<typeof archivioDalSeed>['fondi']
 
 const RETE = () => new ErroreDati('rete', 'Non riesco a raggiungere il server.')
 
+describe('archivio: controllaFondo', () => {
+  it('con fondi → true', async () => {
+    const s = useArchivioStore()
+    await expect(s.controllaFondo()).resolves.toBe(true)
+    expect(s.haFondo).toBe(true)
+  })
+
+  it('senza fondi → false', async () => {
+    vi.mocked(elencaFondi).mockResolvedValueOnce([])
+    const s = useArchivioStore()
+    await expect(s.controllaFondo()).resolves.toBe(false)
+    expect(s.haFondo).toBe(false)
+  })
+
+  it('con un errore → null, senza uscire', async () => {
+    vi.mocked(elencaFondi).mockRejectedValueOnce(new ErroreDati('rete', 'Rete giù'))
+    const s = useArchivioStore()
+    await expect(s.controllaFondo()).resolves.toBeNull()
+    expect(s.haFondo).toBeNull()
+    expect(esci).not.toHaveBeenCalled()
+  })
+
+  it('due richieste sovrapposte → una sola lettura; poi resta in memoria', async () => {
+    const s = useArchivioStore()
+    const [prima, seconda] = await Promise.all([s.controllaFondo(), s.controllaFondo()])
+    expect([prima, seconda]).toEqual([true, true])
+    await s.controllaFondo()
+    expect(elencaFondi).toHaveBeenCalledOnce()
+  })
+
+  it('salvaFondo → haFondo true', async () => {
+    vi.mocked(elencaFondi).mockResolvedValueOnce([])
+    const s = useArchivioStore()
+    await s.controllaFondo()
+    vi.mocked(salvaFondo).mockResolvedValueOnce({ id: 'f1', nome: FONDO })
+    await s.salvaFondo({ nome: FONDO })
+    expect(s.haFondo).toBe(true)
+  })
+
+  it('reset → haFondo null', async () => {
+    const s = useArchivioStore()
+    await s.controllaFondo()
+    s.reset()
+    expect(s.haFondo).toBeNull()
+  })
+})
+
 describe('archivio: carica concorrenti', () => {
   it('T1: la prima che risolve dopo la seconda non sovrascrive i dati', async () => {
     const estratti = inSospeso<EstrattoConto[]>()
@@ -324,14 +371,14 @@ describe('archivio: reset', () => {
   it('C5 T2: salvaEstratto in volo che fallisce con rete dopo un reset rifiuta senza uscire', async () => {
     const s = useArchivioStore()
     await s.carica()
-    const esciSessione = vi.spyOn(useSessioneStore(), 'esci')
+    const scaduta = vi.spyOn(useSessioneStore(), 'sessioneScaduta')
     const risposta = inSospeso<EstrattoConto>()
     vi.mocked(salvaEstratto).mockReturnValueOnce(risposta.promessa)
     const scrittura = s.salvaEstratto({ fondoId: FONDO, data: '2026-11-04', valore: 1, note: '' })
     s.reset()
     risposta.rifiuta(RETE())
     await expect(scrittura).rejects.toMatchObject({ tipo: 'rete' })
-    expect(esciSessione).not.toHaveBeenCalled()
+    expect(scaduta).not.toHaveBeenCalled()
     expect(esci).not.toHaveBeenCalled()
     expect(s.estratti).toEqual([])
   })
@@ -567,11 +614,11 @@ describe('archivio: rilettura e sessione', () => {
   it("T5: sessione scaduta nella rilettura esce una volta e risolve con l'id", async () => {
     const s = useArchivioStore()
     await s.carica()
-    const esci = vi.spyOn(useSessioneStore(), 'esci')
+    const scaduta = vi.spyOn(useSessioneStore(), 'sessioneScaduta')
     vi.mocked(salvaMovimento).mockResolvedValueOnce('m-nuovo')
     vi.mocked(elencaBuste).mockRejectedValueOnce(new ErroreDati('sessione', 'Sessione scaduta.'))
     await expect(s.salvaMovimento(BOZZA_MOVIMENTO, [])).resolves.toBe('m-nuovo')
-    expect(esci).toHaveBeenCalledOnce()
+    expect(scaduta).toHaveBeenCalledOnce()
     expect(s.errore).toBeNull()
     expect(s.movimenti).toEqual([])
   })
@@ -596,7 +643,7 @@ describe('archivio: rilettura e sessione', () => {
   it('T7: un reset con la rilettura in volo, poi fallita con sessione, non esce', async () => {
     const s = useArchivioStore()
     await s.carica()
-    const esciSessione = vi.spyOn(useSessioneStore(), 'esci')
+    const scaduta = vi.spyOn(useSessioneStore(), 'sessioneScaduta')
     const buste = inSospeso<ReturnType<typeof archivioDalSeed>['buste']>()
     vi.mocked(salvaMovimento).mockResolvedValueOnce('m-nuovo')
     vi.mocked(elencaBuste).mockReturnValueOnce(buste.promessa)
@@ -605,7 +652,7 @@ describe('archivio: rilettura e sessione', () => {
     s.reset()
     buste.rifiuta(new ErroreDati('sessione', 'Sessione scaduta.'))
     await expect(scrittura).resolves.toBe('m-nuovo')
-    expect(esciSessione).not.toHaveBeenCalled()
+    expect(scaduta).not.toHaveBeenCalled()
     expect(s.errore).toBeNull()
     expect(s.buste).toEqual([])
     expect(s.movimenti).toEqual([])

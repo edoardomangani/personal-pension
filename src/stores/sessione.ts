@@ -7,9 +7,13 @@ import {
   accedi as accediDb,
   aggiornaNome as aggiornaNomeDb,
   cambiaPassword as cambiaPasswordDb,
+  accediConGoogle as accediConGoogleDb,
   esci as esciDb,
   metodiDiAccesso,
   registrati as registratiDb,
+  reimpostaPassword as reimpostaPasswordDb,
+  reinviaCodice as reinviaCodiceDb,
+  richiediReset as richiediResetDb,
   sessioneCorrente,
   verificaCodice as verificaCodiceDb,
   verificaPassword,
@@ -18,12 +22,19 @@ import {
 } from '../data/sessione'
 import { useArchivioStore } from './archivio'
 
+// Le viste riconoscono l'esito «email da verificare» senza importare il livello dati.
+export { CODICE_EMAIL_DA_VERIFICARE } from '../data/sessione'
+
+/** Perché l'utente è uscito senza volerlo: lo legge `useSessioneScaduta` per tornare all'accesso. */
+export type MotivoUscita = 'sessione'
+
 export const useSessioneStore = defineStore('sessione', () => {
   const utente = ref<Utente | null>(null)
   const pronto = ref(false)
   const errore = ref<ErroreDati | null>(null)
   const foto = ref<string | null>(null)
   const metodi = ref<MetodiDiAccesso | null>(null)
+  const motivoUscita = ref<MotivoUscita | null>(null)
   let ripristino: Promise<void> | null = null
 
   // Ogni store con dati dell'utente va svuotato qui.
@@ -57,6 +68,32 @@ export const useSessioneStore = defineStore('sessione', () => {
     }
   }
 
+  /** R10: segna il motivo prima di uscire, così chi guarda il motivo trova gli store già vuoti. */
+  async function sessioneScaduta(): Promise<void> {
+    motivoUscita.value = 'sessione'
+    await esci()
+  }
+
+  function azzeraMotivoUscita(): void {
+    motivoUscita.value = null
+  }
+
+  /**
+   * Per le azioni che richiedono la sessione: un errore `sessione` fa uscire, ma solo se
+   * l'utente è ancora quello per cui è partita la chiamata. Rifiuta con l'errore ricevuto.
+   */
+  async function conSessione<T>(operazione: () => Promise<T>): Promise<T> {
+    const id = utente.value?.id
+    try {
+      return await operazione()
+    } catch (eccezione) {
+      if (id !== undefined && eAncora(id) && erroreDaEccezione(eccezione).tipo === 'sessione') {
+        await sessioneScaduta()
+      }
+      throw eccezione
+    }
+  }
+
   /**
    * Non rifiuta; `pronto` diventa true con ogni esito. Idempotente dopo un successo,
    * un errore si riprova; le chiamate sovrapposte condividono quella in volo.
@@ -85,6 +122,7 @@ export const useSessioneStore = defineStore('sessione', () => {
     svuotaStore()
     utente.value = null
     const nuovo = await accediDb(email, password)
+    motivoUscita.value = null
     utente.value = nuovo
     errore.value = null
     pronto.value = true
@@ -117,6 +155,7 @@ export const useSessioneStore = defineStore('sessione', () => {
     const nuovo = await verificaCodiceDb(email.trim(), codice.trim())
     // È un cambio di account: niente dati di chi c'era prima.
     svuotaStore()
+    motivoUscita.value = null
     utente.value = nuovo
     errore.value = null
     pronto.value = true
@@ -126,13 +165,30 @@ export const useSessioneStore = defineStore('sessione', () => {
 
   async function aggiornaNome(nome: string): Promise<void> {
     const pulito = nome.trim()
-    await aggiornaNomeDb(pulito)
+    await conSessione(() => aggiornaNomeDb(pulito))
     if (utente.value !== null)
       utente.value = { ...utente.value, nome: pulito === '' ? null : pulito }
   }
 
   async function cambiaPassword(attuale: string, nuova: string): Promise<void> {
-    await cambiaPasswordDb(attuale, nuova)
+    await conSessione(() => cambiaPasswordDb(attuale, nuova))
+  }
+
+  // Passaggi diretti al livello dati: non richiedono sessione, le viste non vedono `src/data/`.
+  async function reinviaCodice(email: string): Promise<void> {
+    await reinviaCodiceDb(email)
+  }
+
+  async function accediConGoogle(ritorno: string, ritornoErrore: string): Promise<void> {
+    await accediConGoogleDb(ritorno, ritornoErrore)
+  }
+
+  async function richiediReset(email: string, ritorno: string): Promise<void> {
+    await richiediResetDb(email, ritorno)
+  }
+
+  async function reimpostaPassword(token: string, password: string): Promise<void> {
+    await reimpostaPasswordDb(token, password)
   }
 
   /**
@@ -155,21 +211,21 @@ export const useSessioneStore = defineStore('sessione', () => {
   async function salvaFoto(dataUrl: string): Promise<void> {
     const id = utente.value?.id
     if (id === undefined) throw new ErroreDati('sessione', MESSAGGI.sessione)
-    await salvaFotoDb(dataUrl)
+    await conSessione(() => salvaFotoDb(dataUrl))
     if (eAncora(id)) foto.value = dataUrl
   }
 
   async function rimuoviFoto(): Promise<void> {
     const id = utente.value?.id
     if (id === undefined) throw new ErroreDati('sessione', MESSAGGI.sessione)
-    await eliminaFoto()
+    await conSessione(() => eliminaFoto())
     if (eAncora(id)) foto.value = null
   }
 
   /** R6: conferma, RPC, poi uscita locale. Se la RPC rifiuta, l'utente resta dentro. */
   async function cancellaAccount(conferma: string, conPassword: boolean): Promise<void> {
     await confermaCancellazione(conferma, conPassword)
-    await cancellaAccountDb()
+    await conSessione(() => cancellaAccountDb())
     await esci()
   }
 
@@ -179,13 +235,20 @@ export const useSessioneStore = defineStore('sessione', () => {
     errore,
     foto,
     metodi,
+    motivoUscita,
     ripristina,
     accedi,
     esci,
+    sessioneScaduta,
+    azzeraMotivoUscita,
     registrati,
     verificaCodice,
     aggiornaNome,
     cambiaPassword,
+    reinviaCodice,
+    accediConGoogle,
+    richiediReset,
+    reimpostaPassword,
     confermaCancellazione,
     salvaFoto,
     rimuoviFoto,

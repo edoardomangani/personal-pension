@@ -1,4 +1,25 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { createPinia, setActivePinia } from 'pinia'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+
+// Il guard del router chiede sessione e fondi: un utente col suo fondo, senza rete.
+vi.mock('./data/sessione', () => ({
+  sessioneCorrente: vi.fn(async () => ({
+    id: 'u1',
+    email: 'edoardo@esempio.it',
+    nome: null,
+    emailVerificata: true,
+    registratoIl: '2026-09-12',
+  })),
+  metodiDiAccesso: vi.fn(async () => ({ password: true, google: false })),
+}))
+vi.mock('./data/foto', () => ({ leggiFoto: vi.fn(async () => null) }))
+vi.mock('./data/fondi', () => ({
+  elencaFondi: vi.fn(async () => [{ id: 'f1', nome: 'Amundi Seconda Pensione' }]),
+}))
+
+beforeEach(() => {
+  setActivePinia(createPinia())
+})
 
 afterEach(() => {
   vi.unstubAllEnvs()

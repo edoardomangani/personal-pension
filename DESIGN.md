@@ -346,6 +346,7 @@ I controlli sono pill: bottoni, input, badge, segmenti. Il resto cresce col cont
 - **Outline:** vetro 1 con filo e filo di luce; hover su vetro 2.
 - **Ghost:** testo Grigio Salvia, hover su vetro 2 con testo Bianco Gesso.
 - **Destructive:** corallo con testo scuro, solo per eliminare.
+- **«Continua con Google» (`BTN-outline-md-google`):** outline 36 a tutta larghezza, col logo di Google nei suoi quattro colori a 16px prima del testo; con l'invio in corso lo spinner al posto del logo. Solo nelle pagine di accesso, sopra il separatore «oppure con la tua email». È l'unica eccezione approvata alle icone Phosphor e ai colori dei token.
 - **Press / Focus:** transizioni di colore 0,2s; alla pressione `scale(.97)` in 0,15s con `cubic-bezier(.2,.8,.2,1)`; focus con anello bianco pieno da 2px staccato di 2px (`outline`, non `box-shadow`, così non si somma al filo di luce). Rispettano `prefers-reduced-motion`.
 - **Il «+»:** bianco, tondo da 48px al centro della barra in basso su telefono, icona Plus Bold scura, ombra `0 8px 24px rgba(0, 0, 0, 0.45)` (`BTN-new-movement-mobile`). Su desktop è la pillola bianca «Registra» (36px, padding 0 16px 0 14px, Plus Bold 16px) a destra nella barra in alto, solo in Home, Movimenti e Valori (`BTN-new-movement-desktop`).
 

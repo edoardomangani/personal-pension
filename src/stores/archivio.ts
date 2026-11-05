@@ -63,6 +63,9 @@ export const useArchivioStore = defineStore('archivio', () => {
   const stato = ref<StatoArchivio>('vuoto')
   const errore = ref<ErroreDati | null>(null)
   const oggi = ref(oggiLocale())
+  // Per il guard del router: null finché non si sa (o se la lettura è fallita).
+  const haFondo = ref<boolean | null>(null)
+  let controlloInVolo: Promise<boolean | null> | null = null
 
   // `reset()` lo incrementa: una risposta (lettura o scrittura) arrivata dopo non tocca più la memoria.
   let generazione = 0
@@ -85,7 +88,7 @@ export const useArchivioStore = defineStore('archivio', () => {
     // Prima di `esci()`: una chiamata superata non chiude la sessione.
     if (!valida()) return false
     if (e.tipo === 'sessione') {
-      await useSessioneStore().esci()
+      await useSessioneStore().sessioneScaduta()
       return false
     }
     errore.value = e
@@ -109,6 +112,30 @@ export const useArchivioStore = defineStore('archivio', () => {
   const futuro = computed(() => proiezione(archivio.value, oggi.value))
 
   /**
+   * Se l'utente ha almeno un fondo. Non rifiuta: con un errore risolve null e la vista
+   * mostrerà il suo. Le chiamate sovrapposte condividono la lettura in volo.
+   */
+  function controllaFondo(): Promise<boolean | null> {
+    if (haFondo.value !== null) return Promise.resolve(haFondo.value)
+    if (controlloInVolo !== null) return controlloInVolo
+    const partenza = generazione
+    const lettura = (async () => {
+      try {
+        const elenco = await elencaFondi()
+        seAncora(partenza, () => (haFondo.value = elenco.length > 0))
+        return elenco.length > 0
+      } catch {
+        return null
+      }
+    })()
+    controlloInVolo = lettura
+    void lettura.then(() => {
+      if (controlloInVolo === lettura) controlloInVolo = null
+    })
+    return lettura
+  }
+
+  /**
    * Non rifiuta: l'esito è in `stato` ed `errore`. Con un errore restano i dati di prima.
    * Fra più chiamate sovrapposte vale solo l'ultima partita.
    */
@@ -128,6 +155,7 @@ export const useArchivioStore = defineStore('archivio', () => {
       ])
       if (!corrente()) return
       fondi.value = f
+      haFondo.value = f.length > 0
       buste.value = b
       movimenti.value = m
       estratti.value = e
@@ -151,7 +179,9 @@ export const useArchivioStore = defineStore('archivio', () => {
       return await operazione()
     } catch (eccezione) {
       const e = erroreDaEccezione(eccezione)
-      if (e.tipo === 'sessione' && partenza === generazione) await useSessioneStore().esci()
+      if (e.tipo === 'sessione' && partenza === generazione) {
+        await useSessioneStore().sessioneScaduta()
+      }
       throw e
     }
   }
@@ -173,14 +203,20 @@ export const useArchivioStore = defineStore('archivio', () => {
   async function salvaFondo(bozza: Bozza<Fondo>): Promise<Fondo> {
     const partenza = generazione
     const salvato = await scrivi(partenza, () => salvaFondoDb(bozza))
-    seAncora(partenza, () => (fondi.value = sostituisciOAggiungi(fondi.value, salvato)))
+    seAncora(partenza, () => {
+      fondi.value = sostituisciOAggiungi(fondi.value, salvato)
+      haFondo.value = true
+    })
     return salvato
   }
 
   async function eliminaFondo(id: string): Promise<void> {
     const partenza = generazione
     await scrivi(partenza, () => eliminaFondoDb(id))
-    seAncora(partenza, () => (fondi.value = fondi.value.filter((f) => f.id !== id)))
+    seAncora(partenza, () => {
+      fondi.value = fondi.value.filter((f) => f.id !== id)
+      haFondo.value = fondi.value.length > 0
+    })
   }
 
   async function salvaBusta(bozza: BozzaBusta): Promise<string> {
@@ -235,6 +271,8 @@ export const useArchivioStore = defineStore('archivio', () => {
   function reset(): void {
     generazione++
     datiApplicati = false
+    controlloInVolo = null
+    haFondo.value = null
     fondi.value = []
     buste.value = []
     movimenti.value = []
@@ -255,6 +293,7 @@ export const useArchivioStore = defineStore('archivio', () => {
     stato,
     errore,
     oggi,
+    haFondo,
     archivio,
     versato,
     daVersare: daVersareTotale,
@@ -264,6 +303,7 @@ export const useArchivioStore = defineStore('archivio', () => {
     deducibilita,
     proiezione: futuro,
     carica,
+    controllaFondo,
     salvaFondo,
     eliminaFondo,
     salvaBusta,

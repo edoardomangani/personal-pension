@@ -10,11 +10,15 @@ import { leggiImpostazioni } from '../data/impostazioni'
 import { elencaMovimenti, salvaMovimento } from '../data/movimenti'
 import {
   accedi,
+  accediConGoogle,
   aggiornaNome,
   cambiaPassword,
   esci,
   metodiDiAccesso,
   registrati,
+  reimpostaPassword,
+  reinviaCodice,
+  richiediReset,
   sessioneCorrente,
   verificaCodice,
   verificaPassword,
@@ -35,6 +39,10 @@ vi.mock('../data/sessione', () => ({
   cambiaPassword: vi.fn(),
   verificaPassword: vi.fn(),
   metodiDiAccesso: vi.fn(),
+  reinviaCodice: vi.fn(),
+  accediConGoogle: vi.fn(),
+  richiediReset: vi.fn(),
+  reimpostaPassword: vi.fn(),
 }))
 vi.mock('../data/foto', () => ({ leggiFoto: vi.fn(), salvaFoto: vi.fn(), eliminaFoto: vi.fn() }))
 vi.mock('../data/account', () => ({ cancellaAccount: vi.fn() }))
@@ -287,9 +295,11 @@ describe('account (R5, R6, R15)', () => {
   it('aggiornaNome che fallisce lascia il nome di prima', async () => {
     const sessione = useSessioneStore()
     await sessione.accedi(PRIMO.email, 'segreta')
-    vi.mocked(aggiornaNome).mockRejectedValueOnce(SESSIONE_SCADUTA)
-    await expect(sessione.aggiornaNome('Giulia')).rejects.toBe(SESSIONE_SCADUTA)
+    const rete = new ErroreDati('rete', 'Rete giù')
+    vi.mocked(aggiornaNome).mockRejectedValueOnce(rete)
+    await expect(sessione.aggiornaNome('Giulia')).rejects.toBe(rete)
     expect(sessione.utente).toEqual(PRIMO)
+    expect(sessione.motivoUscita).toBeNull()
   })
 
   it('cambiaPassword passa al livello dati', async () => {
@@ -505,6 +515,100 @@ describe('foto, metodi e cancellazione (R5, R6)', () => {
     await expect(sessione.cancellaAccount(GIULIA.email, false)).rejects.toBe(rete)
     expect(esci).not.toHaveBeenCalled()
     expect(sessione.utente).toEqual(GIULIA)
+  })
+})
+
+describe('passaggi diretti al livello dati', () => {
+  const casi = [
+    {
+      nome: 'reinviaCodice',
+      finta: reinviaCodice,
+      chiama: (s: ReturnType<typeof useSessioneStore>) => s.reinviaCodice('g@esempio.it'),
+      argomenti: ['g@esempio.it'],
+    },
+    {
+      nome: 'accediConGoogle',
+      finta: accediConGoogle,
+      chiama: (s: ReturnType<typeof useSessioneStore>) =>
+        s.accediConGoogle('https://app.it/#/', 'https://app.it/#/accedi'),
+      argomenti: ['https://app.it/#/', 'https://app.it/#/accedi'],
+    },
+    {
+      nome: 'richiediReset',
+      finta: richiediReset,
+      chiama: (s: ReturnType<typeof useSessioneStore>) =>
+        s.richiediReset('g@esempio.it', 'https://app.it/#/nuova-password'),
+      argomenti: ['g@esempio.it', 'https://app.it/#/nuova-password'],
+    },
+    {
+      nome: 'reimpostaPassword',
+      finta: reimpostaPassword,
+      chiama: (s: ReturnType<typeof useSessioneStore>) => s.reimpostaPassword('tok', 'nuova12345'),
+      argomenti: ['tok', 'nuova12345'],
+    },
+  ]
+
+  for (const caso of casi) {
+    it(`${caso.nome} chiama il livello dati con gli stessi argomenti`, async () => {
+      vi.mocked(caso.finta).mockResolvedValueOnce(undefined)
+      await caso.chiama(useSessioneStore())
+      expect(caso.finta).toHaveBeenCalledWith(...caso.argomenti)
+    })
+
+    it(`${caso.nome} propaga l'errore senza motivo d'uscita`, async () => {
+      const sessione = useSessioneStore()
+      await sessione.accedi(PRIMO.email, 'segreta')
+      vi.mocked(caso.finta).mockRejectedValueOnce(SESSIONE_SCADUTA)
+      await expect(caso.chiama(sessione)).rejects.toBe(SESSIONE_SCADUTA)
+      expect(sessione.motivoUscita).toBeNull()
+      expect(sessione.utente).toEqual(PRIMO)
+      expect(esci).not.toHaveBeenCalled()
+    })
+  }
+})
+
+describe('sessione scaduta (R10)', () => {
+  it('errore sessione dall’archivio → motivo «sessione» e uscita', async () => {
+    const { sessione, archivio } = await accessoConArchivio()
+    vi.mocked(elencaFondi).mockRejectedValueOnce(SESSIONE_SCADUTA)
+    await archivio.carica()
+    expect(sessione.motivoUscita).toBe('sessione')
+    expect(sessione.utente).toBeNull()
+    expect(esci).toHaveBeenCalledOnce()
+  })
+
+  it('aggiornaNome con errore sessione → motivo «sessione», uscita e stesso errore', async () => {
+    const sessione = useSessioneStore()
+    await sessione.accedi(PRIMO.email, 'segreta')
+    vi.mocked(aggiornaNome).mockRejectedValueOnce(SESSIONE_SCADUTA)
+    await expect(sessione.aggiornaNome('Giulia')).rejects.toBe(SESSIONE_SCADUTA)
+    expect(sessione.motivoUscita).toBe('sessione')
+    expect(sessione.utente).toBeNull()
+  })
+
+  it('credenziali errate in accedi → nessun motivo', async () => {
+    const sessione = useSessioneStore()
+    vi.mocked(accedi).mockRejectedValueOnce(
+      new ErroreDati('sessione', 'Email o password non corretti.'),
+    )
+    await expect(sessione.accedi('a@b.it', 'x')).rejects.toMatchObject({ tipo: 'sessione' })
+    expect(sessione.motivoUscita).toBeNull()
+    expect(esci).not.toHaveBeenCalled()
+  })
+
+  it('un accesso riuscito azzera il motivo', async () => {
+    const sessione = useSessioneStore()
+    await sessione.sessioneScaduta()
+    expect(sessione.motivoUscita).toBe('sessione')
+    await sessione.accedi(PRIMO.email, 'segreta')
+    expect(sessione.motivoUscita).toBeNull()
+  })
+
+  it('il reset dell’uscita azzera haFondo', async () => {
+    const { sessione, archivio } = await accessoConArchivio()
+    expect(archivio.haFondo).toBe(true)
+    await sessione.esci()
+    expect(archivio.haFondo).toBeNull()
   })
 })
 

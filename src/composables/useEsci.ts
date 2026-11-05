@@ -7,7 +7,7 @@ export type UseEsciReturn = {
   inCorso: Ref<boolean>
 }
 
-// Esci di «Profilo» e del menu del piede: una sola chiamata anche con tocchi ravvicinati, poi Home.
+// Esci di «Profilo», del menu del piede e dell'onboarding: una sola chiamata anche con tocchi ravvicinati, poi Accedi (R11).
 export function useEsci(): UseEsciReturn {
   const router = useRouter()
   const sessione = useSessioneStore()
@@ -17,9 +17,9 @@ export function useEsci(): UseEsciReturn {
     if (inCorso.value) return
     inCorso.value = true
     try {
-      // `sessione.esci()` non rifiuta; su `/` il replace risolve con una navigazione duplicata, non un errore.
+      // `sessione.esci()` non rifiuta; senza `da` né avviso: è un'uscita voluta.
       await sessione.esci()
-      await router.replace('/')
+      await router.replace('/accedi')
     } finally {
       inCorso.value = false
     }

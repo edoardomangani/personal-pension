@@ -73,7 +73,7 @@ describe('NavUtente (R14)', () => {
     expect(voci[0]?.getAttribute('href')).toBe('/account')
   })
 
-  it('Esci chiama sessione.esci una volta e porta a /', async () => {
+  it('Esci chiama sessione.esci una volta e porta a /accedi', async () => {
     useSessioneStore().utente = utenteDiProva()
     vi.mocked(esciDb).mockResolvedValue(undefined)
     const router = await routerSu('/movimenti')
@@ -88,7 +88,7 @@ describe('NavUtente (R14)', () => {
     await flushPromises()
 
     expect(esciDb).toHaveBeenCalledTimes(1)
-    expect(router.currentRoute.value.path).toBe('/')
+    expect(router.currentRoute.value.path).toBe('/accedi')
     expect(useSessioneStore().utente).toBeNull()
   })
 

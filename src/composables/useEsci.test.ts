@@ -54,7 +54,7 @@ function inSospeso() {
 }
 
 describe('useEsci (R11)', () => {
-  it('due chiamate ravvicinate fanno un solo logout e finiscono su / con replace', async () => {
+  it('due chiamate ravvicinate fanno un solo logout e finiscono su /accedi con replace', async () => {
     const remoto = inSospeso()
     vi.mocked(esciDb).mockReturnValue(remoto.promessa)
     const router = await routerSu('/profilo')
@@ -71,8 +71,8 @@ describe('useEsci (R11)', () => {
 
     expect(esciDb).toHaveBeenCalledTimes(1)
     expect(replace).toHaveBeenCalledTimes(1)
-    expect(replace).toHaveBeenCalledWith('/')
-    expect(router.currentRoute.value.path).toBe('/')
+    expect(replace).toHaveBeenCalledWith('/accedi')
+    expect(router.currentRoute.value.fullPath).toBe('/accedi')
     expect(useSessioneStore().utente).toBeNull()
     expect(inCorso.value).toBe(false)
   })
@@ -89,16 +89,17 @@ describe('useEsci (R11)', () => {
     await flushPromises()
 
     expect(esciDb).toHaveBeenCalledTimes(1)
-    expect(router.currentRoute.value.path).toBe('/')
+    expect(router.currentRoute.value.fullPath).toBe('/accedi')
     expect(inCorso.value).toBe(false)
   })
 
-  it('su / resta su / senza errori', async () => {
+  it('da / finisce su /accedi senza query', async () => {
     vi.mocked(esciDb).mockResolvedValue(undefined)
     const router = await routerSu('/')
     const { esci } = esciCon(router)
 
     await expect(esci()).resolves.toBeUndefined()
-    expect(router.currentRoute.value.path).toBe('/')
+    expect(router.currentRoute.value.fullPath).toBe('/accedi')
+    expect(router.currentRoute.value.query).toEqual({})
   })
 })
