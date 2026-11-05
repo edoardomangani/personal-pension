@@ -3,10 +3,12 @@ import { computed } from 'vue'
 import { RouterView, useRoute } from 'vue-router'
 import AccessoLayout from '@/components/AccessoLayout.vue'
 import AppLayout from '@/components/AppLayout.vue'
+import { useConfermaSessione } from '@/composables/useConfermaSessione'
 import { useSessioneScaduta } from '@/composables/useSessioneScaduta'
 
 const route = useRoute()
 useSessioneScaduta()
+useConfermaSessione()
 
 // Senza rotte risolte il guard sta ancora aspettando la sessione: né shell né accesso.
 const risolta = computed(() => route.matched.length > 0)

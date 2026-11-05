@@ -191,6 +191,8 @@ export async function guardAccesso(to: RouteLocationNormalized): Promise<true | 
     return to.fullPath === '/' ? '/accedi' : { path: '/accedi', query: { da: to.fullPath } }
   }
   if (diAccesso) return '/'
+  // R8: senza conferma del server non si legge niente del piano; alla conferma decide useConfermaSessione.
+  if (!sessione.confermata) return true
 
   const haFondo = await useArchivioStore().controllaFondo()
   // Durante la lettura l'utente può essere uscito o cambiato: si decide di nuovo da capo.

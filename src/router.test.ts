@@ -6,6 +6,7 @@ import App from './App.vue'
 import { ErroreDati } from './data/errori'
 import { elencaFondi } from './data/fondi'
 import { metodiDiAccesso, sessioneCorrente } from './data/sessione'
+import { salvaUltimoUtente } from './data/ultimoUtente'
 import { inSospeso } from './test/promesse'
 import { utenteDiProva } from './test/utenti'
 import VistaAccount from './views/VistaAccount.vue'
@@ -243,6 +244,31 @@ describe('guard (R9)', () => {
     fondi.risolvi([FONDO])
     await navigazione
     expect(r.currentRoute.value.fullPath).toBe('/accedi?da=/valori')
+  })
+
+  describe('con utente provvisorio (PWA-01-C1 R8)', () => {
+    beforeEach(() => {
+      salvaUltimoUtente(UTENTE)
+      vi.mocked(sessioneCorrente).mockRejectedValue(new TypeError('Failed to fetch'))
+    })
+
+    it('T18: /movimenti resta, senza leggere i fondi', async () => {
+      const r = await conGuard('/movimenti')
+      expect(r.currentRoute.value.path).toBe('/movimenti')
+      expect(useSessioneStore().confermata).toBe(false)
+      expect(elencaFondi).not.toHaveBeenCalled()
+    })
+
+    it('T19: /accedi → /', async () => {
+      const r = await conGuard('/accedi')
+      expect(r.currentRoute.value.path).toBe('/')
+    })
+
+    it('T20: /benvenuto resta', async () => {
+      const r = await conGuard('/benvenuto')
+      expect(r.currentRoute.value.path).toBe('/benvenuto')
+      expect(elencaFondi).not.toHaveBeenCalled()
+    })
   })
 })
 
