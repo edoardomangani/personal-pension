@@ -27,11 +27,11 @@ watch(isDesktop, () => {
 </script>
 
 <template>
-  <!-- Sotto lg un drawer dal basso, da lg il dialog di vetro centrato: stessa testata, corpo e piede. -->
+  <!-- Sotto lg un drawer dal basso, da lg il dialog di vetro ancorato in alto: stessa testata, corpo e piede. -->
   <Dialog v-if="isDesktop" v-model:open="open">
     <DialogContent
       :show-close-button="false"
-      class="flex max-h-[85dvh] flex-col gap-0 p-0 pt-4 pb-5 sm:max-w-[480px]"
+      class="flex flex-col gap-0 p-0 pt-4 pb-5 sm:max-w-[480px]"
     >
       <ResponsiveSheetHeader layout="dialog" class="px-5" @close="open = false">
         <template #title>
@@ -50,7 +50,7 @@ watch(isDesktop, () => {
   </Dialog>
 
   <Drawer v-else v-model:open="open">
-    <DrawerContent class="pb-[max(24px,env(safe-area-inset-bottom))]">
+    <DrawerContent>
       <ResponsiveSheetHeader @close="open = false">
         <template #title>
           <DrawerTitle class="truncate">{{ title }}</DrawerTitle>

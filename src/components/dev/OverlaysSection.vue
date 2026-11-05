@@ -247,8 +247,8 @@ function sheetTrigger(side: (typeof sheetSides)[number]): string {
 
     <ShowcaseBlock id="overlay-sheet-responsive">
       <p class="text-xs text-subtle-foreground">
-        Sotto lg si apre come pannello dal basso, da lg come dialog centrato: ridimensiona la
-        finestra per vederli entrambi.
+        Sotto lg si apre come pannello dal basso, da lg come dialog ancorato in alto: ridimensiona
+        la finestra per vederli entrambi.
       </p>
       <div class="flex flex-wrap gap-6">
         <Specimen

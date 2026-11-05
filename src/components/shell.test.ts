@@ -10,6 +10,7 @@ import { ErroreDati, type TipoErroreDati } from '@/data/errori'
 import { useArchivioStore } from '@/stores/archivio'
 import { useSessioneStore } from '@/stores/sessione'
 import { AvatarImage } from '@/components/ui/avatar'
+import { Toaster } from '@/components/ui/sonner'
 import { buttonVariants } from '@/components/ui/button'
 import { SidebarProvider, sidebarMenuButtonVariants } from '@/components/ui/sidebar'
 import AppBottomBar from './AppBottomBar.vue'
@@ -465,6 +466,26 @@ describe('AppLayout (R3)', () => {
     const etichetta = wrapper.get('section[aria-live]').attributes('aria-label')
     expect(etichetta).toMatch(/^Notifiche/)
     expect(etichetta).not.toContain('Notifications')
+  })
+
+  it('il toast sta sopra la barra sotto lg e a 24px dall’angolo da lg, largo 320 (ACC-01-C6 T8)', async () => {
+    const wrapper = mount(AppLayout, {
+      global: { plugins: [await routerSu('/')] },
+      attachTo: document.body,
+    })
+    await flushPromises()
+    const toaster = wrapper.getComponent(Toaster)
+    expect(toaster.props('offset')).toEqual({
+      bottom: 'var(--toast-offset-bottom)',
+      right: '24px',
+    })
+    expect(toaster.props('mobileOffset')).toEqual({
+      bottom: 'calc(var(--bottom-bar-height) + 20px)',
+      left: '16px',
+      right: '16px',
+    })
+    const lista = wrapper.get('section[aria-live] ol').element as HTMLElement
+    expect(lista.style.getPropertyValue('--width')).toBe('320px')
   })
 
   it('padding del contenuto nella shell (DS-03-C2 R4, DS-03-C2-C2 R1)', async () => {
