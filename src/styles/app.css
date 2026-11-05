@@ -41,7 +41,7 @@
   --radius-xl: calc(var(--radius) + 4px);
   --radius-2xl: 18px;
   --radius-3xl: 22px;
-  /* Tile 36px delle righe di «Profilo». */
+  /* Tile icona da 36px (`size-9`); quelli da 32px usano `rounded-lg`. */
   --radius-tile: 12px;
   /* Card sul telefono (DESIGN.md, rounded.card-mobile). */
   --radius-card-mobile: 24px;
@@ -50,6 +50,12 @@
   --leading-row: 1.35;
   --leading-display: 1.15;
   --leading-figure: 1.1;
+
+  /* Spaziatura delle lettere dei ruoli di DESIGN.md § Typography (letterSpacing). */
+  --tracking-display: -0.02em;
+  --tracking-title: -0.015em;
+  --tracking-figure: -0.03em;
+  --tracking-section: -0.01em;
 
   --shadow-glass: inset 0 -1px 2px rgba(255, 255, 255, 0.06);
   --shadow-popover: 0 24px 60px rgba(0, 0, 0, 0.5);
@@ -293,6 +299,11 @@
   to {
     background-position: 0 0;
   }
+}
+
+/* Dashed line of the projection: 4px brand dashes every 8px. */
+@utility dashed-brand {
+  background-image: repeating-linear-gradient(90deg, var(--brand) 0 4px, transparent 4px 8px);
 }
 
 /* Bottom sheet surface: the popover glass, open at the bottom edge. */

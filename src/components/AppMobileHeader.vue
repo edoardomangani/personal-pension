@@ -50,7 +50,7 @@ const giorno = computed(() => formatoGiorno(archivio.oggi))
     <!-- min-h-11: la riga tiene saluto e data, così la testata è alta uguale con e senza data. -->
     <div v-else class="flex min-h-11 items-center gap-3">
       <div class="flex min-w-0 flex-1 flex-col gap-0.5">
-        <h1 class="truncate text-xl leading-6 font-semibold tracking-[-0.015em]">
+        <h1 class="truncate text-xl leading-6 font-semibold tracking-title">
           {{ inHome ? saluto : titolo }}
         </h1>
         <p v-if="inHome" class="truncate text-xs text-subtle-foreground">{{ giorno }}</p>

@@ -561,6 +561,32 @@ describe('token DS-04 R5', () => {
   })
 })
 
+describe('token DS-04-C1 R6', () => {
+  const RADICE = fileURLToPath(new URL('../../../', import.meta.url))
+  const css = readFileSync(`${RADICE}src/styles/app.css`, 'utf8')
+  const tema = /@theme inline\s*\{([\s\S]*?)\n\}/.exec(css)?.[1] ?? ''
+
+  it('@theme inline ha i quattro token di spaziatura delle lettere', () => {
+    expect(tema).toMatch(/--tracking-display:\s*-0\.02em;/)
+    expect(tema).toMatch(/--tracking-title:\s*-0\.015em;/)
+    expect(tema).toMatch(/--tracking-figure:\s*-0\.03em;/)
+    expect(tema).toMatch(/--tracking-section:\s*-0\.01em;/)
+  })
+
+  it('app.css ha la utility della linea tratteggiata col lime del brand', () => {
+    const utility = /@utility dashed-brand\s*\{([^}]*)\}/.exec(css)?.[1] ?? ''
+    expect(utility).toContain(
+      'background-image: repeating-linear-gradient(90deg, var(--brand) 0 4px, transparent 4px 8px);',
+    )
+  })
+
+  it('il commento di --radius-tile cita size-9 e rounded-lg', () => {
+    const commento = /\/\*([^*]*)\*\/\s*--radius-tile:/.exec(tema)?.[1] ?? ''
+    expect(commento).toContain('size-9')
+    expect(commento).toContain('rounded-lg')
+  })
+})
+
 describe('icone delle sezioni nella vetrina (DS-04 R4)', () => {
   const testo = sorgente('FoundationsSection.vue')
 
@@ -589,10 +615,10 @@ describe('icone delle sezioni nella vetrina (DS-04 R4)', () => {
   })
 })
 
-// Utility con valore arbitrario numerico o calcolato (`-[3…`, `-[#…`, `-[calc(`, `-[max(`, `-[var(`).
+// Classi con un valore arbitrario `-[…]` nell'utility; le varianti, anche arbitrarie (`data-[…]:`), non contano.
 function valoriArbitrari(testo: string): string[] {
   const trovati = testo.matchAll(
-    /(?<=^|[\s"'`])[^\s"'`]*?-\[(?:\d|#|calc\(|max\(|var\()[^\]\s]*\]/g,
+    /(?<=^|[\s"'`])(?:(?:[^\s"'`:[]|\[[^\]\s]*\])*:)*[^\s"'`:[]*-\[[^\]\s]*\](?!:)/g,
   )
   // Il filo da 0,75px del DS resta fuori perimetro (DS-04, voce a parte se serve un token).
   const filo = /^(?:[^\s:]+:)*border(?:-[trblxy])?-\[0\.75px\]$/
@@ -612,13 +638,13 @@ describe('niente valori arbitrari nella vetrina e nella shell (DS-04 R6)', () =>
     `${COMPONENTI}AppLayout.vue`,
   ]
 
-  it("l'estrattore prende misure e calcoli, lascia il filo, tracking e le varianti", () => {
+  it("l'estrattore prende ogni valore arbitrario, tracking e gradiente compresi, lascia il filo e le varianti", () => {
     const esempio = `<div class="size-[18px] lg:min-h-[52px] rounded-t-[24px] bg-[#0e0e0d]
       pt-[calc(12px+env(safe-area-inset-top))] pb-[max(24px,env(safe-area-inset-bottom))]
       w-[var(--x)] [&>svg]:size-[18px] max-h-[90%] leading-[1.35]" />
 <div class="border-[0.75px] border-b-[0.75px] hover:border-[0.75px] border-[1px] tracking-[-0.02em]
   [&>svg]:size-4.5 pb-(--bottom-bar-clearance) bg-[repeating-linear-gradient(90deg,red_0_4px)]
-  rounded-card-mobile" :class="[rowClass, specimen ? 'w-72' : 'px-4']" />`
+  rounded-card-mobile data-[state=open]:bg-card" :class="[rowClass, specimen ? 'w-72' : 'px-4']" />`
     expect(valoriArbitrari(esempio)).toEqual([
       'size-[18px]',
       'lg:min-h-[52px]',
@@ -631,6 +657,8 @@ describe('niente valori arbitrari nella vetrina e nella shell (DS-04 R6)', () =>
       'max-h-[90%]',
       'leading-[1.35]',
       'border-[1px]',
+      'tracking-[-0.02em]',
+      'bg-[repeating-linear-gradient(90deg,red_0_4px)]',
     ])
   })
 
@@ -665,6 +693,11 @@ describe('raggi dei tile in DESIGN.md (DS-04 R3)', () => {
 
   it('la card su telefono cita il token da 24px', () => {
     expect(forme).toMatch(/24px \(`rounded-card-mobile`/)
+  })
+
+  it('lo Sheet dal basso sta fra i 24px, non fra i 22px', () => {
+    expect(forme).not.toMatch(/22px[^,;]*Sheet dal basso/)
+    expect(forme).toMatch(/24px \(`rounded-card-mobile`[^;.]*Sheet dal basso/)
   })
 })
 

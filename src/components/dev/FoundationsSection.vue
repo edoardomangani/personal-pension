@@ -56,13 +56,13 @@ const radii = [
 const typeScale = [
   {
     code: 'display',
-    type: 'text-2xl leading-display font-medium tracking-[-0.02em]',
+    type: 'text-2xl leading-display font-medium tracking-display',
     spec: 'text-2xl · 24 / 500',
   },
-  { code: 'title', type: 'text-xl font-semibold tracking-[-0.015em]', spec: 'text-xl · 20 / 600' },
+  { code: 'title', type: 'text-xl font-semibold tracking-title', spec: 'text-xl · 20 / 600' },
   {
     code: 'section',
-    type: 'text-lg font-semibold tracking-[-0.01em]',
+    type: 'text-lg font-semibold tracking-section',
     spec: 'text-lg · 18 / 600',
   },
   { code: 'heading', type: 'text-base font-semibold', spec: 'text-base · 16 / 600' },
@@ -155,9 +155,7 @@ const spese = formatoEuro(-1500)
           <span class="flex w-48 items-center">
             <span class="h-0.5 w-20 rounded-full bg-foreground/32" />
             <span class="size-3 shrink-0 rounded-full bg-foreground shadow-cutout" />
-            <span
-              class="h-0.5 flex-1 bg-[repeating-linear-gradient(90deg,var(--brand)_0_4px,transparent_4px_8px)]"
-            />
+            <span class="h-0.5 flex-1 dashed-brand" />
             <span class="size-2.5 shrink-0 rounded-full bg-brand shadow-cutout" />
           </span>
         </Specimen>
@@ -264,7 +262,7 @@ const spese = formatoEuro(-1500)
           </p>
         </Specimen>
         <Specimen code="AMT-account" note="20 / 14">
-          <span class="text-xl leading-figure font-semibold tracking-[-0.03em]"
+          <span class="text-xl leading-figure font-semibold tracking-figure"
             >{{ versatoIntero
             }}<span class="text-sm tracking-normal text-subtle-foreground"
               >,{{ versatoDecimali }}</span
