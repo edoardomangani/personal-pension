@@ -7,7 +7,7 @@ const heights = {
   screen: 'h-[760px]',
   header: 'h-[132px]',
   // Testata col banner offline, più la sfumatura del vetro sotto.
-  'header-banner': 'h-[210px]',
+  'header-banner': 'h-52.5',
   bar: 'h-[220px]',
   card: 'h-[340px]',
   form: 'h-[480px]',
