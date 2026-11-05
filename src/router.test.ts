@@ -11,7 +11,16 @@ import { utenteDiProva } from './test/utenti'
 import VistaAccount from './views/VistaAccount.vue'
 import VistaProfilo from './views/VistaProfilo.vue'
 import VistaSegnaposto from './views/VistaSegnaposto.vue'
-import { guardAccesso, rotte, rottaDiRitorno, router, titoloDocumento, urlApp } from './router'
+import {
+  guardAccesso,
+  indirizzoConSearchNelFrammento,
+  rotte,
+  rottaDiRitorno,
+  router,
+  spostaSearchNelFrammento,
+  titoloDocumento,
+  urlApp,
+} from './router'
 import { useSessioneStore } from './stores/sessione'
 
 vi.mock('./data/sessione', () => ({
@@ -248,6 +257,42 @@ describe('rottaDiRitorno e urlApp (R10)', () => {
   })
 })
 
+describe('search nel frammento (ACC-01-C1 R1-R3, R5)', () => {
+  const BASE = '/personal-pension/'
+
+  it.each([
+    ['?token=T', '#/nuova-password', '/personal-pension/#/nuova-password?token=T'],
+    ['?error=access_denied', '#/accedi', '/personal-pension/#/accedi?error=access_denied'],
+    [
+      '?error=INVALID_TOKEN',
+      '#/nuova-password',
+      '/personal-pension/#/nuova-password?error=INVALID_TOKEN',
+    ],
+    ['?token=S', '#/nuova-password?token=F', '/personal-pension/#/nuova-password?token=F'],
+    ['?a=1&b=2', '#/accedi?avviso=password', '/personal-pension/#/accedi?avviso=password&a=1&b=2'],
+    ['?error=x', '', '/personal-pension/#/?error=x'],
+    ['?error=x', '#', '/personal-pension/#/?error=x'],
+    ['?token', '#/nuova-password', '/personal-pension/#/nuova-password?token='],
+    ['?k=1&k=2', '#/accedi', '/personal-pension/#/accedi?k=1&k=2'],
+    ['?error=x', '#accedi', '/personal-pension/#accedi?error=x'],
+  ])('%s con %j → %s', (search, hash, atteso) => {
+    expect(indirizzoConSearchNelFrammento(BASE, search, hash)).toBe(atteso)
+  })
+
+  it('decodifica e ricodifica i valori come URLSearchParams', () => {
+    const indirizzo = indirizzoConSearchNelFrammento(BASE, '?x=a%20b%2Fc&y=c+d', '#/accedi')
+    const [prima, query] = (indirizzo ?? '').split('?')
+    expect(prima).toBe('/personal-pension/#/accedi')
+    const parametri = new URLSearchParams(query)
+    expect(parametri.get('x')).toBe('a b/c')
+    expect(parametri.get('y')).toBe('c d')
+  })
+
+  it.each(['', '?'])('search %j → niente da fare', (search) => {
+    expect(indirizzoConSearchNelFrammento(BASE, search, '#/accedi')).toBeNull()
+  })
+})
+
 describe('vetrina /dev/ui (R8)', () => {
   it('in sviluppo la rotta dev.ui esiste con titolo «Vetrina dei componenti»', () => {
     const vetrina = router.resolve('/dev/ui')
@@ -303,4 +348,75 @@ describe('vetrina /dev/ui (R8)', () => {
     expect(sezioni.classes()).toContain('lg:pl-10')
     wrapper.unmount()
   }, 20_000)
+})
+
+// Ultimo: vi.resetModules() ricarica le viste, e i test col router statico non devono vederle.
+describe('avvio da indirizzo reale (ACC-01-C1 R1, R3, R4, R8)', () => {
+  afterEach(() => {
+    vi.restoreAllMocks()
+    window.history.replaceState(null, '', '/')
+  })
+
+  /** Porta jsdom all'indirizzo, ricarica il router senza sessione e fa la navigazione iniziale. */
+  async function avviaDa(indirizzo: string): Promise<Router> {
+    window.history.replaceState(null, '', indirizzo)
+    vi.resetModules()
+    const sessione = await import('./data/sessione')
+    vi.mocked(sessione.sessioneCorrente).mockResolvedValue(null)
+    const { router: avviato } = await import('./router')
+    await avviato.push(avviato.options.history.location)
+    await avviato.isReady()
+    return avviato
+  }
+
+  // Timeout suo: il primo import del router trasforma a freddo le viste.
+  it('/?token=T#/nuova-password → /nuova-password col token, search vuota', async () => {
+    const avviato = await avviaDa('/?token=T#/nuova-password')
+    expect(avviato.currentRoute.value.path).toBe('/nuova-password')
+    expect(avviato.currentRoute.value.query.token).toBe('T')
+    expect(window.location.search).toBe('')
+    expect(window.location.hash).toBe('#/nuova-password?token=T')
+  }, 20_000)
+
+  it("/?error=access_denied#/accedi → /accedi con l'errore, search vuota", async () => {
+    const avviato = await avviaDa('/?error=access_denied#/accedi')
+    expect(avviato.currentRoute.value.path).toBe('/accedi')
+    expect(avviato.currentRoute.value.query.error).toBe('access_denied')
+    expect(window.location.search).toBe('')
+  }, 20_000)
+
+  it('dopo una navigazione la search non ricompare (base senza search)', async () => {
+    const avviato = await avviaDa('/?token=T#/nuova-password')
+    await avviato.push('/accedi')
+    expect(avviato.currentRoute.value.path).toBe('/accedi')
+    expect(window.location.search).toBe('')
+    expect(window.location.hash).toBe('#/accedi')
+  }, 20_000)
+
+  it("/#/accedi?avviso=password → /accedi con l'avviso, indirizzo intatto", async () => {
+    const avviato = await avviaDa('/#/accedi?avviso=password')
+    expect(avviato.currentRoute.value.path).toBe('/accedi')
+    expect(avviato.currentRoute.value.query.avviso).toBe('password')
+    expect(window.location.search).toBe('')
+    expect(window.location.hash).toBe('#/accedi?avviso=password')
+  }, 20_000)
+
+  it.each(['/#/accedi?avviso=password', '/?#/accedi'])(
+    "con search vuota (%s) l'involucro non chiama replaceState",
+    (indirizzo) => {
+      window.history.replaceState(null, '', indirizzo)
+      const replaceState = vi.spyOn(window.history, 'replaceState')
+      spostaSearchNelFrammento()
+      expect(replaceState).not.toHaveBeenCalled()
+    },
+  )
+
+  it("l'involucro conserva history.state", () => {
+    const stato = { chiave: 'k' }
+    window.history.replaceState(stato, '', '/?token=T#/nuova-password')
+    spostaSearchNelFrammento()
+    expect(window.history.state).toEqual(stato)
+    expect(window.location.search).toBe('')
+    expect(window.location.hash).toBe('#/nuova-password?token=T')
+  })
 })

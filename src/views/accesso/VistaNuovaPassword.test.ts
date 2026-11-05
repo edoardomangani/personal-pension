@@ -1,10 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { enableAutoUnmount, flushPromises, mount, type VueWrapper } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
-import { createMemoryHistory, createRouter, type Router } from 'vue-router'
+import { createMemoryHistory, createRouter, createWebHashHistory, type Router } from 'vue-router'
 import { ErroreDati } from '@/data/errori'
 import { reimpostaPassword } from '@/data/sessione'
-import { rotte } from '@/router'
+import { rotte, spostaSearchNelFrammento } from '@/router'
 import VistaNuovaPassword from './VistaNuovaPassword.vue'
 
 vi.mock('@/data/sessione', () => ({
@@ -25,6 +25,20 @@ beforeEach(() => {
 async function apri(percorso: string): Promise<{ wrapper: VueWrapper; router: Router }> {
   const router = createRouter({ history: createMemoryHistory(), routes: rotte })
   await router.push(percorso)
+  await router.isReady()
+  const wrapper = mount(VistaNuovaPassword, { global: { plugins: [router] } })
+  return { wrapper, router }
+}
+
+/** Come all'avvio vero: jsdom all'indirizzo che manda Better Auth, poi la history hash. */
+async function apriDaIndirizzo(
+  indirizzo: string,
+): Promise<{ wrapper: VueWrapper; router: Router }> {
+  window.history.replaceState(null, '', indirizzo)
+  spostaSearchNelFrammento()
+  const history = createWebHashHistory()
+  const router = createRouter({ history, routes: rotte })
+  await router.push(history.location)
   await router.isReady()
   const wrapper = mount(VistaNuovaPassword, { global: { plugins: [router] } })
   return { wrapper, router }
@@ -79,5 +93,23 @@ describe('VistaNuovaPassword (R17)', () => {
     await salva(wrapper, 'nuova12345', 'nuova12345')
     expect(titolo(wrapper)).toBe('Il link è scaduto')
     expect(router.currentRoute.value.path).toBe('/nuova-password')
+  })
+})
+
+describe('VistaNuovaPassword dagli indirizzi reali (ACC-01-C1 R6)', () => {
+  afterEach(() => {
+    window.history.replaceState(null, '', '/')
+  })
+
+  it('/?token=T#/nuova-password → «Scegli una nuova password», «Salva» col token T', async () => {
+    const { wrapper } = await apriDaIndirizzo('/?token=T#/nuova-password')
+    expect(titolo(wrapper)).toBe('Scegli una nuova password')
+    await salva(wrapper, 'nuova12345', 'nuova12345')
+    expect(reimpostaPassword).toHaveBeenCalledWith('T', 'nuova12345')
+  })
+
+  it('/?error=INVALID_TOKEN#/nuova-password → «Il link è scaduto»', async () => {
+    const { wrapper } = await apriDaIndirizzo('/?error=INVALID_TOKEN#/nuova-password')
+    expect(titolo(wrapper)).toBe('Il link è scaduto')
   })
 })

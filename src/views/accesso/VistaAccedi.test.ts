@@ -1,10 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { enableAutoUnmount, flushPromises, mount, type VueWrapper } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
-import { createMemoryHistory, createRouter, type Router } from 'vue-router'
+import { createMemoryHistory, createRouter, createWebHashHistory, type Router } from 'vue-router'
 import { ErroreDati } from '@/data/errori'
 import { accedi, accediConGoogle, reinviaCodice } from '@/data/sessione'
-import { rotte, urlApp } from '@/router'
+import { rotte, spostaSearchNelFrammento, urlApp } from '@/router'
 import { utenteDiProva } from '@/test/utenti'
 import VistaAccedi from './VistaAccedi.vue'
 
@@ -30,6 +30,20 @@ beforeEach(() => {
 async function apri(percorso: string): Promise<{ wrapper: VueWrapper; router: Router }> {
   const router = createRouter({ history: createMemoryHistory(), routes: rotte })
   await router.push(percorso)
+  await router.isReady()
+  const wrapper = mount(VistaAccedi, { global: { plugins: [router] }, attachTo: document.body })
+  return { wrapper, router }
+}
+
+/** Come all'avvio vero: jsdom all'indirizzo che manda Better Auth, poi la history hash. */
+async function apriDaIndirizzo(
+  indirizzo: string,
+): Promise<{ wrapper: VueWrapper; router: Router }> {
+  window.history.replaceState(null, '', indirizzo)
+  spostaSearchNelFrammento()
+  const history = createWebHashHistory()
+  const router = createRouter({ history, routes: rotte })
+  await router.push(history.location)
   await router.isReady()
   const wrapper = mount(VistaAccedi, { global: { plugins: [router] }, attachTo: document.body })
   return { wrapper, router }
@@ -140,5 +154,16 @@ describe('VistaAccedi: confini', () => {
   it('non importa il livello dati', async () => {
     const sorgente = (await import('./VistaAccedi.vue?raw')).default
     expect(sorgente).not.toMatch(/from ['"]@\/data\//)
+  })
+})
+
+describe('VistaAccedi dagli indirizzi reali (ACC-01-C1 R7)', () => {
+  afterEach(() => {
+    window.history.replaceState(null, '', '/')
+  })
+
+  it('/?error=access_denied#/accedi → avviso di Google', async () => {
+    const { wrapper } = await apriDaIndirizzo('/?error=access_denied#/accedi')
+    expect(wrapper.get('[data-avviso]').text()).toContain('Accesso con Google non riuscito')
   })
 })

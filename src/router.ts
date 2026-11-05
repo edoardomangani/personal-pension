@@ -155,6 +155,29 @@ export function urlApp(percorso: string): string {
   return `${window.location.origin}${import.meta.env.BASE_URL}#${percorso}`
 }
 
+/**
+ * Better Auth mette i suoi parametri prima del `#`: li sposta nella query del frammento.
+ * `null` se la search è vuota; sui nomi doppi vince il frammento.
+ */
+export function indirizzoConSearchNelFrammento(
+  pathname: string,
+  search: string,
+  hash: string,
+): string | null {
+  const daSearch = new URLSearchParams(search)
+  if (daSearch.toString() === '') return null
+
+  const frammento = hash.startsWith('#') ? hash.slice(1) : hash
+  const inizioQuery = frammento.indexOf('?')
+  const percorso = (inizioQuery === -1 ? frammento : frammento.slice(0, inizioQuery)) || '/'
+  const query = new URLSearchParams(inizioQuery === -1 ? '' : frammento.slice(inizioQuery + 1))
+  const nomiDelFrammento = new Set(query.keys())
+  for (const [nome, valore] of daSearch) {
+    if (!nomiDelFrammento.has(nome)) query.append(nome, valore)
+  }
+  return `${pathname}#${percorso}?${query.toString()}`
+}
+
 /** R9. Esportato a parte: i test lo montano su un router in memoria. */
 export async function guardAccesso(to: RouteLocationNormalized): Promise<true | RouteLocationRaw> {
   if (to.name === 'dev.ui') return true
@@ -177,6 +200,15 @@ export async function guardAccesso(to: RouteLocationNormalized): Promise<true | 
   if (!haFondo) return to.meta.primoAvvio === true ? true : '/benvenuto'
   return to.meta.primoAvvio === true ? '/' : true
 }
+
+/** R4: va chiamata prima di `createWebHashHistory()`, che prende la search nella sua base. */
+export function spostaSearchNelFrammento(): void {
+  const { pathname, search, hash } = window.location
+  const indirizzo = indirizzoConSearchNelFrammento(pathname, search, hash)
+  if (indirizzo !== null) window.history.replaceState(window.history.state, '', indirizzo)
+}
+
+spostaSearchNelFrammento()
 
 export const router = createRouter({
   history: createWebHashHistory(),
