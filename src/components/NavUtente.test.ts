@@ -107,3 +107,33 @@ describe('NavUtente (R14)', () => {
     expect(testa?.textContent?.trim()).toBe('Account')
   })
 })
+
+describe('NavUtente: piede della sidebar (DS-03-C2)', () => {
+  it('piede senza fondo a riposo (DS-03-C2 R1)', async () => {
+    const wrapper = montaPiede(await routerSu('/'))
+
+    const classi = wrapper.get('button[aria-haspopup="menu"]').classes()
+    expect(classi).not.toContain('bg-card')
+    expect(classi).not.toContain('border-[0.75px]')
+    expect(classi).not.toContain('shadow-glass')
+    expect(classi).toContain('data-[state=open]:bg-sidebar-accent')
+  })
+
+  it('il piede tiene gap-2.5 (DS-03-C2 R3)', async () => {
+    const wrapper = montaPiede(await routerSu('/'))
+
+    const classi = wrapper.get('button[aria-haspopup="menu"]').classes()
+    expect(classi).toContain('gap-2.5')
+    expect(classi).not.toContain('gap-3')
+  })
+
+  it('aperto: data-state open sul trigger (DS-03-C2 R1)', async () => {
+    useSessioneStore().utente = { id: 'u1', email: 'edoardo@esempio.it' }
+    const wrapper = montaPiede(await routerSu('/'))
+    await apri(wrapper)
+
+    expect(wrapper.get('button[aria-haspopup="menu"]').attributes('data-state')).toBe('open')
+    const voci = Array.from(menu()?.querySelectorAll('[role="menuitem"]') ?? [])
+    expect(voci.map((voce) => voce.textContent?.trim())).toEqual(['Account', 'Esci'])
+  })
+})

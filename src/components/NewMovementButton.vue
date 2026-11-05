@@ -11,7 +11,7 @@ const { variant = 'pill', testo = 'Nuovo movimento' } = defineProps<{
 
 <template>
   <!-- aria-disabled, non disabled: il pulsante resta focalizzabile perché il tooltip spieghi il motivo. -->
-  <!-- Il + tondo resta bianco pieno anche disabilitato: è il punto focale della barra. -->
+  <!-- + tondo e pillola restano bianchi pieni anche disabilitati: sono il punto focale della barra. -->
   <ComingSoonTooltip>
     <Button
       v-if="variant === 'round'"
@@ -24,7 +24,12 @@ const { variant = 'pill', testo = 'Nuovo movimento' } = defineProps<{
       <PhPlus weight="bold" class="size-6" />
     </Button>
     <!-- 14 a sinistra, 16 a destra: il + ha più aria del testo. -->
-    <Button v-else type="button" aria-disabled="true" class="has-[>svg]:pr-4">
+    <Button
+      v-else
+      type="button"
+      aria-disabled="true"
+      class="has-[>svg]:pr-4 aria-disabled:opacity-100"
+    >
       <PhPlus weight="bold" />
       {{ testo }}
     </Button>

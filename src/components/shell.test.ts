@@ -8,7 +8,8 @@ import { formatoGiorno } from '@/calc/formato'
 import { rotte } from '@/router'
 import { useArchivioStore } from '@/stores/archivio'
 import { useSessioneStore } from '@/stores/sessione'
-import { SidebarProvider } from '@/components/ui/sidebar'
+import { buttonVariants } from '@/components/ui/button'
+import { SidebarProvider, sidebarMenuButtonVariants } from '@/components/ui/sidebar'
 import AppBottomBar from './AppBottomBar.vue'
 import AppLayout from './AppLayout.vue'
 import AppLogo from './AppLogo.vue'
@@ -108,6 +109,28 @@ describe('NewMovementButton (R6)', () => {
     const pulsante = wrapper.get('button')
     expect(pulsante.text()).toBe('Registra')
     expect(pulsante.attributes('aria-disabled')).toBe('true')
+  })
+
+  it('Registra a opacità piena da disattivato (DS-03-C2 R2)', () => {
+    const wrapper = mount(conTooltip(NewMovementButton, { testo: 'Registra' }), {
+      attachTo: document.body,
+    })
+    const pulsante = wrapper.get('button')
+    expect(pulsante.attributes('aria-disabled')).toBe('true')
+    expect(pulsante.classes()).toContain('aria-disabled:opacity-100')
+    expect(pulsante.classes()).not.toContain('aria-disabled:opacity-50')
+  })
+
+  it('gli altri disattivati restano al 50% (DS-03-C2 R2)', () => {
+    expect(buttonVariants().split(' ')).toContain('aria-disabled:opacity-50')
+  })
+})
+
+describe('voci della sidebar (DS-03-C2 R3)', () => {
+  it('voci della sidebar con gap-3 (DS-03-C2 R3)', () => {
+    const classi = sidebarMenuButtonVariants().split(' ')
+    expect(classi).toContain('gap-3')
+    expect(classi).not.toContain('gap-2.5')
   })
 })
 

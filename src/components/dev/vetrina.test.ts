@@ -408,3 +408,15 @@ describe('token del tile (DS-03-C2 R6)', () => {
     expect(rounded).toMatch(/^ {2}tile: "12px"$/m)
   })
 })
+
+describe('DESIGN.md della shell (DS-03-C2 R10)', () => {
+  const RADICE = fileURLToPath(new URL('../../../', import.meta.url))
+
+  it('il piede della sidebar è una riga senza vetro, con sidebar-accent da aperto', () => {
+    const design = readFileSync(`${RADICE}DESIGN.md`, 'utf8')
+    const piede = /^- \*\*Piede della sidebar \(desktop\):\*\*.*$/m.exec(design)?.[0] ?? ''
+    expect(piede).not.toBe('')
+    expect(piede).not.toContain('pulsante di vetro')
+    expect(piede).toContain('sidebar-accent')
+  })
+})

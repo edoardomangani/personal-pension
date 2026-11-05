@@ -34,7 +34,7 @@ watch(isDesktop, (desktop) => {
         <DropdownMenuTrigger as-child>
           <SidebarMenuButton
             size="lg"
-            class="h-12 gap-2.5 rounded-xl border-[0.75px] border-border bg-card px-2 text-foreground shadow-glass [&>svg]:size-4"
+            class="h-12 gap-2.5 rounded-xl px-2 text-foreground data-[state=open]:bg-sidebar-accent [&>svg]:size-4"
           >
             <Avatar>
               <AvatarFallback>
