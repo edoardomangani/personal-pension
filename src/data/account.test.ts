@@ -2,7 +2,7 @@ import { NeonPostgrestClient } from '@neon/neon-js'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { cancellaAccount } from './account'
 import { impostaClientDati } from './client'
-import { eErroreDati } from './errori'
+import { eErroreDati, MESSAGGI } from './errori'
 
 function conFetch(finto: typeof fetch) {
   const f = vi.fn(finto)
@@ -40,6 +40,19 @@ describe('cancellaAccount', () => {
         }),
     )
     await expect(tipoDelRifiuto(cancellaAccount())).resolves.toBe('sessione')
+  })
+
+  it('rifiuto XX000 della RPC → ErroreDati altro, senza il testo dell’eccezione', async () => {
+    conFetch(
+      async () =>
+        new Response(
+          JSON.stringify({ code: 'XX000', message: 'cancella_account: restano righe in fondi' }),
+          { status: 500, headers: { 'content-type': 'application/json' } },
+        ),
+    )
+    const errore: unknown = await cancellaAccount().catch((e: unknown) => e)
+    expect(eErroreDati(errore) && errore.tipo).toBe('altro')
+    expect(eErroreDati(errore) && errore.messaggio).toBe(MESSAGGI.altro)
   })
 
   it('fetch che lancia → ErroreDati rete', async () => {

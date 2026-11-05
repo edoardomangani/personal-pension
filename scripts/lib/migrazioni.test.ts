@@ -213,3 +213,86 @@ describe('003_account.sql', () => {
     expect(sql).toContain('v_utente text := auth.user_id()')
   })
 })
+
+describe('004_account_controlli.sql', () => {
+  const sql = readFileSync(
+    new URL('../../db/migrations/004_account_controlli.sql', import.meta.url),
+    'utf8',
+  )
+  const primoDelete = sql.indexOf('delete from ')
+  const deleteUtente = sql.indexOf('delete from neon_auth."user"')
+
+  it('il trigger aggiorna aggiornata_il a ogni update di foto_profilo', () => {
+    expect(sql).toMatch(
+      /create trigger foto_profilo_aggiornata_il before update on foto_profilo\s+for each row execute function foto_profilo_aggiornata_il\(\)/,
+    )
+    expect(sql).toMatch(/new\.aggiornata_il :?= now\(\)/)
+  })
+
+  it('drop trigger if exists prima del create trigger', () => {
+    const drop = sql.indexOf('drop trigger if exists foto_profilo_aggiornata_il on foto_profilo')
+    expect(drop).toBeGreaterThanOrEqual(0)
+    expect(drop).toBeLessThan(sql.indexOf('create trigger'))
+  })
+
+  it('la funzione trigger è security invoker con search_path fissato', () => {
+    const blocco = sql.match(
+      /create or replace function foto_profilo_aggiornata_il\(\)[\s\S]*?end \$\$;/,
+    )?.[0]
+    expect(blocco).toBeDefined()
+    expect(blocco).not.toMatch(/security definer/)
+    expect(blocco).toMatch(/set search_path = public, pg_temp/)
+  })
+
+  it('cancella_account() resta security definer e ogni delete filtra sull’utente della sessione', () => {
+    expect(sql).toMatch(
+      /create or replace function cancella_account\(\) returns void\s+language plpgsql security definer set search_path = public, pg_temp/,
+    )
+    const cancellazioni = sql.match(/delete from [^;]+;/g) ?? []
+    expect(cancellazioni).toHaveLength(7)
+    for (const d of cancellazioni) {
+      expect(d).toMatch(/where (user_id|id::text) = v_utente;$/)
+    }
+    expect(sql).toContain('v_utente text := auth.user_id()')
+  })
+
+  it('la precondizione sul ruolo viene prima del primo delete', () => {
+    for (const termine of ['rolbypassrls', 'relowner', 'relforcerowsecurity']) {
+      const i = sql.indexOf(termine)
+      expect(i, termine).toBeGreaterThanOrEqual(0)
+      expect(i, termine).toBeLessThan(primoDelete)
+    }
+  })
+
+  it('il controllo dei residui sulle sei tabelle viene prima di cancellare l’utente', () => {
+    const tabelle = [
+      'buste_paga',
+      'movimenti',
+      'estratti_conto',
+      'fondi',
+      'impostazioni',
+      'foto_profilo',
+    ]
+    for (const t of tabelle) {
+      const i = sql.indexOf(`exists (select 1 from ${t} where user_id = v_utente)`)
+      expect(i, t).toBeGreaterThan(primoDelete)
+      expect(i, t).toBeLessThan(deleteUtente)
+    }
+  })
+
+  it('le eccezioni nuove usano errcode XX000', () => {
+    const eccezioni = (sql.match(/raise exception [^;]+;/g) ?? []).filter(
+      (r) => !r.includes("'Sessione mancante'"),
+    )
+    expect(eccezioni).toHaveLength(2)
+    for (const r of eccezioni) {
+      expect(r).toMatch(/using errcode = 'XX000';$/)
+    }
+  })
+
+  it('cancella_account() eseguibile solo da authenticated', () => {
+    expect(sql).toContain('revoke execute on function cancella_account() from public, anonymous')
+    expect(sql).toContain('grant execute on function cancella_account() to authenticated')
+    expect(sql).not.toMatch(/to anonymous/)
+  })
+})
