@@ -5,6 +5,7 @@ import {
   type RouteLocationNormalized,
   type RouteLocationRaw,
   type RouteRecordRaw,
+  type RouterScrollBehavior,
 } from 'vue-router'
 import { useArchivioStore } from './stores/archivio'
 import { useSessioneStore } from './stores/sessione'
@@ -246,11 +247,19 @@ export function spostaSearchNelFrammento(): void {
   if (indirizzo !== null) window.history.replaceState(window.history.state, '', indirizzo)
 }
 
+// DS-05-C1 R1-R4: con la testata fissa la pagina nuova deve partire dal suo inizio, non dallo scorrimento di quella prima.
+export const scorrimentoTraPagine: RouterScrollBehavior = (to, from, savedPosition) => {
+  if (savedPosition) return savedPosition
+  if (to.path === from.path) return false
+  return { top: 0 }
+}
+
 spostaSearchNelFrammento()
 
 export const router = createRouter({
   history: createWebHashHistory(),
   routes: rotte,
+  scrollBehavior: scorrimentoTraPagine,
 })
 
 router.beforeEach(guardAccesso)

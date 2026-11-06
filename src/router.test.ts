@@ -1,7 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { enableAutoUnmount, flushPromises, mount } from '@vue/test-utils'
 import { createPinia, setActivePinia, type Pinia } from 'pinia'
-import { createMemoryHistory, createRouter, type Router } from 'vue-router'
+import {
+  createMemoryHistory,
+  createRouter,
+  type RouteLocationNormalized,
+  type Router,
+} from 'vue-router'
 import App from './App.vue'
 import { ErroreDati } from './data/errori'
 import { elencaFondi } from './data/fondi'
@@ -19,6 +24,7 @@ import {
   rotte,
   rottaDiRitorno,
   router,
+  scorrimentoTraPagine,
   spostaSearchNelFrammento,
   titoloDocumento,
   togliVerifierDallaSearch,
@@ -50,6 +56,8 @@ beforeEach(() => {
   pinia = createPinia()
   setActivePinia(pinia)
   vi.clearAllMocks()
+  // jsdom non implementa scrollTo, che ora il router chiama a ogni navigazione.
+  vi.spyOn(window, 'scrollTo').mockImplementation(() => {})
   vi.mocked(sessioneCorrente).mockResolvedValue(UTENTE)
   vi.mocked(metodiDiAccesso).mockResolvedValue({ password: true, google: false })
   vi.mocked(elencaFondi).mockResolvedValue([FONDO])
@@ -288,6 +296,30 @@ describe('rottaDiRitorno e urlApp (R10)', () => {
     expect(urlApp('/nuova-password')).toBe(
       `${window.location.origin}${import.meta.env.BASE_URL}#/nuova-password`,
     )
+  })
+})
+
+describe('scorrimento tra pagine (DS-05-C1 R1-R4)', () => {
+  // resolve() ammette name null, che la rotta normalizzata non prevede: qui conta solo il path.
+  const rotta = (percorso: string) => router.resolve(percorso) as RouteLocationNormalized
+  const scorri = (da: string, a: string, salvata: { left: number; top: number } | null) =>
+    scorrimentoTraPagine(rotta(a), rotta(da), salvata)
+
+  it('verso un altro percorso va in cima, senza animazione (T1, T4)', () => {
+    expect(scorri('/', '/movimenti', null)).toStrictEqual({ top: 0 })
+    expect(scorri('/profilo', '/account', null)).toStrictEqual({ top: 0 })
+  })
+
+  it('con indietro e avanti torna alla posizione salvata (T2)', () => {
+    expect(scorri('/movimenti', '/', { left: 0, top: 872 })).toStrictEqual({ left: 0, top: 872 })
+  })
+
+  it('se cambia solo la query non tocca lo scorrimento (T3)', () => {
+    expect(scorri('/accedi', '/accedi?avviso=password', null)).toBe(false)
+  })
+
+  it('è la scrollBehavior del router (T5)', () => {
+    expect(router.options.scrollBehavior).toBe(scorrimentoTraPagine)
   })
 })
 
