@@ -198,7 +198,7 @@ describe('marchio (DS-02 R2-R4)', () => {
     )?.[1]
     const involucro = /<div\s+class="([^"]*)"\s*>\s*<VistaProfilo \/>/.exec(campione ?? '')?.[1]
     const classi = involucro?.split(/\s+/) ?? []
-    expect(classi).toEqual(expect.arrayContaining(['px-4', 'pt-3', PADDING_SOTTO_CORNICE]))
+    expect(classi).toEqual(expect.arrayContaining(['px-4', 'pt-8', PADDING_SOTTO_CORNICE]))
     expect(classi.some((c) => c.startsWith('lg:'))).toBe(false)
     expect(classi.filter((c) => c.startsWith('pb-'))).toEqual([PADDING_SOTTO_CORNICE])
   })
@@ -210,7 +210,7 @@ describe('marchio (DS-02 R2-R4)', () => {
     const involucro = /<div\s+class="([^"]*)"\s*>\s*<Skeleton/.exec(campione ?? '')?.[1]
     const classi = involucro?.split(/\s+/) ?? []
     expect(classi).toEqual(
-      expect.arrayContaining(['flex', 'flex-col', 'gap-3', 'px-4', 'pt-7', PADDING_SOTTO_CORNICE]),
+      expect.arrayContaining(['flex', 'flex-col', 'gap-3', 'px-4', 'pt-8', PADDING_SOTTO_CORNICE]),
     )
     expect(classi.filter((c) => c.startsWith('pb-'))).toEqual([PADDING_SOTTO_CORNICE])
   })
@@ -450,6 +450,151 @@ describe('testata desktop (R12)', () => {
   })
 })
 
+describe('testata mobile fissa (DS-05 R7)', () => {
+  // Un ResizeObserver che il test fa scattare con l'altezza esterna voluta.
+  const originale = globalThis.ResizeObserver
+  class OsservatoreFinto implements ResizeObserver {
+    el: Element[] = []
+    constructor(readonly cb: ResizeObserverCallback) {
+      osservatori.push(this)
+    }
+    observe(el: Element): void {
+      this.el.push(el)
+    }
+    unobserve(): void {}
+    disconnect(): void {
+      this.el = []
+    }
+  }
+  const osservatori: OsservatoreFinto[] = []
+
+  // senzaBordo: voce come nei browser senza borderBoxSize, che ripiegano sulla misura dell'elemento.
+  function riporta(header: Element, altezza: number, senzaBordo = false): void {
+    const misura = [{ blockSize: altezza, inlineSize: 390 }]
+    const voce: ResizeObserverEntry = {
+      target: header,
+      contentRect: header.getBoundingClientRect(),
+      borderBoxSize: senzaBordo ? [] : misura,
+      contentBoxSize: misura,
+      devicePixelContentBoxSize: misura,
+    }
+    for (const osservatore of osservatori) {
+      if (osservatore.el.includes(header)) osservatore.cb([voce], osservatore)
+    }
+  }
+
+  beforeEach(() => {
+    osservatori.length = 0
+    vi.stubGlobal('ResizeObserver', OsservatoreFinto)
+  })
+
+  afterEach(() => {
+    vi.stubGlobal('ResizeObserver', originale)
+  })
+
+  it('la testata è fixed in cima, non sticky (T5)', async () => {
+    const wrapper = mount(AppMobileHeader, { global: { plugins: [await routerSu('/')] } })
+    const classi = wrapper.get('header').classes()
+    expect(classi).toEqual(expect.arrayContaining(['fixed', 'inset-x-0', 'top-0', 'z-30']))
+    expect(classi).not.toContain('sticky')
+  })
+
+  it('lo spazio in flusso precede il contenuto e segue l’altezza della testata (T5)', async () => {
+    const wrapper = mount(AppMobileHeader, { global: { plugins: [await routerSu('/')] } })
+    await flushPromises()
+    const spazio = wrapper.get('[data-spazio-testata]')
+    const header = wrapper.get('header').element
+    expect(spazio.element).toBe(wrapper.element)
+    expect(header.parentElement).toBe(spazio.element)
+    // Prima della misura: l'altezza nominale dal token.
+    expect(spazio.classes()).toContain('h-(--header-mobile-space)')
+    expect((spazio.element as HTMLElement).style.height).toBe('')
+
+    riporta(header, 68)
+    await nextTick()
+    expect((spazio.element as HTMLElement).style.height).toBe('68px')
+    // Col banner offline la testata cresce e lo spazio con lei.
+    riporta(header, 154)
+    await nextTick()
+    expect((spazio.element as HTMLElement).style.height).toBe('154px')
+    riporta(header, 68)
+    await nextTick()
+    expect((spazio.element as HTMLElement).style.height).toBe('68px')
+  })
+
+  // jsdom misura 0: l'altezza simulata dipende dalla variante già nel DOM, come nel browser.
+  // offsetHeight resta quello di jsdom, così i test provano che non viene letto.
+  function simulaAltezza(header: Element, misura: (secondaria: boolean) => number): void {
+    header.getBoundingClientRect = () =>
+      new DOMRect(0, 0, 390, misura(header.querySelector('[aria-label="Indietro"]') !== null))
+  }
+
+  async function montaSu(percorso: string, misura: (secondaria: boolean) => number) {
+    const router = await routerSu(percorso)
+    const wrapper = mount(AppMobileHeader, { global: { plugins: [router] } })
+    await flushPromises()
+    simulaAltezza(wrapper.get('header').element, misura)
+    const spazio = wrapper.get('[data-spazio-testata]').element as HTMLElement
+    return { router, spazio }
+  }
+
+  it('al cambio di variante lo spazio prende subito l’altezza della testata principale (T1)', async () => {
+    const { router, spazio } = await montaSu('/profilo', (secondaria) => (secondaria ? 60 : 68))
+    await router.push('/')
+    await nextTick()
+    expect(spazio.style.height).toBe('68px')
+  })
+
+  it('al cambio di variante lo spazio prende subito l’altezza della testata secondaria (T2)', async () => {
+    const { router, spazio } = await montaSu('/', (secondaria) => (secondaria ? 60 : 68))
+    await router.push('/profilo')
+    await nextTick()
+    expect(spazio.style.height).toBe('60px')
+  })
+
+  it('al cambio di variante lo spazio prende la misura frazionaria senza arrotondare (C1-C1-C1 T1)', async () => {
+    const { router, spazio } = await montaSu('/profilo', (secondaria) => (secondaria ? 60 : 92.73))
+    await router.push('/')
+    await nextTick()
+    expect(spazio.style.height).toBe('92.73px')
+  })
+
+  it('senza borderBoxSize lo spazio prende la misura frazionaria dell’elemento (C1-C1-C1 T6)', async () => {
+    const wrapper = mount(AppMobileHeader, { global: { plugins: [await routerSu('/')] } })
+    await flushPromises()
+    const header = wrapper.get('header').element
+    simulaAltezza(header, () => 92.73)
+    riporta(header, 0, true)
+    await nextTick()
+    const spazio = wrapper.get('[data-spazio-testata]').element as HTMLElement
+    expect(spazio.style.height).toBe('92.73px')
+  })
+
+  it('al cambio di variante assente (Home → Valori) lo spazio non cambia (T3)', async () => {
+    const { router, spazio } = await montaSu('/', () => 99)
+    const prima = spazio.style.height
+    await router.push('/valori')
+    await nextTick()
+    expect(spazio.style.height).toBe(prima)
+  })
+
+  it('al cambio di variante con misura 0 lo spazio non diventa 0px (T5)', async () => {
+    const { router, spazio } = await montaSu('/profilo', () => 0)
+    await router.push('/')
+    await nextTick()
+    expect(spazio.style.height).not.toBe('0px')
+  })
+
+  it('allo smontaggio smette di osservare la testata', async () => {
+    const wrapper = mount(AppMobileHeader, { global: { plugins: [await routerSu('/')] } })
+    await flushPromises()
+    const header = wrapper.get('header').element
+    expect(osservatori.some(({ el }) => el.includes(header))).toBe(true)
+    wrapper.unmount()
+    expect(osservatori.some(({ el }) => el.includes(header))).toBe(false)
+  })
+})
+
 describe('AppLayout (R3)', () => {
   it('su / monta la testata mobile e quella desktop', async () => {
     const wrapper = mount(AppLayout, {
@@ -517,7 +662,7 @@ describe('AppLayout (R3)', () => {
     expect(dentro).toMatch(/--toast-width:\s*320px;/)
   })
 
-  it('padding del contenuto nella shell (DS-03-C2 R4, DS-03-C2-C2 R1)', async () => {
+  it('padding del contenuto nella shell (DS-03-C2 R4, DS-03-C2-C2 R1, DS-05 R8)', async () => {
     const wrapper = mount(AppLayout, {
       slots: { default: '<p data-slot-prova>contenuto</p>' },
       global: { plugins: [await routerSu('/')] },
@@ -532,7 +677,7 @@ describe('AppLayout (R3)', () => {
     const esterno = interno?.closest('[data-contenuto]')
     expect(esterno).not.toBeNull()
     expect(esterno).not.toBe(interno)
-    for (const classe of ['px-4', 'pt-3', 'lg:px-12', 'lg:pt-6', 'lg:pb-(--content-pad-bottom)']) {
+    for (const classe of ['px-4', 'pt-8', 'lg:px-12', 'lg:pt-6', 'lg:pb-(--content-pad-bottom)']) {
       expect(esterno?.classList.contains(classe)).toBe(true)
     }
 
@@ -540,6 +685,34 @@ describe('AppLayout (R3)', () => {
     const classiEsterno = [...(esterno?.classList ?? [])]
     expect(classiEsterno).toContain('pb-(--content-pad-bottom-mobile)')
     expect(classiEsterno.some((c) => c.includes('-['))).toBe(false)
+  })
+})
+
+describe('spazio sopra il contenuto (DS-05 R8)', () => {
+  async function layout() {
+    const wrapper = mount(AppLayout, {
+      slots: { default: '<p data-slot-prova>contenuto</p>' },
+      global: { plugins: [await routerSu('/')] },
+      attachTo: document.body,
+    })
+    await flushPromises()
+    return wrapper
+  }
+
+  it('sotto lg 32px sopra il contenuto, da lg 24px (T6)', async () => {
+    const classi = (await layout()).get('[data-contenuto]').classes()
+    expect(classi).toEqual(expect.arrayContaining(['pt-8', 'lg:pt-6']))
+    expect(classi.filter((c) => /^pt-/.test(c))).toEqual(['pt-8'])
+  })
+
+  it('lo spazio della testata viene prima del contenuto ed è nascosto da lg', async () => {
+    const wrapper = await layout()
+    const spazio = wrapper.get('[data-spazio-testata]')
+    expect(spazio.classes()).toContain('lg:hidden')
+    const contenuto = wrapper.get('[data-contenuto]').element
+    const ordine = spazio.element.compareDocumentPosition(contenuto)
+    expect(ordine & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(spazio.element.contains(wrapper.get('header').element)).toBe(true)
   })
 })
 

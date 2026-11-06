@@ -34,7 +34,7 @@ const colorTokens = [
   { code: 'primary', swatch: 'bg-primary', value: '#f3f5f2' },
   { code: 'brand', swatch: 'bg-brand', value: '#d4f53c' },
   { code: 'brand-soft', swatch: 'bg-brand-soft', value: 'rgba(212,245,60,.16)' },
-  { code: 'ambient-strong', swatch: 'bg-ambient-strong', value: 'rgba(212,245,60,.15)' },
+  { code: 'ambient-strong', swatch: 'bg-ambient-strong', value: 'rgba(212,245,60,.06)' },
   { code: 'ambient-soft', swatch: 'bg-ambient-soft', value: 'rgba(212,245,60,.06)' },
   { code: 'destructive', swatch: 'bg-destructive', value: '#ff7a6b' },
   { code: 'warning', swatch: 'bg-warning', value: '#ffc457' },

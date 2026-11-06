@@ -30,8 +30,9 @@ describe('index.html', () => {
   it('lascia invariati gli altri tag', () => {
     expect(html).toContain('<html lang="it" class="dark">')
     expect(html).toContain('<meta charset="UTF-8" />')
-    expect(html).toContain(
-      '<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />',
+    // Dal DOM: il formatter manda il tag a capo, la stringa esatta non regge.
+    expect(documento.head.querySelector('meta[name="viewport"]')?.getAttribute('content')).toBe(
+      'width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no, viewport-fit=cover',
     )
     expect(html).toContain('background-color: #060708;')
     expect(html).toContain('<title>Next</title>')
@@ -52,7 +53,7 @@ describe('index.html, meta della PWA', () => {
     ['theme-color', '#060708'],
     ['apple-mobile-web-app-capable', 'yes'],
     ['mobile-web-app-capable', 'yes'],
-    ['apple-mobile-web-app-status-bar-style', 'black-translucent'],
+    ['apple-mobile-web-app-status-bar-style', 'default'],
     ['apple-mobile-web-app-title', 'Next'],
   ])('%s vale %s', (nome, valore) => {
     expect(documento.head.querySelectorAll(`meta[name="${nome}"]`)).toHaveLength(1)
@@ -70,6 +71,25 @@ describe('index.html, meta della PWA', () => {
 
   it('non scrive a mano il link al manifest: lo inietta il plugin', () => {
     expect(documento.head.querySelector('link[rel="manifest"]')).toBeNull()
+  })
+})
+
+describe('index.html, DS-05 R9 R10', () => {
+  const viewport =
+    documento.head.querySelector('meta[name="viewport"]')?.getAttribute('content') ?? ''
+
+  it('T8: barra di stato piena, una volta sola; viewport-fit=cover resta', () => {
+    const barra = documento.head.querySelectorAll(
+      'meta[name="apple-mobile-web-app-status-bar-style"]',
+    )
+    expect(barra).toHaveLength(1)
+    expect(barra[0]?.getAttribute('content')).toBe('default')
+    expect(viewport).toContain('viewport-fit=cover')
+  })
+
+  it('T10: la viewport impedisce lo zoom, anche quello al focus di iOS', () => {
+    expect(viewport).toContain('maximum-scale=1')
+    expect(viewport).toContain('user-scalable=no')
   })
 })
 

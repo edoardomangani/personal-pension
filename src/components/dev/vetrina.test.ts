@@ -772,3 +772,176 @@ describe('campione dell’aiuto che compare dopo un errore (ACC-01-C2 R5)', () =
     expect(codiciScritti(blocco)).toEqual(['FRM-error-${density}', 'FRM-error-help-${density}'])
   })
 })
+
+describe('token del bagliore e del vetro (DS-05 R1 R4)', () => {
+  const RADICE = fileURLToPath(new URL('../../../', import.meta.url))
+  const css = readFileSync(`${RADICE}src/styles/app.css`, 'utf8')
+  const radice = /:root\s*\{([\s\S]*?)\n\}/.exec(css)?.[1] ?? ''
+
+  it('ambient-strong vale 0,06 e ambient-soft resta 0,06 (T1)', () => {
+    expect(radice).toMatch(/--ambient-strong:\s*rgba\(212, 245, 60, 0\.06\);/)
+    expect(radice).toMatch(/--ambient-soft:\s*rgba\(212, 245, 60, 0\.06\);/)
+  })
+
+  it('la dissolvenza del vetro vale 36px (T3)', () => {
+    expect(radice).toMatch(/--glass-fade:\s*36px;/)
+  })
+
+  it('lo spazio per la barra in basso resta 84 + 36 = 120px più l’inset (T7)', () => {
+    expect(radice).toMatch(/--bottom-bar-height:\s*84px;/)
+    // 9 passi da 4px di --spacing sono i 36px della dissolvenza.
+    expect(radice).toMatch(
+      /--bottom-bar-clearance:\s*calc\(var\(--bottom-bar-height\) \+ var\(--spacing\) \* 9\);/,
+    )
+    expect(radice).toMatch(
+      /--content-pad-bottom-mobile:\s*calc\(var\(--bottom-bar-clearance\) \+ env\(safe-area-inset-bottom\)\);/,
+    )
+  })
+})
+
+describe('livello fisso del bagliore e fondo sulla radice (DS-05 R2 R3)', () => {
+  const RADICE = fileURLToPath(new URL('../../../', import.meta.url))
+  const css = readFileSync(`${RADICE}src/styles/app.css`, 'utf8')
+  const base = /@layer base\s*\{([\s\S]*?)\n\}/.exec(css)?.[1] ?? ''
+  const regole = (selettore: string): string[] =>
+    [...base.matchAll(new RegExp(`(?:^|\\n)\\s*${selettore}\\s*\\{([^}]*)\\}`, 'g'))].map(
+      (m) => m[1] ?? '',
+    )
+  const telefono = /@utility bagliore-telefono\s*\{([^}]*)\}/.exec(css)?.[1] ?? ''
+  const desktop =
+    /@media \(width >= 64rem\)\s*\{\s*body::before\s*\{([^}]*)\}/.exec(base)?.[1] ?? ''
+
+  it('il bagliore sta su un livello fisso a tutta finestra, dietro e senza tocchi (T2)', () => {
+    const [livello = ''] = regole('body::before')
+    expect(livello).toContain('@apply bagliore-telefono;')
+    expect(livello).toMatch(/position:\s*fixed;/)
+    expect(livello).toMatch(/inset:\s*0;/)
+    expect(livello).toMatch(/z-index:\s*-1;/)
+    expect(livello).toMatch(/pointer-events:\s*none;/)
+  })
+
+  it('sotto lg i radiali del telefono al 75% e la maschera di 160px (T2)', () => {
+    expect(telefono).toContain(
+      'radial-gradient(480px 480px at 114% 38%, var(--ambient-strong), transparent 75%)',
+    )
+    expect(telefono).toContain(
+      'radial-gradient(480px 480px at -14% 62%, var(--ambient-soft), transparent 75%)',
+    )
+    expect(telefono).toMatch(/mask-image:\s*linear-gradient\(to bottom, transparent, #000 160px\);/)
+  })
+
+  it('da lg i radiali del desktop al 70% e nessuna maschera (T2)', () => {
+    expect(desktop).toContain(
+      'radial-gradient(900px 620px at 96% -12%, var(--ambient-strong), transparent 70%)',
+    )
+    expect(desktop).toContain(
+      'radial-gradient(760px 620px at -6% 70%, var(--ambient-soft), transparent 70%)',
+    )
+    expect(desktop).toMatch(/mask-image:\s*none;/)
+  })
+
+  it('il fondo sta su html e il body non ha fondo né background-attachment (T2)', () => {
+    expect(regole('html').join('')).toMatch(/background-color:\s*var\(--background\);/)
+    const body = regole('body').join('')
+    expect(body).not.toMatch(/background|bg-/)
+    expect(css).not.toContain('background-attachment')
+  })
+})
+
+describe('vetro di testata e barra in basso (DS-05 R4 R5 R6)', () => {
+  const RADICE = fileURLToPath(new URL('../../../', import.meta.url))
+  const css = readFileSync(`${RADICE}src/styles/app.css`, 'utf8')
+  const utility = (nome: string): string =>
+    new RegExp(`@utility ${nome}\\s*\\{([\\s\\S]*?)\\n\\}`).exec(css)?.[1] ?? ''
+  const opacitaDellaMaschera = (corpo: string): string[] => {
+    const maschera = /mask-image:\s*linear-gradient\(([\s\S]*?)\);/.exec(corpo)?.[1] ?? ''
+    return [...maschera.matchAll(/#000|rgba\(0, 0, 0, ([\d.]+)\)|transparent/g)].map((m) =>
+      m[0] === '#000' ? '1' : m[0] === 'transparent' ? '0' : (m[1] ?? ''),
+    )
+  }
+
+  it('le due maschere sono piene fino alla dissolvenza, poi 0,9 · 0,65 · 0,35 · 0,1 · 0 (T3)', () => {
+    for (const nome of ['glass-header', 'glass-bar']) {
+      const corpo = utility(nome)
+      expect(opacitaDellaMaschera(corpo), nome).toEqual(['1', '0.9', '0.65', '0.35', '0.1', '0'])
+      expect(corpo, nome).toContain('#000 calc(100% - var(--glass-fade))')
+    }
+    expect(utility('glass-header')).toMatch(/mask-image:\s*linear-gradient\(\s*to bottom,/)
+    expect(utility('glass-bar')).toMatch(/mask-image:\s*linear-gradient\(\s*to top,/)
+  })
+
+  it('il vetro della testata parte pieno, poi bar al 55%, poi header, con blur e saturazione (T4)', () => {
+    const testata = utility('glass-header')
+    expect(testata).toMatch(
+      /background:\s*linear-gradient\(to bottom, var\(--background\), var\(--bar\) 55%, var\(--header\)\);/,
+    )
+    expect(testata).toMatch(/backdrop-filter:\s*blur\(var\(--blur-header\)\) saturate\(140%\);/)
+  })
+
+  it('la barra in basso tiene fondo e blur (T4)', () => {
+    const barra = utility('glass-bar')
+    expect(barra).toMatch(
+      /background:\s*linear-gradient\(to top, var\(--bar\) 55%, var\(--header\)\);/,
+    )
+    expect(barra).toMatch(/backdrop-filter:\s*blur\(var\(--blur-bar\)\) saturate\(140%\);/)
+  })
+})
+
+describe('vetrina del bagliore (DS-05 R11)', () => {
+  it('CLR-ambient-strong mostra 0,06 (T11)', () => {
+    expect(sorgente('FoundationsSection.vue')).toContain(
+      "{ code: 'ambient-strong', swatch: 'bg-ambient-strong', value: 'rgba(212,245,60,.06)' }",
+    )
+  })
+
+  it('PhoneFrame non scrive radiali a mano e usa la utility del bagliore (T11)', () => {
+    const cornice = sorgente('PhoneFrame.vue')
+    expect(cornice).not.toContain('radial-gradient')
+    expect(cornice).toMatch(/class="[^"]*\bbagliore-telefono\b[^"]*"/)
+  })
+})
+
+describe('DESIGN.md del bagliore e del vetro (DS-05 R12 fase 1)', () => {
+  const RADICE = fileURLToPath(new URL('../../../', import.meta.url))
+  const design = readFileSync(`${RADICE}DESIGN.md`, 'utf8')
+
+  it('ambient-strong vale 0,06 nel frontmatter e nei colori', () => {
+    expect(design).toContain('ambient-strong: "rgba(212, 245, 60, 0.06)"')
+    expect(design).toContain('`ambient-strong` 0,06')
+    expect(design).toContain('**The Ambient Ceiling Rule.**')
+  })
+
+  it('la dissolvenza del vetro è di 36px a curva, non più di 24px', () => {
+    expect(design).not.toMatch(/(sfumatura|maschera|dissolvenza) di 24px/)
+    expect(design).toContain('dissolvenza di 36px a curva')
+    expect(design).toContain('0,9 · 0,65 · 0,35 · 0,1 · 0')
+  })
+
+  it('il vetro della testata parte pieno e il bagliore sta su un livello fisso col telefono sfumato in cima', () => {
+    expect(design).toContain('Il vetro della testata parte pieno')
+    expect(design).toMatch(/\*\*Do\*\* mettere il bagliore[^\n]*livello fisso/)
+    expect(design).toContain('radial-gradient(480px 480px at 114% 38%, ambient-strong…)')
+    expect(design).toContain('pieno a 160px')
+  })
+})
+
+describe('DESIGN.md della testata fissa (DS-05 R12 fase 2)', () => {
+  const RADICE = fileURLToPath(new URL('../../../', import.meta.url))
+  const design = readFileSync(`${RADICE}DESIGN.md`, 'utf8')
+
+  it('la testata del telefono è fissa, non sticky', () => {
+    expect(design).not.toContain('testata sticky')
+    expect(design).not.toContain('Sticky, `glass-header`')
+    expect(design).toContain('testata di vetro fissa in cima')
+    const principale = /^- \*\*Testata principale \(telefono\):\*\*.*$/m.exec(design)?.[0] ?? ''
+    expect(principale).toContain('Fissa in cima alla finestra')
+    expect(design).toContain('Sul telefono sta dentro la testata fissa')
+  })
+
+  it('sul telefono il contenuto ha 32px sopra; la barra in alto desktop resta sticky', () => {
+    expect(design).toContain('con padding 32px sopra e 16px ai lati')
+    expect(design).not.toContain('padding 12px 16px (sopra e ai lati)')
+    expect(design).toContain('32px sotto la testata')
+    expect(design).toContain('**Barra in alto (desktop):** sticky')
+  })
+})

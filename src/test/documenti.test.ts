@@ -80,3 +80,40 @@ describe('DS-04 R10: DESIGN.md', () => {
     expect(testata).toContain('«Salva»')
   })
 })
+
+describe('DS-05 R12 fase 3: DESIGN.md', () => {
+  const design = leggi('DESIGN.md')
+
+  it('la barra di stato è piena, non più trasparente', () => {
+    expect(design).not.toContain('barra di stato trasparente')
+    expect(riga(design, 'Installata dalla Home')).toContain('barra di stato piena e scura')
+  })
+
+  it('lo zoom touch è bloccato', () => {
+    const zoom = riga(design, '- **Zoom:**')
+    expect(zoom).toContain('zoom touch è bloccato')
+    expect(zoom).toContain('doppio tocco')
+    expect(zoom).toContain('pizzico')
+    expect(zoom).toContain('al focus')
+  })
+})
+
+describe.skipIf(!inCiclo('ciclo/riferimenti'))(
+  'DS-05 R13: riferimenti delle voci con la shell',
+  () => {
+    const regola =
+      '- La shell (vetro di testata e barre, bagliore, spazio sopra il contenuto su telefono) segue DS-05, anche dove le tavole la mostrano diversa.'
+
+    it.each(['MOV-01', 'VAL-01', 'FIS-01', 'IMP-01', 'NOT-01', 'PAN-01'])(
+      '%s ha la riga nelle Regole',
+      (voce) => {
+        const testo = leggi(`ciclo/riferimenti/${voce}/riferimento.md`)
+        const inizio = testo.indexOf('\n## Regole\n')
+        expect(inizio).toBeGreaterThanOrEqual(0)
+        const fine = testo.indexOf('\n## ', inizio + 1)
+        const regole = testo.slice(inizio, fine === -1 ? undefined : fine)
+        expect(regole.split('\n')).toContain(regola)
+      },
+    )
+  },
+)

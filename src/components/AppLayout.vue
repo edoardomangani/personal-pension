@@ -26,7 +26,7 @@ const classeContenuto = computed(() =>
 </script>
 
 <template>
-  <!-- Sotto lg: testata sticky e barra in basso; da lg: sidebar e testata desktop. -->
+  <!-- Sotto lg: testata fissa e barra in basso; da lg: sidebar e testata desktop. -->
   <AppShell>
     <div class="hidden shrink-0 lg:block">
       <AppSidebar />
@@ -38,7 +38,7 @@ const classeContenuto = computed(() =>
       <!-- Il padding sta fuori: il limite di 1180px vale per il contenuto dentro. -->
       <div
         data-contenuto
-        class="flex flex-1 flex-col px-4 pt-3 pb-(--content-pad-bottom-mobile) lg:px-12 lg:pt-6 lg:pb-(--content-pad-bottom)"
+        class="flex flex-1 flex-col px-4 pt-8 pb-(--content-pad-bottom-mobile) lg:px-12 lg:pt-6 lg:pb-(--content-pad-bottom)"
       >
         <div class="mx-auto flex w-full max-w-content flex-1 flex-col">
           <!-- Sotto lg il banner sta nella testata mobile. -->
