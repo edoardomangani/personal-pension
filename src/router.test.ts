@@ -605,6 +605,59 @@ describe('avvio da indirizzo reale (ACC-01-C1 R1, R3, R4, R8; ACC-01-C1-C1 R2-R5
       }
     }
 
+    /**
+     * La mappatura vera di `sessioneCorrente` sulla risposta del server a un verifier falso
+     * (P1 della verifica di ACC-01-C1-C1-C1): 400 SESSION_CHALLENGE_COOKIE_NOT_FOUND.
+     */
+    async function sessioneSuVerifierFalso(): Promise<Utente | null> {
+      const reale = await vi.importActual<typeof import('./data/sessione')>('./data/sessione')
+      // Il client del registro ricaricato: è quello che legge il modulo reale.
+      const { impostaAuthDati: imposta } = await import('./data/client')
+      const nonUsata = () => Promise.reject(new Error('Chiamata non prevista'))
+      imposta({
+        getSession: async () => ({
+          data: null,
+          error: { status: 400, code: 'SESSION_CHALLENGE_COOKIE_NOT_FOUND' },
+        }),
+        signIn: { email: nonUsata, social: nonUsata },
+        signUp: { email: nonUsata },
+        signOut: nonUsata,
+        emailOtp: { verifyEmail: nonUsata, sendVerificationOtp: nonUsata },
+        sendVerificationEmail: nonUsata,
+        requestPasswordReset: nonUsata,
+        resetPassword: nonUsata,
+        changePassword: nonUsata,
+        updateUser: nonUsata,
+        listAccounts: nonUsata,
+      })
+      return reale.sessioneCorrente()
+    }
+
+    afterEach(async () => {
+      const { impostaAuthDati: imposta } = await import('./data/client')
+      imposta(null)
+    })
+
+    it('400 SESSION_CHALLENGE_COOKIE_NOT_FOUND → /accedi, verifier tolto dopo la richiesta', async () => {
+      const { ricerche, registra } = richiesteRegistrate()
+      const avviato = await avviaDa(CON_VERIFIER, registra, sessioneSuVerifierFalso)
+      expect(ricerche[0]).toContain('neon_auth_session_verifier=V')
+      expect(avviato.currentRoute.value.path).toBe('/accedi')
+      expect(window.location.search).toBe('')
+      expect(window.location.hash).toBe('#/accedi')
+    }, 20_000)
+
+    it('dopo il 400 SESSION_CHALLENGE_COOKIE_NOT_FOUND accedi() e push(/) → Home, search vuota', async () => {
+      const avviato = await avviaDa(CON_VERIFIER, undefined, sessioneSuVerifierFalso)
+      const dati = await import('./data/sessione')
+      vi.mocked(dati.accedi).mockResolvedValue(UTENTE)
+      const { useSessioneStore: storeRicaricato } = await import('./stores/sessione')
+      await storeRicaricato().accedi(UTENTE.email, 'password')
+      await avviato.push('/')
+      expect(avviato.currentRoute.value.path).toBe('/')
+      expect(window.location.search).toBe('')
+    }, 20_000)
+
     it('senza sessione dal server → /accedi, verifier tolto dopo la richiesta', async () => {
       const { ricerche, registra } = richiesteRegistrate()
       const avviato = await avviaDa(CON_VERIFIER, registra)

@@ -216,6 +216,65 @@ describe('sessione', () => {
     })
   })
 
+  describe('verifier non valido: SESSION_CHALLENGE_COOKIE_NOT_FOUND', () => {
+    const CODICE = 'SESSION_CHALLENGE_COOKIE_NOT_FOUND'
+
+    it('restituito come { data: null, error } (risposta vera del server) → null', async () => {
+      authFinto({ getSession: () => errore(400, CODICE) })
+      await expect(sessioneCorrente()).resolves.toBeNull()
+    })
+
+    it("lanciato dall'adapter (in .error) → null", async () => {
+      authFinto({
+        getSession: () =>
+          Promise.reject(
+            Object.assign(new Error('Bad Request'), { error: { status: 400, code: CODICE } }),
+          ),
+      })
+      await expect(sessioneCorrente()).resolves.toBeNull()
+    })
+
+    it('lanciato da Better Fetch (sul valore) → null', async () => {
+      authFinto({
+        getSession: () =>
+          Promise.reject(Object.assign(new Error('Bad Request'), { status: 400, code: CODICE })),
+      })
+      await expect(sessioneCorrente()).resolves.toBeNull()
+    })
+
+    it('400 senza codice → altro', async () => {
+      authFinto({ getSession: () => errore(400) })
+      await expect(rifiuto(sessioneCorrente())).resolves.toEqual({
+        tipo: 'altro',
+        messaggio: MESSAGGI.altro,
+      })
+    })
+
+    it('400 con un altro codice → altro', async () => {
+      authFinto({ getSession: () => errore(400, 'ALTRO_CODICE') })
+      await expect(rifiuto(sessioneCorrente())).resolves.toEqual({
+        tipo: 'altro',
+        messaggio: MESSAGGI.altro,
+      })
+    })
+
+    it('stesso codice su accedi → altro', async () => {
+      authFinto({ signInEmail: () => errore(400, CODICE) })
+      await expect(rifiuto(accedi('a@b.it', 'x'))).resolves.toEqual({
+        tipo: 'altro',
+        messaggio: MESSAGGI.altro,
+      })
+    })
+
+    it('429 con lo stesso codice → troppi tentativi', async () => {
+      authFinto({ getSession: () => errore(429, CODICE) })
+      await expect(rifiuto(sessioneCorrente())).resolves.toEqual({
+        tipo: 'altro',
+        messaggio: MESSAGGIO_TROPPI,
+      })
+    })
+  })
+
   it('sessione con 500 → altro', async () => {
     authFinto({ getSession: async () => ({ data: null, error: { status: 500 } }) })
     await expect(rifiuto(sessioneCorrente())).resolves.toEqual({

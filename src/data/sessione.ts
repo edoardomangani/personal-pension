@@ -44,17 +44,27 @@ const PASSWORD_ATTUALE_ERRATA: Esito = {
 const LINK_SCADUTO: Esito = { tipo: 'vincolo', messaggio: 'Il link è scaduto.' }
 const PASSWORD_ERRATA: Esito = { tipo: 'vincolo', messaggio: 'Password non corretta.' }
 const TROPPI_TENTATIVI = 'Troppi tentativi: aspetta un minuto e riprova.'
+/** Neon Auth risponde 400 con questo codice a un verifier falso o scaduto: vale «nessuna sessione». */
+const VERIFIER_NON_VALIDO = 'SESSION_CHALLENGE_COOKIE_NOT_FOUND'
 
 /** Come leggere gli errori di una chiamata: i codici di Better Auth e il senso del 401. */
 interface Contesto {
   codici?: Readonly<Record<string, Esito>>
   /** Sulle chiamate con le credenziali un 401 è la password sbagliata, non la sessione scaduta. */
   nonAutorizzato?: Esito
+  /** Codici che valgono «nessun dato»: la chiamata risolve `null` invece di fallire. */
+  codiciSenzaDati?: readonly string[]
 }
 
 interface DatiErrore {
   status: number | undefined
   code: string | undefined
+}
+
+/** Status `0` e `429` si leggono prima del codice, come in `erroreDaStatus`. */
+function senzaDati({ status, code }: DatiErrore, contesto: Contesto): boolean {
+  if (status === 0 || status === 429 || code === undefined) return false
+  return contesto.codiciSenzaDati?.includes(code) === true
 }
 
 const errore = ({ tipo, messaggio, codice }: Esito) => new ErroreDati(tipo, messaggio, codice)
@@ -100,10 +110,14 @@ async function chiama<T>(
     risposta = await richiesta()
   } catch (eccezione) {
     const dati = datiErroreDi(eccezione)
-    throw dati.status === undefined ? erroreDaEccezione(eccezione) : erroreDaStatus(dati, contesto)
+    if (dati.status === undefined) throw erroreDaEccezione(eccezione)
+    if (senzaDati(dati, contesto)) return null
+    throw erroreDaStatus(dati, contesto)
   }
-  if (risposta.error !== null) throw erroreDaStatus(datiErroreDi(risposta.error), contesto)
-  return risposta.data
+  if (risposta.error === null) return risposta.data
+  const dati = datiErroreDi(risposta.error)
+  if (senzaDati(dati, contesto)) return null
+  throw erroreDaStatus(dati, contesto)
 }
 
 const due = (n: number) => String(n).padStart(2, '0')
@@ -126,7 +140,9 @@ const utenteDa = (u: UtenteAuth): Utente => ({
 const altro = () => new ErroreDati('altro', MESSAGGI.altro)
 
 export async function sessioneCorrente(): Promise<Utente | null> {
-  const dati = await chiama(() => authDati().getSession())
+  const dati = await chiama(() => authDati().getSession(), {
+    codiciSenzaDati: [VERIFIER_NON_VALIDO],
+  })
   return dati === null ? null : utenteDa(dati.user)
 }
 
