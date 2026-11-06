@@ -452,6 +452,11 @@ describe('avvio da indirizzo reale (ACC-01-C1 R1, R3, R4, R8; ACC-01-C1-C1 R2-R5
     expect(window.location.hash).toBe('#/accedi')
   }, 20_000)
 
+  it('la base della history non contiene la search (R4)', async () => {
+    const avviato = await avviaDa('/?token=T#/nuova-password')
+    expect(avviato.options.history.base).toBe('/#')
+  }, 20_000)
+
   it("/#/accedi?avviso=password → /accedi con l'avviso, indirizzo intatto", async () => {
     const avviato = await avviaDa('/#/accedi?avviso=password')
     expect(avviato.currentRoute.value.path).toBe('/accedi')
