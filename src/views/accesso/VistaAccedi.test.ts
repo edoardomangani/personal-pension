@@ -1,5 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { enableAutoUnmount, flushPromises, mount, type VueWrapper } from '@vue/test-utils'
+import {
+  enableAutoUnmount,
+  flushPromises,
+  mount,
+  type DOMWrapper,
+  type VueWrapper,
+} from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import { createMemoryHistory, createRouter, createWebHashHistory, type Router } from 'vue-router'
 import { ErroreDati } from '@/data/errori'
@@ -179,6 +185,36 @@ describe('VistaAccedi: area di tocco (R2)', () => {
       expect(link?.classes()).toEqual(expect.arrayContaining(['relative', 'touch-target']))
     },
   )
+})
+
+describe('VistaAccedi: posizione del link (ACC-02)', () => {
+  async function linkPassword(): Promise<{ wrapper: VueWrapper; link: DOMWrapper<Element> }> {
+    const { wrapper } = await apri('/accedi')
+    const link = wrapper.findAll('a').find((a) => a.text() === 'Hai dimenticato la password?')
+    if (!link) throw new Error('link «Hai dimenticato la password?» assente')
+    return { wrapper, link }
+  }
+
+  it('R1: gruppo e link stanno in un contenitore con gap-4, non gap-3', async () => {
+    const { wrapper, link } = await linkPassword()
+    const contenitore = link.element.parentElement
+    const gruppo = wrapper.get('#accedi-email').element.closest('fieldset')
+    expect(gruppo?.parentElement).toBe(contenitore)
+    expect(contenitore?.classList.contains('gap-4')).toBe(true)
+    expect(contenitore?.classList.contains('gap-3')).toBe(false)
+  })
+
+  it('R2: il link ha px-1 e self-end', async () => {
+    const { link } = await linkPassword()
+    expect(link.classes()).toEqual(expect.arrayContaining(['px-1', 'self-end']))
+  })
+
+  it('R4: con la history hash il link termina con #/password-dimenticata', async () => {
+    const { wrapper } = await apriDaIndirizzo('/#/accedi')
+    window.history.replaceState(null, '', '/')
+    const link = wrapper.findAll('a').find((a) => a.text() === 'Hai dimenticato la password?')
+    expect(link?.attributes('href')).toMatch(/#\/password-dimenticata$/)
+  })
 })
 
 /** Come all'avvio vero: il ripristino fallisce con l'errore dato, poi si monta la vista. */

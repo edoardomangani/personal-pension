@@ -197,7 +197,7 @@ onUnmounted(() => {
     <FieldSeparator>oppure con la tua email</FieldSeparator>
 
     <form class="flex flex-col gap-6" novalidate @submit.prevent="accedi">
-      <div class="flex flex-col gap-3">
+      <div class="flex flex-col gap-4">
         <InsetGroup>
           <InsetRow :for="ID.email" label="Indirizzo email" hide-label :error="errori.email">
             <InsetInput
@@ -223,7 +223,7 @@ onUnmounted(() => {
         </InsetGroup>
         <RouterLink
           to="/password-dimenticata"
-          class="self-end text-sm text-foreground underline underline-offset-4 relative touch-target"
+          class="self-end px-1 text-sm text-foreground underline underline-offset-4 relative touch-target"
         >
           Hai dimenticato la password?
         </RouterLink>
