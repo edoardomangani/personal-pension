@@ -305,7 +305,7 @@
   }
 }
 
-/* Dashed line of the projection: 4px brand dashes every 8px. */
+/* Linea tratteggiata della proiezione: trattini brand da 4px ogni 8px. */
 @utility dashed-brand {
   background-image: repeating-linear-gradient(90deg, var(--brand) 0 4px, transparent 4px 8px);
 }

@@ -580,6 +580,33 @@ describe('token DS-04-C1 R6', () => {
     )
   })
 
+  it('il commento di dashed-brand è in italiano, su una riga', () => {
+    const commento = /\/\*([^*]*)\*\/\s*@utility dashed-brand/.exec(css)?.[1] ?? ''
+    expect(commento).toContain('Linea tratteggiata')
+    expect(commento).not.toContain('\n')
+    for (const parola of ['Dashed', 'dashes', 'every']) expect(commento).not.toContain(parola)
+  })
+
+  it('il titolo, la vetrina e la linea della proiezione usano i token nuovi', () => {
+    const testata = readFileSync(`${RADICE}src/components/AppMobileHeader.vue`, 'utf8')
+    // Il titolo grande di Home e sezioni; l'h1 centrato delle sottopagine non è di DS-04-C1.
+    const titolo = [...testata.matchAll(/<h1 class="([^"]*)"/g)]
+      .map((m) => m[1]?.split(' ') ?? [])
+      .find((classi) => classi.includes('text-xl'))
+    expect(titolo).toContain('tracking-title')
+    const fondamenta = readFileSync(`${RADICE}src/components/dev/FoundationsSection.vue`, 'utf8')
+    for (const classe of [
+      'tracking-display',
+      'tracking-title',
+      'tracking-section',
+      'tracking-figure',
+    ]) {
+      expect(fondamenta).toMatch(new RegExp(`[\\s'"]${classe}[\\s'"]`))
+    }
+    const linea = /code="ACC-future-line"([\s\S]*?)<\/Specimen>/.exec(fondamenta)?.[1] ?? ''
+    expect(linea).toContain('<span class="h-0.5 flex-1 dashed-brand" />')
+  })
+
   it('il commento di --radius-tile cita size-9 e rounded-lg', () => {
     const commento = /\/\*([^*]*)\*\/\s*--radius-tile:/.exec(tema)?.[1] ?? ''
     expect(commento).toContain('size-9')
@@ -615,13 +642,17 @@ describe('icone delle sezioni nella vetrina (DS-04 R4)', () => {
   })
 })
 
-// Classi con un valore arbitrario `-[…]` nell'utility; le varianti, anche arbitrarie (`data-[…]:`), non contano.
+// Classi con un valore arbitrario: un breakpoint `min-[…]:`/`max-[…]:` (classe presa intera) o un `-[…]` nell'utility; le altre varianti arbitrarie (`data-[…]:`) non contano.
+const PEZZO = String.raw`(?:[^\s"'\`:[]|\[[^\]\s]*\])`
+const BREAKPOINT = String.raw`(?:min|max)-\[[^\]\s]*\]:`
+const CON_BREAKPOINT = String.raw`(?:${PEZZO}*:)*?${BREAKPOINT}(?:${PEZZO}*:)*${PEZZO}+(?![^\s"'\`])`
+const CON_VALORE = String.raw`(?:${PEZZO}*:)*[^\s"'\`:[]*-\[[^\]\s]*\](?!:)`
+const ARBITRARI = new RegExp(String.raw`(?<=^|[\s"'\`])(?:${CON_BREAKPOINT}|${CON_VALORE})`, 'g')
+
 function valoriArbitrari(testo: string): string[] {
-  const trovati = testo.matchAll(
-    /(?<=^|[\s"'`])(?:(?:[^\s"'`:[]|\[[^\]\s]*\])*:)*[^\s"'`:[]*-\[[^\]\s]*\](?!:)/g,
-  )
-  // Il filo da 0,75px del DS resta fuori perimetro (DS-04, voce a parte se serve un token).
-  const filo = /^(?:[^\s:]+:)*border(?:-[trblxy])?-\[0\.75px\]$/
+  const trovati = testo.matchAll(ARBITRARI)
+  // Il filo da 0,75px del DS resta fuori perimetro (DS-04, voce a parte se serve un token), ma non con un breakpoint arbitrario.
+  const filo = /^(?:(?!(?:min|max)-\[)[^\s:]+:)*border(?:-[trblxy])?-\[0\.75px\]$/
   return [...trovati].map((m) => m[0]).filter((classe) => !filo.test(classe))
 }
 
@@ -638,10 +669,10 @@ describe('niente valori arbitrari nella vetrina e nella shell (DS-04 R6)', () =>
     `${COMPONENTI}AppLayout.vue`,
   ]
 
-  it("l'estrattore prende ogni valore arbitrario, tracking e gradiente compresi, lascia il filo e le varianti", () => {
+  it("l'estrattore prende ogni valore arbitrario, tracking, gradiente e breakpoint arbitrari compresi, lascia il filo e le varianti", () => {
     const esempio = `<div class="size-[18px] lg:min-h-[52px] rounded-t-[24px] bg-[#0e0e0d]
       pt-[calc(12px+env(safe-area-inset-top))] pb-[max(24px,env(safe-area-inset-bottom))]
-      w-[var(--x)] [&>svg]:size-[18px] max-h-[90%] leading-[1.35]" />
+      w-[var(--x)] [&>svg]:size-[18px] max-h-[90%] leading-[1.35] min-[900px]:flex max-[600px]:hidden" />
 <div class="border-[0.75px] border-b-[0.75px] hover:border-[0.75px] border-[1px] tracking-[-0.02em]
   [&>svg]:size-4.5 pb-(--bottom-bar-clearance) bg-[repeating-linear-gradient(90deg,red_0_4px)]
   rounded-card-mobile data-[state=open]:bg-card" :class="[rowClass, specimen ? 'w-72' : 'px-4']" />`
@@ -656,10 +687,33 @@ describe('niente valori arbitrari nella vetrina e nella shell (DS-04 R6)', () =>
       '[&>svg]:size-[18px]',
       'max-h-[90%]',
       'leading-[1.35]',
+      'min-[900px]:flex',
+      'max-[600px]:hidden',
       'border-[1px]',
       'tracking-[-0.02em]',
       'bg-[repeating-linear-gradient(90deg,red_0_4px)]',
     ])
+  })
+
+  it("l'estrattore trova intere le classi con breakpoint arbitrari", () => {
+    expect(valoriArbitrari('<div class="min-[900px]:flex max-[600px]:hidden" />')).toEqual([
+      'min-[900px]:flex',
+      'max-[600px]:hidden',
+    ])
+    expect(
+      valoriArbitrari('<div class="lg:min-[900px]:flex min-[600px]:max-[900px]:flex" />'),
+    ).toEqual(['lg:min-[900px]:flex', 'min-[600px]:max-[900px]:flex'])
+    expect(valoriArbitrari('<div class="min-[900px]:size-[18px]" />')).toEqual([
+      'min-[900px]:size-[18px]',
+    ])
+    expect(
+      valoriArbitrari(
+        '<div class="max-h-[90%] lg:min-h-[52px] min-w-0 data-[state=open]:bg-card [&>svg]:size-4.5 hover:border-[0.75px]" />',
+      ),
+    ).toEqual(['max-h-[90%]', 'lg:min-h-[52px]'])
+    expect(
+      valoriArbitrari('<div class="hover:max-[600px]:hidden min-[900px]:border-[0.75px]" />'),
+    ).toEqual(['hover:max-[600px]:hidden', 'min-[900px]:border-[0.75px]'])
   })
 
   it('i file di R5 esistono e non hanno valori arbitrari', () => {
