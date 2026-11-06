@@ -1,9 +1,13 @@
+import { readFileSync } from 'node:fs'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { defineComponent, h, nextTick, reactive, type Component } from 'vue'
 import { enableAutoUnmount, flushPromises, mount, type VueWrapper } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import { TooltipProvider } from 'reka-ui'
 import { createMemoryHistory, createRouter, type Router } from 'vue-router'
+import { Toaster as SonnerToaster } from 'vue-sonner'
 import { formatoGiorno } from '@/calc/formato'
 import { rotte } from '@/router'
 import { ErroreDati, type TipoErroreDati } from '@/data/errori'
@@ -468,7 +472,7 @@ describe('AppLayout (R3)', () => {
     expect(etichetta).not.toContain('Notifications')
   })
 
-  it('il toast sta sopra la barra sotto lg e a 24px dall’angolo da lg, largo 320 (ACC-01-C6 T8)', async () => {
+  it('il toast legge margini e larghezza dalle variabili che cambiano a lg (ACC-01-C6-C1 T1-T3)', async () => {
     const wrapper = mount(AppLayout, {
       global: { plugins: [await routerSu('/')] },
       attachTo: document.body,
@@ -477,7 +481,7 @@ describe('AppLayout (R3)', () => {
     const toaster = wrapper.getComponent(Toaster)
     expect(toaster.props('offset')).toEqual({
       bottom: 'var(--toast-offset-bottom)',
-      right: '24px',
+      right: 'var(--toast-offset-x)',
     })
     expect(toaster.props('mobileOffset')).toEqual({
       bottom: 'calc(var(--bottom-bar-height) + 20px)',
@@ -485,7 +489,28 @@ describe('AppLayout (R3)', () => {
       right: '16px',
     })
     const lista = wrapper.get('section[aria-live] ol').element as HTMLElement
-    expect(lista.style.getPropertyValue('--width')).toBe('320px')
+    expect(lista.style.getPropertyValue('--width')).toBe('var(--toast-width)')
+    // Il singolo toast eredita --width dalla lista: lo riporta al 100% di questa.
+    expect(wrapper.getComponent(SonnerToaster).props('toastOptions')).toMatchObject({
+      style: { '--width': '100%' },
+    })
+  })
+
+  it('larghezza e lati del toast cambiano a lg nel blocco di --toast-offset-bottom (ACC-01-C6-C1 T4)', () => {
+    // Niente `new URL`: sotto jsdom è quello di jsdom e fileURLToPath lo rifiuta.
+    const css = readFileSync(
+      join(dirname(fileURLToPath(import.meta.url)), '..', 'styles', 'app.css'),
+      'utf8',
+    )
+    const blocco =
+      /--toast-offset-bottom:[^;]*;([\s\S]*?)@media \(width >= 64rem\)\s*\{([\s\S]*?)\}/.exec(css)
+    expect(blocco).not.toBeNull()
+    const [, fuori = '', dentro = ''] = blocco ?? []
+    expect(fuori).toMatch(/--toast-offset-x:\s*16px;/)
+    expect(fuori).toMatch(/--toast-width:\s*calc\(100% - 32px\);/)
+    expect(dentro).toMatch(/--toast-offset-bottom:\s*24px;/)
+    expect(dentro).toMatch(/--toast-offset-x:\s*24px;/)
+    expect(dentro).toMatch(/--toast-width:\s*320px;/)
   })
 
   it('padding del contenuto nella shell (DS-03-C2 R4, DS-03-C2-C2 R1)', async () => {

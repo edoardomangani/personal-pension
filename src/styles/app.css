@@ -215,11 +215,15 @@
   --content-pad-bottom-mobile: calc(var(--bottom-bar-clearance) + env(safe-area-inset-bottom));
   /* Da lg il dialog parte a 160px dall'alto e lascia 24px in fondo. */
   --dialog-max-height: calc(100dvh - 160px - 24px);
-  /* vue-sonner usa il mobile-offset solo sotto 600px: fino a lg il toast deve comunque stare sopra la barra. */
+  /* vue-sonner usa mobile-offset e larghezza piena solo sotto 600px: fino a lg il toast sta sopra la barra, a 16px ai lati (100% dell'ol fisso esclude la scrollbar). */
   --toast-offset-bottom: calc(var(--bottom-bar-height) + 20px);
+  --toast-offset-x: 16px;
+  --toast-width: calc(100% - 32px);
 
   @media (width >= 64rem) {
     --toast-offset-bottom: 24px;
+    --toast-offset-x: 24px;
+    --toast-width: 320px;
   }
 }
 

@@ -60,7 +60,7 @@ const classeContenuto = computed(() =>
     <Toaster
       theme="dark"
       container-aria-label="Notifiche"
-      :offset="{ bottom: 'var(--toast-offset-bottom)', right: '24px' }"
+      :offset="{ bottom: 'var(--toast-offset-bottom)', right: 'var(--toast-offset-x)' }"
       :mobile-offset="{
         bottom: 'calc(var(--bottom-bar-height) + 20px)',
         left: '16px',

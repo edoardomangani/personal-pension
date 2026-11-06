@@ -1,12 +1,19 @@
 <script lang="ts" setup>
 import type { ToasterProps } from 'vue-sonner'
 import { PhCheckCircle, PhInfo, PhSpinnerGap, PhWarning, PhX, PhXCircle } from '@phosphor-icons/vue'
+import { computed } from 'vue'
 import { Toaster as Sonner } from 'vue-sonner'
 import { cn } from '@/lib/utils'
 
 import 'vue-sonner/style.css'
 
 const props = defineProps<ToasterProps>()
+
+// --width vale anche per ogni toast: 100% lo lega alla lista, che legge --toast-width.
+const toastOptions = computed(() => ({
+  ...props.toastOptions,
+  style: { '--width': '100%', ...props.toastOptions?.style },
+}))
 </script>
 
 <template>
@@ -17,9 +24,10 @@ const props = defineProps<ToasterProps>()
       '--normal-text': 'var(--popover-foreground)',
       '--normal-border': 'var(--border-strong)',
       '--border-radius': 'calc(var(--radius) + 4px)',
-      '--width': '320px',
+      '--width': 'var(--toast-width)',
     }"
     v-bind="props"
+    :toast-options="toastOptions"
   >
     <template #success-icon>
       <PhCheckCircle class="size-4" />
