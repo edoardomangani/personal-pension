@@ -521,6 +521,52 @@ describe('testata mobile fissa (DS-05 R7)', () => {
     expect((spazio.element as HTMLElement).style.height).toBe('68px')
   })
 
+  // jsdom misura 0: l'altezza simulata dipende dalla variante già nel DOM, come nel browser.
+  function simulaAltezza(header: Element, misura: (secondaria: boolean) => number): void {
+    Object.defineProperty(header, 'offsetHeight', {
+      configurable: true,
+      get: () => misura(header.querySelector('[aria-label="Indietro"]') !== null),
+    })
+  }
+
+  async function montaSu(percorso: string, misura: (secondaria: boolean) => number) {
+    const router = await routerSu(percorso)
+    const wrapper = mount(AppMobileHeader, { global: { plugins: [router] } })
+    await flushPromises()
+    simulaAltezza(wrapper.get('header').element, misura)
+    const spazio = wrapper.get('[data-spazio-testata]').element as HTMLElement
+    return { router, spazio }
+  }
+
+  it('al cambio di variante lo spazio prende subito l’altezza della testata principale (T1)', async () => {
+    const { router, spazio } = await montaSu('/profilo', (secondaria) => (secondaria ? 60 : 68))
+    await router.push('/')
+    await nextTick()
+    expect(spazio.style.height).toBe('68px')
+  })
+
+  it('al cambio di variante lo spazio prende subito l’altezza della testata secondaria (T2)', async () => {
+    const { router, spazio } = await montaSu('/', (secondaria) => (secondaria ? 60 : 68))
+    await router.push('/profilo')
+    await nextTick()
+    expect(spazio.style.height).toBe('60px')
+  })
+
+  it('al cambio di variante assente (Home → Valori) lo spazio non cambia (T3)', async () => {
+    const { router, spazio } = await montaSu('/', () => 99)
+    const prima = spazio.style.height
+    await router.push('/valori')
+    await nextTick()
+    expect(spazio.style.height).toBe(prima)
+  })
+
+  it('al cambio di variante con misura 0 lo spazio non diventa 0px (T5)', async () => {
+    const { router, spazio } = await montaSu('/profilo', () => 0)
+    await router.push('/')
+    await nextTick()
+    expect(spazio.style.height).not.toBe('0px')
+  })
+
   it('allo smontaggio smette di osservare la testata', async () => {
     const wrapper = mount(AppMobileHeader, { global: { plugins: [await routerSu('/')] } })
     await flushPromises()

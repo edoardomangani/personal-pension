@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { PhCaretLeft } from '@phosphor-icons/vue'
 import { useResizeObserver } from '@vueuse/core'
-import { computed, ref, useTemplateRef } from 'vue'
+import { computed, ref, useTemplateRef, watch } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 import AvatarUtente from '@/components/AvatarUtente.vue'
 import { Button } from '@/components/ui/button'
@@ -34,6 +34,15 @@ useResizeObserver(testata, ([voce]) => {
   const bordo = voce?.borderBoxSize?.[0]?.blockSize
   altezza.value = bordo ?? testata.value?.offsetHeight ?? null
 })
+// Al cambio di variante misura subito: col ResizeObserver lo spazio cambierebbe dopo lo scorrimento del router e lo scroll anchoring sposterebbe la pagina.
+watch(
+  secondaria,
+  () => {
+    const misura = testata.value?.offsetHeight ?? 0
+    if (misura > 0) altezza.value = misura
+  },
+  { flush: 'post' },
+)
 const stileSpazio = computed(() =>
   altezza.value === null ? undefined : { height: `${altezza.value}px` },
 )
