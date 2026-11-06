@@ -167,7 +167,7 @@
   --brand-foreground: #0c1203;
   --brand-soft: rgba(212, 245, 60, 0.16);
   --income: var(--brand);
-  --ambient-strong: rgba(212, 245, 60, 0.15);
+  --ambient-strong: rgba(212, 245, 60, 0.06);
   --ambient-soft: rgba(212, 245, 60, 0.06);
   --header: rgba(6, 7, 8, 0.55);
   --bar: rgba(6, 7, 8, 0.72);
@@ -206,7 +206,7 @@
   --sidebar-rail: 60px;
   --detail-width: 340px;
   --touch-min: 44px;
-  --glass-fade: 24px;
+  --glass-fade: 36px;
   --bottom-bar-height: 84px;
   /* Safe area della shell sul telefono: testata 12 + 44 + 12, barra con 24px sotto. */
   --header-mobile-pad-top: calc(12px + env(safe-area-inset-top));
@@ -239,27 +239,33 @@
 
   html {
     color-scheme: dark;
+    background-color: var(--background);
     scrollbar-color: var(--border-strong) transparent;
     scrollbar-width: thin;
   }
 
   body {
-    @apply bg-background text-foreground;
-    /* Fixed attachment keeps the glow still behind scrolling content. */
-    background-image:
-      radial-gradient(560px 460px at 104% -8%, var(--ambient-strong), transparent 70%),
-      radial-gradient(480px 480px at -14% 62%, var(--ambient-soft), transparent 70%);
-    background-attachment: fixed;
-    background-repeat: no-repeat;
+    @apply text-foreground;
     font-variant-numeric: tabular-nums;
     caret-color: var(--foreground);
   }
 
+  /* Livello fisso del bagliore: iOS ignora lo sfondo fisso e lo farebbe scorrere col contenuto. */
+  body::before {
+    @apply bagliore-telefono;
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+  }
+
   @media (width >= 64rem) {
-    body {
+    body::before {
       background-image:
         radial-gradient(900px 620px at 96% -12%, var(--ambient-strong), transparent 70%),
         radial-gradient(760px 620px at -6% 70%, var(--ambient-soft), transparent 70%);
+      mask-image: none;
     }
   }
 
@@ -268,17 +274,42 @@
   }
 }
 
-/* Header and bottom bar: glass that fades into the content instead of a hard edge. */
+/* Bagliore del telefono, unico punto per l'app sotto lg e per la cornice della vetrina. */
+@utility bagliore-telefono {
+  background-image:
+    radial-gradient(480px 480px at 114% 38%, var(--ambient-strong), transparent 75%),
+    radial-gradient(480px 480px at -14% 62%, var(--ambient-soft), transparent 75%);
+  background-repeat: no-repeat;
+  mask-image: linear-gradient(to bottom, transparent, #000 160px);
+}
+
+/* Testata e barra in basso: vetro che sfuma sul contenuto a curva, senza scalino. */
 @utility glass-header {
-  background: var(--header);
+  background: linear-gradient(to bottom, var(--background), var(--bar) 55%, var(--header));
   backdrop-filter: blur(var(--blur-header)) saturate(140%);
-  mask-image: linear-gradient(to bottom, #000 calc(100% - var(--glass-fade)), transparent);
+  mask-image: linear-gradient(
+    to bottom,
+    #000 calc(100% - var(--glass-fade)),
+    rgba(0, 0, 0, 0.9) calc(100% - var(--glass-fade) * 0.8),
+    rgba(0, 0, 0, 0.65) calc(100% - var(--glass-fade) * 0.6),
+    rgba(0, 0, 0, 0.35) calc(100% - var(--glass-fade) * 0.4),
+    rgba(0, 0, 0, 0.1) calc(100% - var(--glass-fade) * 0.2),
+    transparent
+  );
 }
 
 @utility glass-bar {
   background: linear-gradient(to top, var(--bar) 55%, var(--header));
   backdrop-filter: blur(var(--blur-bar)) saturate(140%);
-  mask-image: linear-gradient(to top, #000 calc(100% - var(--glass-fade)), transparent);
+  mask-image: linear-gradient(
+    to top,
+    #000 calc(100% - var(--glass-fade)),
+    rgba(0, 0, 0, 0.9) calc(100% - var(--glass-fade) * 0.8),
+    rgba(0, 0, 0, 0.65) calc(100% - var(--glass-fade) * 0.6),
+    rgba(0, 0, 0, 0.35) calc(100% - var(--glass-fade) * 0.4),
+    rgba(0, 0, 0, 0.1) calc(100% - var(--glass-fade) * 0.2),
+    transparent
+  );
 }
 
 @utility shimmer {

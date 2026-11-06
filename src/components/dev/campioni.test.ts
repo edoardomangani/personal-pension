@@ -11,6 +11,7 @@ import FormsSection from './FormsSection.vue'
 import FoundationsSection from './FoundationsSection.vue'
 import MovementRowSample, { type MovementSampleRow } from './MovementRowSample.vue'
 import MovementDaySample from './MovementDaySample.vue'
+import PhoneFrame from './PhoneFrame.vue'
 import RottaCampione from './RottaCampione.vue'
 import ShellSection from './ShellSection.vue'
 import SheetSampleBody from './SheetSampleBody.vue'
@@ -274,5 +275,29 @@ describe('ShellSection: la shell nuova (R16)', () => {
     expect(offline.get('header [role="status"]').text()).toContain('Sei offline')
     expect(offline.get('h1').text()).toContain('Ciao')
     expect(wrapper.get('[data-specimen="SHL-header-mobile"]').text()).not.toContain('Sei offline')
+  })
+})
+
+describe('PhoneFrame: bagliore del telefono (DS-05 R11)', () => {
+  it('la cornice screen monta lo strato del bagliore, dietro e senza tocchi', () => {
+    const strato = mount(PhoneFrame, { props: { size: 'screen' } }).get('[data-bagliore]')
+    expect(strato.classes()).toEqual(
+      expect.arrayContaining([
+        'bagliore-telefono',
+        'absolute',
+        'inset-0',
+        '-z-1',
+        'pointer-events-none',
+      ]),
+    )
+    expect(strato.attributes('aria-hidden')).toBe('true')
+  })
+
+  it('le altre misure non hanno il bagliore', () => {
+    for (const size of ['header', 'header-banner', 'bar', 'card', 'form'] as const) {
+      expect(mount(PhoneFrame, { props: { size } }).find('[data-bagliore]').exists(), size).toBe(
+        false,
+      )
+    }
   })
 })
