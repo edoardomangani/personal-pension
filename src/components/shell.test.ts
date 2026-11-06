@@ -496,14 +496,17 @@ describe('AppLayout (R3)', () => {
     })
   })
 
-  it('larghezza e lati del toast cambiano a lg nel blocco di --toast-offset-bottom (ACC-01-C6-C1 T4)', () => {
+  it('larghezza e lati del toast cambiano a lg nel blocco di --toast-offset-bottom (ACC-01-C6-C1 T4, ACC-01-C6-C1-C1-C1 R1)', () => {
     // Niente `new URL`: sotto jsdom è quello di jsdom e fileURLToPath lo rifiuta.
     const css = readFileSync(
       join(dirname(fileURLToPath(import.meta.url)), '..', 'styles', 'app.css'),
       'utf8',
     )
+    // Il valore fuori dal media sta nell'ancora: se cambia, `blocco` è null e T4 fallisce.
     const blocco =
-      /--toast-offset-bottom:[^;]*;([\s\S]*?)@media \(width >= 64rem\)\s*\{([\s\S]*?)\}/.exec(css)
+      /--toast-offset-bottom:\s*calc\(var\(--bottom-bar-height\)\s*\+\s*20px\);([\s\S]*?)@media \(width >= 64rem\)\s*\{([\s\S]*?)\}/.exec(
+        css,
+      )
     expect(blocco).not.toBeNull()
     const [, fuori = '', dentro = ''] = blocco ?? []
     expect(fuori).toMatch(/--toast-offset-x:\s*16px;/)
