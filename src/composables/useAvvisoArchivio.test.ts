@@ -7,6 +7,7 @@ import { metodiDiAccesso, sessioneCorrente, type Utente } from '@/data/sessione'
 import { salvaUltimoUtente } from '@/data/ultimoUtente'
 import { useArchivioStore } from '@/stores/archivio'
 import { useSessioneStore } from '@/stores/sessione'
+import { inSospeso } from '@/test/promesse'
 import { utenteDiProva } from '@/test/utenti'
 import { fornisciRete } from './useRete'
 import { useAvvisoArchivio } from './useAvvisoArchivio'
@@ -64,12 +65,6 @@ async function provvisorio(): Promise<void> {
   vi.mocked(sessioneCorrente).mockRejectedValueOnce(SENZA_RETE())
   await useSessioneStore().ripristina()
   vi.mocked(sessioneCorrente).mockClear()
-}
-
-function inAttesa<T>(): { promessa: Promise<T>; risolvi: (valore: T) => void } {
-  let risolvi: (valore: T) => void = () => {}
-  const promessa = new Promise<T>((r) => (risolvi = r))
-  return { promessa, risolvi }
 }
 
 describe('useAvvisoArchivio: primo carico ed errore (PWA-01-C1 R10, R12)', () => {
@@ -131,8 +126,8 @@ describe('useAvvisoArchivio: ricontrollo e Riprova (PWA-01-C1 R11, R13)', () => 
   it('T27: Riprova da provvisorio → ripristina poi carica(), inCorso fino alla fine, un secondo clic non rifà niente', async () => {
     await provvisorio()
     const { avviso } = monta(true)
-    const sessioneInVolo = inAttesa<Utente | null>()
-    const caricaInVolo = inAttesa<void>()
+    const sessioneInVolo = inSospeso<Utente | null>()
+    const caricaInVolo = inSospeso<void>()
     vi.mocked(sessioneCorrente).mockReturnValueOnce(sessioneInVolo.promessa)
     carica.mockReturnValueOnce(caricaInVolo.promessa)
 
@@ -182,7 +177,7 @@ describe('useAvvisoArchivio: ricontrollo e Riprova (PWA-01-C1 R11, R13)', () => 
   it('provvisorio, ritorno della rete con ricontrollo in volo → avviso nascosto', async () => {
     await provvisorio()
     const { rete, avviso } = monta(false)
-    const sessioneInVolo = inAttesa<Utente | null>()
+    const sessioneInVolo = inSospeso<Utente | null>()
     vi.mocked(sessioneCorrente).mockReturnValueOnce(sessioneInVolo.promessa)
 
     rete.value = true

@@ -6,6 +6,7 @@ import { ErroreDati } from '@/data/errori'
 import { accedi, accediConGoogle, reinviaCodice, sessioneCorrente } from '@/data/sessione'
 import { rotte, spostaSearchNelFrammento, urlApp } from '@/router'
 import { useSessioneStore } from '@/stores/sessione'
+import { inSospeso } from '@/test/promesse'
 import { utenteDiProva } from '@/test/utenti'
 import VistaAccedi from './VistaAccedi.vue'
 
@@ -330,17 +331,13 @@ describe('VistaAccedi: ritorno della rete (PWA-01-C1 R14)', () => {
 
   it('T31: con Riprova in corso il ritorno della rete non rifà la chiamata', async () => {
     const { wrapper, torna } = await apriOffline('/accedi')
-    let risolvi: (valore: null) => void = () => {}
-    vi.mocked(sessioneCorrente).mockReturnValueOnce(
-      new Promise((resolve) => {
-        risolvi = resolve
-      }),
-    )
+    const sessioneInVolo = inSospeso<null>()
+    vi.mocked(sessioneCorrente).mockReturnValueOnce(sessioneInVolo.promessa)
     await bottoneRiprova(wrapper).trigger('click')
     await torna()
     expect(sessioneCorrente).toHaveBeenCalledTimes(1)
     expect(bottoneRiprova(wrapper).attributes('disabled')).toBeDefined()
-    risolvi(null)
+    sessioneInVolo.risolvi(null)
     await flushPromises()
     expect(sessioneCorrente).toHaveBeenCalledTimes(1)
   })
