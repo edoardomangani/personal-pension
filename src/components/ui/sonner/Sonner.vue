@@ -10,8 +10,14 @@ import 'vue-sonner/style.css'
 const props = defineProps<ToasterProps>()
 
 // --width vale anche per ogni toast: 100% lo lega alla lista, che legge --toast-width.
+// Il `!` serve perché il CSS di vue-sonner sta fuori dai layer e batte le utility.
 const toastOptions = computed(() => ({
   ...props.toastOptions,
+  class: cn('py-3! px-4!', props.toastOptions?.class),
+  classes: {
+    ...props.toastOptions?.classes,
+    title: cn('text-sm! leading-5!', props.toastOptions?.classes?.title),
+  },
   style: { '--width': '100%', ...props.toastOptions?.style },
 }))
 </script>
