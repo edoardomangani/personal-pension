@@ -148,6 +148,8 @@ describe('InsetGroup con l’aiuto che compare dopo un errore (R1)', () => {
     })
     const wrapper = mount(Modulo, { attachTo: document.body })
     expect(wrapper.find('[data-slot="field-description"]').exists()).toBe(false)
+    expect(wrapper.find('[role="alert"]').exists()).toBe(true)
+    expect(wrapper.get('[role="alert"]').text()).toContain('Scrivi un anno valido.')
 
     description.value = 'Con questi dati vai in pensione nel 2061.'
     errore.value = undefined
