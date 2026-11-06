@@ -79,6 +79,16 @@ function erroreNome(nome: string): string | undefined {
   return undefined
 }
 
+function erroreAnnoNascita(annoNascita: string, annoCorrente: number): string | undefined {
+  const anno = annoNascita.trim()
+  if (!/^\d{4}$/.test(anno)) return "Scrivi l'anno con quattro cifre, es. 1994."
+  const annoMassimo = annoCorrente - ETA_MINIMA_ISCRITTO
+  if (Number(anno) < ANNO_MINIMO || Number(anno) > annoMassimo) {
+    return `Un anno fra ${ANNO_MINIMO} e ${annoMassimo}.`
+  }
+  return undefined
+}
+
 /** Bozza valida: nessun campo ha un messaggio. */
 export function eValida<Bozza>(errori: ErroriDi<Bozza>): boolean {
   return Object.values(errori).every((messaggio) => messaggio === undefined)
@@ -143,11 +153,6 @@ export function validaOnboarding(
   bozza: BozzaOnboarding,
   annoCorrente: number,
 ): ErroriDi<BozzaOnboarding> {
-  const anno = bozza.annoNascita.trim()
-  const annoValido =
-    /^\d{4}$/.test(anno) &&
-    Number(anno) >= ANNO_MINIMO &&
-    Number(anno) <= annoCorrente - ETA_MINIMA_ISCRITTO
   const eta = bozza.etaPensione.trim()
   const etaValida =
     /^\d{1,3}$/.test(eta) &&
@@ -155,7 +160,7 @@ export function validaOnboarding(
     Number(eta) <= ETA_PENSIONE_MASSIMA
   return {
     fondo: bozza.fondo.trim() === '' ? 'Scrivi il nome del tuo fondo pensione.' : undefined,
-    annoNascita: annoValido ? undefined : "Scrivi l'anno con quattro cifre, es. 1994.",
+    annoNascita: erroreAnnoNascita(bozza.annoNascita, annoCorrente),
     etaPensione: etaValida ? undefined : "Un'età fra 40 e 80 anni.",
   }
 }

@@ -86,7 +86,8 @@ describe('VistaBenvenuto (R18)', () => {
     await compila(wrapper, '', '1939', '81')
     await inizia(wrapper)
     expect(wrapper.text()).toContain('Scrivi il nome del tuo fondo pensione.')
-    expect(wrapper.text()).toContain("Scrivi l'anno con quattro cifre, es. 1994.")
+    expect(wrapper.text()).toContain('Un anno fra 1940 e 2010.')
+    expect(wrapper.text()).not.toContain("Scrivi l'anno con quattro cifre")
     expect(wrapper.text()).toContain("Un'età fra 40 e 80 anni.")
     expect(salvaFondo).not.toHaveBeenCalled()
   })
@@ -118,6 +119,7 @@ describe('VistaBenvenuto (R18)', () => {
 describe('VistaBenvenuto: correzione dopo un «Inizia» fallito (ACC-01-C2, R2, R3)', () => {
   const ERRORE_FONDO = 'Scrivi il nome del tuo fondo pensione.'
   const ERRORE_ANNO = "Scrivi l'anno con quattro cifre, es. 1994."
+  const ERRORE_INTERVALLO = 'Un anno fra 1940 e 2010.'
 
   function card(wrapper: VueWrapper) {
     return wrapper.get('[data-slot="field-group"]')
@@ -159,18 +161,22 @@ describe('VistaBenvenuto: correzione dopo un «Inizia» fallito (ACC-01-C2, R2, 
     expect(router.currentRoute.value.path).toBe('/')
   })
 
-  it('1939 e 81, poi età 70 e anno 1994 → «…nel 2064.»; anno di nuovo non valido → frase via, errore di nuovo', async () => {
+  it('1939 e 81 → errore dell’intervallo; poi età 70 e anno 1994 → «…nel 2064.»; anno «19» → frase via, errore della forma', async () => {
     const { wrapper } = await apri()
     await compila(wrapper, '', '1939', '81')
     await inizia(wrapper)
+    expect(wrapper.text()).toContain(ERRORE_INTERVALLO)
+    expect(wrapper.text()).not.toContain(ERRORE_ANNO)
+    expect(salvaFondo).not.toHaveBeenCalled()
 
     await wrapper.get('#benvenuto-eta').setValue('70')
-    expect(wrapper.text()).toContain(ERRORE_ANNO)
+    expect(wrapper.text()).toContain(ERRORE_INTERVALLO)
     expect(wrapper.text()).not.toContain('vai in pensione')
 
     await wrapper.get('#benvenuto-anno').setValue('1994')
     expect(wrapper.text()).toContain('Con questi dati vai in pensione nel 2064.')
     expect(wrapper.text()).not.toContain(ERRORE_ANNO)
+    expect(wrapper.text()).not.toContain(ERRORE_INTERVALLO)
     expect(wrapper.text()).not.toContain("Un'età fra 40 e 80 anni.")
     campiNellaCard(wrapper)
 
@@ -178,6 +184,7 @@ describe('VistaBenvenuto: correzione dopo un «Inizia» fallito (ACC-01-C2, R2, 
     expect(wrapper.text()).not.toContain('vai in pensione')
     expect(wrapper.find('[data-slot="field-description"]').exists()).toBe(false)
     expect(wrapper.text()).toContain(ERRORE_ANNO)
+    expect(wrapper.text()).not.toContain(ERRORE_INTERVALLO)
     campiNellaCard(wrapper)
   })
 })

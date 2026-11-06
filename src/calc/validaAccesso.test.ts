@@ -16,6 +16,7 @@ const EMAIL_NON_VALIDA = 'Scrivi un indirizzo email valido.'
 const ALMENO_8 = 'Almeno 8 caratteri.'
 const NON_COINCIDONO = 'Le password non coincidono.'
 const ANNO = "Scrivi l'anno con quattro cifre, es. 1994."
+const INTERVALLO_2026 = 'Un anno fra 1940 e 2010.'
 const ETA = "Un'età fra 40 e 80 anni."
 
 describe('validaAccesso', () => {
@@ -167,18 +168,35 @@ describe('validaOnboarding', () => {
     expect(eValida(validaOnboarding(valida, 2026))).toBe(true)
   })
 
-  it('anno 1939 ed età 81 → i messaggi di R29', () => {
-    expect(validaOnboarding({ ...valida, annoNascita: '1939', etaPensione: '81' }, 2026)).toEqual({
-      annoNascita: ANNO,
+  it('anno 1939, età 81 e fondo vuoto → i messaggi di R29', () => {
+    expect(validaOnboarding({ fondo: '', annoNascita: '1939', etaPensione: '81' }, 2026)).toEqual({
+      fondo: 'Scrivi il nome del tuo fondo pensione.',
+      annoNascita: INTERVALLO_2026,
       etaPensione: ETA,
     })
   })
 
-  it('limiti dell’anno: 1940 e anno corrente − 16', () => {
-    expect(eValida(validaOnboarding({ ...valida, annoNascita: '1940' }, 2026))).toBe(true)
-    expect(eValida(validaOnboarding({ ...valida, annoNascita: '2010' }, 2026))).toBe(true)
-    expect(validaOnboarding({ ...valida, annoNascita: '2011' }, 2026).annoNascita).toBe(ANNO)
-    expect(validaOnboarding({ ...valida, annoNascita: '94' }, 2026).annoNascita).toBe(ANNO)
+  it.each([
+    ['', ANNO],
+    ['94', ANNO],
+    ['19a4', ANNO],
+    ['19940', ANNO],
+    ['1939', INTERVALLO_2026],
+    [' 1939 ', INTERVALLO_2026],
+    ['0000', INTERVALLO_2026],
+    ['9999', INTERVALLO_2026],
+    ['2011', INTERVALLO_2026],
+    ['1940', undefined],
+    ['2010', undefined],
+  ])('anno «%s» con anno corrente 2026 → %s', (annoNascita, atteso) => {
+    expect(validaOnboarding({ ...valida, annoNascita }, 2026).annoNascita).toBe(atteso)
+  })
+
+  it('il limite superiore segue l’anno corrente', () => {
+    expect(eValida(validaOnboarding({ ...valida, annoNascita: '2011' }, 2027))).toBe(true)
+    expect(validaOnboarding({ ...valida, annoNascita: '2012' }, 2027).annoNascita).toBe(
+      'Un anno fra 1940 e 2011.',
+    )
   })
 
   it('limiti dell’età e fondo vuoto', () => {
