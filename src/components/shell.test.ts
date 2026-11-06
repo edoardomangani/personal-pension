@@ -507,7 +507,8 @@ describe('AppLayout (R3)', () => {
     expect(blocco).not.toBeNull()
     const [, fuori = '', dentro = ''] = blocco ?? []
     expect(fuori).toMatch(/--toast-offset-x:\s*16px;/)
-    expect(fuori).toMatch(/--toast-width:\s*calc\(100% - 32px\);/)
+    expect(fuori).toMatch(/--toast-width:\s*calc\(100%\s*-\s*2\s*\*\s*var\(--toast-offset-x\)\);/)
+    expect(fuori).not.toMatch(/calc\(100%\s*-\s*32px\)/)
     expect(dentro).toMatch(/--toast-offset-bottom:\s*24px;/)
     expect(dentro).toMatch(/--toast-offset-x:\s*24px;/)
     expect(dentro).toMatch(/--toast-width:\s*320px;/)
