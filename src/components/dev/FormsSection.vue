@@ -1,0 +1,185 @@
+<script setup lang="ts">
+import { computed, ref } from 'vue'
+import { leggiImporto } from '@/calc/importi'
+import DensityFrame from '@/components/dev/DensityFrame.vue'
+import { useShowcaseDensity } from '@/components/dev/showcase'
+import ShowcaseBlock from '@/components/dev/ShowcaseBlock.vue'
+import ShowcaseSection from '@/components/dev/ShowcaseSection.vue'
+import Specimen from '@/components/dev/Specimen.vue'
+import { insetPasswordClass } from '@/components/forms/inset'
+import InsetChoiceRow from '@/components/forms/InsetChoiceRow.vue'
+import InsetGroup from '@/components/forms/InsetGroup.vue'
+import InsetInput from '@/components/forms/InsetInput.vue'
+import InsetRow from '@/components/forms/InsetRow.vue'
+import InsetSwitchRow from '@/components/forms/InsetSwitchRow.vue'
+import InsetTextareaRow from '@/components/forms/InsetTextareaRow.vue'
+import PasswordInput from '@/components/PasswordInput.vue'
+
+const density = useShowcaseDensity()
+
+const busta = ref<string | null>('2026-09')
+const altroMovimento = ref(false)
+
+// Campione dell'aiuto che compare correggendo: la riga parte in errore e si corregge scrivendo.
+const importoAiuto = ref('0,00')
+const importoAiutoValido = computed(() => (leggiImporto(importoAiuto.value) ?? 0) > 0)
+
+const busteOptions = [
+  { value: '2026-10', label: 'Ottobre 2026' },
+  { value: '2026-09', label: 'Settembre 2026' },
+  { value: '2026-08', label: 'Agosto 2026' },
+]
+</script>
+
+<template>
+  <ShowcaseSection id="form">
+    <ShowcaseBlock id="form-righe">
+      <p class="text-xs text-subtle-foreground">
+        Etichetta a sinistra, valore a destra, una card di vetro per gruppo; un tocco ovunque sulla
+        riga raggiunge il controllo.
+      </p>
+      <Specimen :code="`FRM-rows-${density}`">
+        <DensityFrame>
+          <InsetGroup title="Movimento" description="Gli importi contano dalla data sul fondo.">
+            <InsetRow :for="`frm-${density}-fund`" label="Fondo">
+              <InsetInput :id="`frm-${density}-fund`" default-value="Amundi Seconda Pensione" />
+            </InsetRow>
+            <InsetRow :for="`frm-${density}-amount`" label="Importo TFR">
+              <InsetInput
+                :id="`frm-${density}-amount`"
+                inputmode="decimal"
+                default-value="175,07"
+              />
+            </InsetRow>
+            <InsetRow :for="`frm-${density}-voluntary`" label="Volontario">
+              <InsetInput
+                :id="`frm-${density}-voluntary`"
+                inputmode="decimal"
+                default-value="50,00"
+              />
+            </InsetRow>
+            <InsetChoiceRow
+              :id="`frm-${density}-payslip`"
+              v-model="busta"
+              label="Busta paga"
+              :options="busteOptions"
+            />
+            <InsetRow :for="`frm-${density}-date`" label="Data sul fondo">
+              <InsetInput :id="`frm-${density}-date`" type="date" default-value="2026-11-03" />
+            </InsetRow>
+            <InsetSwitchRow
+              :id="`frm-${density}-another`"
+              v-model="altroMovimento"
+              label="Registrane un altro"
+            />
+          </InsetGroup>
+        </DensityFrame>
+      </Specimen>
+    </ShowcaseBlock>
+
+    <ShowcaseBlock id="form-errore">
+      <Specimen :code="`FRM-error-${density}`">
+        <DensityFrame>
+          <InsetGroup>
+            <InsetRow
+              :for="`frm-${density}-error-amount`"
+              label="Importo TFR"
+              error="Scrivi un importo maggiore di zero."
+            >
+              <InsetInput
+                :id="`frm-${density}-error-amount`"
+                inputmode="decimal"
+                default-value="0,00"
+                aria-invalid="true"
+              />
+            </InsetRow>
+            <InsetRow :for="`frm-${density}-error-voluntary`" label="Volontario">
+              <InsetInput
+                :id="`frm-${density}-error-voluntary`"
+                inputmode="decimal"
+                default-value="50,00"
+              />
+            </InsetRow>
+          </InsetGroup>
+        </DensityFrame>
+      </Specimen>
+      <Specimen
+        :code="`FRM-error-help-${density}`"
+        note="L'aiuto che compare non schiaccia la card"
+      >
+        <DensityFrame>
+          <InsetGroup
+            :description="
+              importoAiutoValido ? 'Gli importi contano dalla data sul fondo.' : undefined
+            "
+          >
+            <InsetRow
+              :for="`frm-${density}-error-help-amount`"
+              label="Importo TFR"
+              :error="importoAiutoValido ? undefined : 'Scrivi un importo maggiore di zero.'"
+            >
+              <InsetInput
+                :id="`frm-${density}-error-help-amount`"
+                v-model="importoAiuto"
+                inputmode="decimal"
+                :aria-invalid="importoAiutoValido ? undefined : true"
+              />
+            </InsetRow>
+            <InsetRow :for="`frm-${density}-error-help-voluntary`" label="Volontario">
+              <InsetInput
+                :id="`frm-${density}-error-help-voluntary`"
+                inputmode="decimal"
+                default-value="50,00"
+              />
+            </InsetRow>
+          </InsetGroup>
+        </DensityFrame>
+      </Specimen>
+    </ShowcaseBlock>
+
+    <ShowcaseBlock id="form-accesso">
+      <p class="text-xs text-subtle-foreground">
+        Accesso, registrazione e password: righe senza etichetta visibile, con il nome per i lettori
+        di schermo.
+      </p>
+      <Specimen :code="`FRM-credentials-${density}`">
+        <DensityFrame>
+          <InsetGroup>
+            <InsetRow :for="`frm-${density}-email`" label="Indirizzo email" hide-label>
+              <InsetInput
+                :id="`frm-${density}-email`"
+                type="email"
+                align="left"
+                placeholder="email@esempio.it"
+              />
+            </InsetRow>
+            <InsetRow :for="`frm-${density}-password`" label="Password" hide-label>
+              <PasswordInput
+                :id="`frm-${density}-password`"
+                :class="insetPasswordClass"
+                placeholder="Password"
+              />
+            </InsetRow>
+          </InsetGroup>
+        </DensityFrame>
+      </Specimen>
+    </ShowcaseBlock>
+
+    <ShowcaseBlock id="form-note">
+      <Specimen :code="`FRM-notes-${density}`">
+        <DensityFrame>
+          <InsetGroup>
+            <InsetRow :for="`frm-${density}-notes-amount`" label="Volontario">
+              <InsetInput
+                :id="`frm-${density}-notes-amount`"
+                inputmode="decimal"
+                default-value="50,00"
+              />
+            </InsetRow>
+            <InsetTextareaRow :id="`frm-${density}-notes`" label="Nota" />
+          </InsetGroup>
+        </DensityFrame>
+      </Specimen>
+    </ShowcaseBlock>
+  </ShowcaseSection>
+</template>

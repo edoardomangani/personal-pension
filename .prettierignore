@@ -1,0 +1,11 @@
+package-lock.json
+dist/
+coverage/
+prototype/
+ciclo/
+data/
+docs/
+icons/
+.claude/
+db/
+*.md

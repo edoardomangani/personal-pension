@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  controlli:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npx prettier --check .
+      - run: npm run typecheck
+      - run: npm test
+      - run: npx vite build
+
+  deploy:
+    needs: controlli
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.pubblica.outputs.page_url }}
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    env:
+      VITE_NEON_DATABASE_URL: ${{ vars.VITE_NEON_DATABASE_URL }}
+      VITE_NEON_AUTH_URL: ${{ vars.VITE_NEON_AUTH_URL }}
+      VITE_NEON_DATA_API_URL: ${{ vars.VITE_NEON_DATA_API_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Controlla le Variables di Neon
+        run: |
+          for nome in VITE_NEON_DATABASE_URL VITE_NEON_AUTH_URL VITE_NEON_DATA_API_URL; do
+            if [ -z "${!nome}" ]; then
+              echo "::error::Manca la Variable $nome (Settings → Secrets and variables → Actions → Variables)"
+              exit 1
+            fi
+          done
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build:pages
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+      - id: pubblica
+        uses: actions/deploy-pages@v4

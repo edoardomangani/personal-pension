@@ -1,4 +1,4 @@
-# Piano pensione — handoff per Claude Code
+# Next — handoff per Claude Code
 
 App personale di Edoardo per seguire il suo fondo pensione (Amundi Seconda Pensione). Nasce come artefatto su claude.ai (prototipo funzionante in `prototype/index.html`) e va portata a **PWA vera**: pagina statica su **GitHub Pages**, dati su **Neon** (Postgres + Neon Auth + Data API + RLS), senza server da mantenere.
 
@@ -6,16 +6,88 @@ App personale di Edoardo per seguire il suo fondo pensione (Amundi Seconda Pensi
 
 Lingua dell'interfaccia e del codice visibile: italiano, dando del tu. Formati it-IT, euro (`Intl.NumberFormat('it-IT',{style:'currency',currency:'EUR',useGrouping:'always'})`), segno − (U+2212) per spese.
 
+## Decisioni prese (4 nov 2026)
+
+- **Stack**: Vue 3 + Vite + TypeScript, SPA statica su GitHub Pages; dati su Neon (Auth + Data API + RLS).
+- **Base dal prototipo: solo la logica** (modello dati e calcoli). La sezione "Interfaccia attuale" qui sotto descrive il prototipo, non è un riferimento.
+- **Stile: il design system di Wallet per intero** (artefatto "Wallet Design System" su claude.ai, `8a927ced-bc93-4c84-9ffa-725362ec1474`: `project/tokens.json` e i README dei componenti), lime compreso: un solo stile per le due app. Il lime fa le cifre positive (crescita, versato, rendimento: il ruolo «entrata»), la proiezione, il bagliore e i tile di crescita e versamenti; ciò che si preme è bianco, cioè il «+», «Registra» e l'anello del focus (The White Acts Rule di `DESIGN.md`). Spese nel colore del testo (`foreground`), da versare in `subtle-foreground`; campi a righe come il «Nuovo movimento» di Wallet. shadcn-vue + Tailwind come Wallet.
+- **Modello dati rivisto** (supera § Modello dati attuale): buste paga con righe TFR/Datore/Personale, movimenti con righe TFR/Datore/Personale/Volontario/Spesa, estratti conto; le buste versate si collegano al movimento. Multiutente con piani separati. Dettagli nel brief di DAT-01.
+- **Lavoro col ciclo kit** (`ciclo/`, profilo in `ciclo/PROFILO.md`): dati e design si rivedono come voci, con brief e specifiche.
+
+## Convenzioni del progetto
+
+Le leggono chi scrive le specifiche, chi pianifica, chi esegue e chi fa la review. Pacchetto di stack: nessuno (non c'è un default del kit per questo stack).
+
+### Struttura
+
+- Codice in `src/` per responsabilità: `calc/` (funzioni pure), `data/` (Neon e auth), `stores/` (stato, Pinia), `composables/` (logica riusabile di interfaccia), `views/` (una per rotta), `components/` (UI, `dev/` per la vetrina), `types/`, `styles/`.
+- Test accanto al file che provano, `nome.test.ts`. Rotte e guard in `src/router.ts`, Vue Router in modalità hash.
+- Schema del DB in `db/migrations/NNN_nome.sql`; script Node (import, collaudo) in `scripts/`.
+
+### Logica
+
+- Ogni calcolo (versato, crescita, XIRR, TFR da versare, deducibilità, proiezione) è una funzione pura in `src/calc/`, senza Vue né I/O: store, viste e composables non calcolano, chiamano.
+- In memoria gli importi sono **centesimi interi** (`number` intero, tipo `Centesimi`); conversione da/verso euro solo al bordo (`src/data/`, campi dei form, formattazione). Somme e confronti sempre sui centesimi.
+- Date come stringhe ISO `YYYY-MM-DD` (mese di competenza `YYYY-MM`), confrontate come stringhe; niente `Date` per la logica di calendario.
+
+### Input
+
+- Ogni modulo ha un validatore puro `validaX(bozza)` che restituisce gli errori per campo, in italiano; il componente li mostra sotto il campo.
+- Numeri digitati letti in formato it-IT (virgola decimale, punto delle migliaia ignorato) da un solo helper.
+- I vincoli `check` del DB sono l'ultima difesa, non la validazione: un errore di vincolo che arriva all'utente è un bug.
+
+### Autorizzazione
+
+- Ogni tabella ha RLS con policy `user_id = auth.user_id()` e `user_id default auth.user_id()`: il client non invia `user_id` e non filtra per utente come misura di sicurezza.
+- Login con Neon Auth; ogni vista dati sta dietro il guard del router; sessione scaduta → ritorno al login senza perdere la rotta.
+- Nel bundle solo configurazione pubblica (`VITE_*`); stringhe di connessione e chiavi segrete mai nel frontend né nel repo.
+
+### Risposte e livello dati
+
+- Solo `src/data/` parla con Neon: un modulo per tabella (`versamenti.ts`, `tfr.ts`, …) che mappa `snake_case` ↔ `camelCase` ed euro ↔ centesimi.
+- Errori normalizzati in un tipo unico (`rete`, `sessione`, `vincolo`, `altro`) con un messaggio in italiano; i componenti non vedono risposte HTTP.
+- Ogni vista gestisce caricamento, errore (con riprova), vuoto e primo avvio.
+
+### Dati
+
+- Migration SQL numerate in `db/migrations/`, solo in avanti, idempotenti dove si può (`if not exists`); `db/schema.sql` del handoff diventa la `001`.
+- Ogni tabella nuova nasce con RLS, policy e `grant` al ruolo della Data API nella stessa migration.
+- Una migration si prova sul branch Neon `collaudo`; sul branch `main` (dati veri) va a mano dopo il merge, come passo di rilascio.
+
+### Frontend
+
+- Vue 3 `<script setup lang="ts">`, `defineProps<T>()` e `defineEmits<T>()` tipizzati, props mai mutate; logica riusabile in composables; cleanup in `onUnmounted`.
+- Stato con Pinia, setup store, uno per dominio in `src/stores/` (`sessione`, `dati`, `impostazioni`…): caricano da `src/data/` e derivano con `src/calc/`. I componenti leggono dagli store, non da `src/data/`.
+- Al logout e al cambio di account ogni store si svuota (`reset()` esplicito, chiamato dallo store della sessione), con un test che lo verifica: nessun dato di un utente resta in memoria per il successivo.
+- Componenti: shadcn-vue (stile new-york-v4, primitive reka-ui) in `src/components/ui/`, con le varianti del design system; icone `@phosphor-icons/vue`, mai `lucide`. Componenti dell'app in `src/components/`.
+- Stili: Tailwind v4; i token del design system sono le variabili CSS di shadcn in `src/styles/app.css` (`:root` e `@theme inline`), un solo tema scuro. Classi Tailwind nei template, solo con i token (niente valori arbitrari `[#…]`, `[13px]`); niente `style=""`; `<style scoped>` solo per ciò che Tailwind non esprime.
+- Ogni componente del design system sta nella vetrina (`docs/convenzioni-vetrina.md`); chi lo cambia aggiorna la vetrina nello stesso lavoro.
+- Formattazione di importi, date e percentuali da un solo modulo (`src/calc/formato.ts`), it-IT, segno − (U+2212).
+- Accessibilità: etichette sui campi, `aria-label` sui pulsanti con sola icona, aree di tocco ≥ 44px, `prefers-reduced-motion` rispettato.
+
+### Test
+
+- Vitest: ogni funzione di `src/calc/` ha test, con `data/seed.json` come fixture e i totali del handoff come atteso (TFR 2.659,15 €; versato 1.591,91 €; da versare 1.067,24 €; spese 15,00 €; ultimo valore 1.641,45 €).
+- `src/data/` con `fetch` finto: mappature, errori, sessione scaduta. Validatori con casi validi e non validi.
+- Componenti con `@vue/test-utils` solo dove c'è logica (es. spunta dei mesi di TFR e ricalcolo dell'importo). Il browser lo copre il collaudo; niente suite e2e committata.
+
+### Divieti
+
+- `console.log` e `debugger` nel codice consegnato; `any` in TypeScript.
+- Segreti, chiavi o stringhe di connessione nel bundle o nel repo (solo `VITE_*` pubbliche).
+- `v-html` con dati; `fetch` fuori da `src/data/`.
+- Aritmetica sugli importi fuori dagli helper dei centesimi; colori e misure fuori dai token (valori arbitrari di Tailwind compresi); icone fuori da Phosphor.
+
 ## Cosa c'è in questa cartella
 
 | File | Cosa |
 |---|---|
 | `prototype/index.html` | L'app com'è oggi: un solo file, HTML+CSS+JS, Chart.js da cdnjs, icone Phosphor inline in uno sprite SVG. Usa `claude.use("db")` (archivio dell'artefatto): è la parte da sostituire. |
 | `PRODUCT.md` | Chi la usa, a cosa serve, principi (formato Impeccable). |
-| `DESIGN.md` | Sistema visivo attuale: colori, tipo, misure. Deriva dal design system "Wallet" di Edoardo, con colori propri. |
+| `DESIGN.md` | Il design system di Next oggi: tema scuro, colori, tipo, misure, componenti. Deriva dal design system "Wallet" di Edoardo. |
 | `db/schema.sql` | Bozza di schema Postgres con RLS per Neon. Da verificare sulla doc Neon (vedi sotto). |
 | `data/seed.json` | Dati reali al 4 nov 2026, da importare. |
-| `icons/` | Icona app (graphite, collina avorio, sole arancio): svg, 512, 192, 180 (apple-touch). |
+| `icons/` | Icona app col marchio Next (pillola e punto bianchi su fondo quasi nero): svg, 512, 192, 180 (apple-touch). |
 
 ## Modello dati attuale
 
@@ -65,7 +137,7 @@ Chiedile una alla volta o a gruppi piccoli, proponendo un'opzione consigliata; n
 3. **Login.** Un solo utente (Edoardo) ma con login vero: nessun dato leggibile senza token. Niente chiavi segrete nel bundle.
 4. **Livello dati.** Sostituire `claude.use("db")` con chiamate alla Data API (stile PostgREST). Tenere la stessa interfaccia interna (liste in memoria + funzioni di calcolo) per riusare viste e calcoli del prototipo. Gestire stati: caricamento, errore di rete, sessione scaduta, primo avvio vuoto.
 5. **Import** di `data/seed.json`: creare il fondo, poi versamenti, poi TFR (mappando gli id `v-…` ai nuovi uuid), poi estratti conto, poi impostazioni. Controllo finale: totale TFR 2.659,15 €; versato 1.591,91 €; da versare 1.067,24 €; spese 15,00 €; ultimo valore 1.641,45 € al 03/11/2026.
-6. **PWA.** `manifest.webmanifest` (nome "Piano pensione", short_name "Pensione", display standalone, theme/background #0e0e0d, icone di `icons/`), `apple-touch-icon`, meta `apple-mobile-web-app-*`, service worker che mette in cache la shell (dati sempre dalla rete, con messaggio chiaro se offline). Togliere dal prototipo il codice specifico dell'artefatto: `claude.use`, downloads, il controllo `isOwner`.
+6. **PWA.** `manifest.webmanifest` (name "Next", short_name "Next", display standalone, theme/background #060708, icone di `icons/`), `apple-touch-icon`, meta `apple-mobile-web-app-*`, service worker che mette in cache la shell (dati sempre dalla rete, con messaggio chiaro se offline). Togliere dal prototipo il codice specifico dell'artefatto: `claude.use`, downloads, il controllo `isOwner`.
 7. **Export** CSV/JSON come backup (download normale, ora che non c'è la sandbox).
 8. **Verifica** su iPhone (Aggiungi a Home → si apre standalone con l'icona giusta) e desktop.
 

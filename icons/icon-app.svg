@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180">
+  <defs>
+    <radialGradient id="bagliore" gradientUnits="userSpaceOnUse" cx="180" cy="0" r="216">
+      <stop offset="0" stop-color="#d4f53c" stop-opacity="0.15"/>
+      <stop offset="0.6" stop-color="#d4f53c" stop-opacity="0"/>
+    </radialGradient>
+    <clipPath id="quadro">
+      <rect id="fondo" width="180" height="180" rx="40"/>
+    </clipPath>
+  </defs>
+  <g clip-path="url(#quadro)">
+    <rect width="180" height="180" fill="#060708"/>
+    <rect width="180" height="180" fill="url(#bagliore)"/>
+  </g>
+  <svg x="30" y="30" width="120" height="120" viewBox="0 0 256 256" fill="#f3f5f2">
+    <path d="M60 102 L130 102 A26 26 0 0 1 130 154 L60 154 A26 26 0 0 1 60 102 Z"/>
+    <circle cx="196" cy="128" r="26"/>
+  </svg>
+</svg>

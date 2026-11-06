@@ -1,0 +1,335 @@
+@import 'tailwindcss';
+
+@import 'tw-animate-css';
+
+@source '../';
+@source '../../index.html';
+@source not '../../prototype';
+@source not '../../ciclo';
+@source not '../../docs';
+
+@theme inline {
+  --font-sans: 'Bricolage Grotesque', system-ui, sans-serif;
+
+  /* Only the sizes the standard Tailwind scale lacks: the balance and the bottom bar labels. Never text-[Npx]. */
+  --text-balance-md: 56px;
+  --text-balance-md--line-height: 1;
+  --text-balance-md--letter-spacing: -0.04em;
+  --text-balance-md--font-weight: 600;
+  --text-balance-md-decimals: 26px;
+  --text-balance-md-decimals--line-height: 1;
+  --text-balance-md-decimals--letter-spacing: -0.02em;
+  --text-balance-lg: 76px;
+  --text-balance-lg--line-height: 1;
+  --text-balance-lg--letter-spacing: -0.04em;
+  --text-balance-lg--font-weight: 600;
+  --text-balance-lg-decimals: 32px;
+  --text-balance-lg-decimals--line-height: 1;
+  --text-balance-lg-decimals--letter-spacing: -0.02em;
+  /* Bottom bar labels only: a documented exception to the 12px floor. */
+  --text-tab-label: 10px;
+  --text-tab-label--line-height: 1;
+  --text-tab-label--font-weight: 600;
+  /* Initials in the 160px photo preview. */
+  --text-avatar-lg: 40px;
+  --text-avatar-lg--line-height: 1;
+  --text-avatar-lg--font-weight: 600;
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: 18px;
+  --radius-3xl: 22px;
+  /* Tile icona da 36px (`size-9`); quelli da 32px usano `rounded-lg`. */
+  --radius-tile: 12px;
+  /* Card sul telefono (DESIGN.md, rounded.card-mobile). */
+  --radius-card-mobile: 24px;
+
+  /* Interlinee dei ruoli di DESIGN.md § Typography che la scala di Tailwind non ha. */
+  --leading-row: 1.35;
+  --leading-display: 1.15;
+  --leading-figure: 1.1;
+
+  /* Spaziatura delle lettere dei ruoli di DESIGN.md § Typography (letterSpacing). */
+  --tracking-display: -0.02em;
+  --tracking-title: -0.015em;
+  --tracking-figure: -0.03em;
+  --tracking-section: -0.01em;
+
+  --shadow-glass: inset 0 -1px 2px rgba(255, 255, 255, 0.06);
+  --shadow-popover: 0 24px 60px rgba(0, 0, 0, 0.5);
+  --shadow-cutout: 0 0 0 3px var(--background);
+  --shadow-fab: 0 8px 24px rgba(0, 0, 0, 0.45);
+  --shadow-tile-outline: inset 0 0 0 0.75px rgba(255, 255, 255, 0.16);
+
+  --container-content: 1180px;
+
+  --blur-header: 20px;
+  --blur-bar: 20px;
+  --blur-panel: 24px;
+  --blur-popover: 30px;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-subtle-foreground: var(--subtle-foreground);
+
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-warning: var(--warning);
+
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-divider: var(--divider);
+  --color-divider-row: var(--divider-row);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-overlay: var(--overlay);
+  --color-handle: var(--handle);
+
+  --color-brand: var(--brand);
+  --color-brand-foreground: var(--brand-foreground);
+  --color-brand-soft: var(--brand-soft);
+  --color-income: var(--income);
+
+  --color-ambient-strong: var(--ambient-strong);
+  --color-ambient-soft: var(--ambient-soft);
+
+  --color-header: var(--header);
+  --color-bar: var(--bar);
+  --color-table-header: var(--table-header);
+  --color-table-footer: var(--table-footer);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-hover: var(--sidebar-hover);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+/* Single theme: values from DESIGN.md (final Home mockups, mobile and desktop). */
+:root {
+  --background: #060708;
+  --foreground: #f3f5f2;
+  --card: rgba(255, 255, 255, 0.06);
+  --card-foreground: var(--foreground);
+  --popover: rgba(20, 21, 23, 0.92);
+  --popover-foreground: var(--foreground);
+  --primary: #f3f5f2;
+  --primary-foreground: #060708;
+  --secondary: rgba(255, 255, 255, 0.09);
+  --secondary-foreground: var(--foreground);
+  --muted: rgba(255, 255, 255, 0.06);
+  --muted-foreground: #b4b8b5;
+  --subtle-foreground: #9a9f9b;
+  --accent: rgba(255, 255, 255, 0.09);
+  --accent-foreground: var(--foreground);
+  --destructive: #ff7a6b;
+  --destructive-foreground: #060708;
+  --warning: #ffc457;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.12);
+  --divider: rgba(255, 255, 255, 0.07);
+  --divider-row: rgba(255, 255, 255, 0.05);
+  --input: rgba(255, 255, 255, 0.08);
+  --ring: #f3f5f2;
+  --overlay: rgba(0, 0, 0, 0.5);
+  --handle: rgba(255, 255, 255, 0.18);
+  --brand: #d4f53c;
+  --brand-foreground: #0c1203;
+  --brand-soft: rgba(212, 245, 60, 0.16);
+  --income: var(--brand);
+  --ambient-strong: rgba(212, 245, 60, 0.15);
+  --ambient-soft: rgba(212, 245, 60, 0.06);
+  --header: rgba(6, 7, 8, 0.55);
+  --bar: rgba(6, 7, 8, 0.72);
+  --table-header: rgba(14, 15, 17, 0.92);
+  --table-footer: rgba(12, 13, 15, 0.9);
+
+  --chart-1: var(--brand);
+  --chart-2: #f3f5f2;
+  --chart-3: #5c605d;
+  /* No value in the DS yet: shadcn defaults until a chart needs more than three series. */
+  --chart-4: hsl(280 65% 60%);
+  --chart-5: hsl(340 75% 55%);
+
+  --sidebar: rgba(6, 7, 8, 0.4);
+  --sidebar-foreground: var(--subtle-foreground);
+  --sidebar-primary: #f3f5f2;
+  --sidebar-primary-foreground: #060708;
+  --sidebar-accent: rgba(255, 255, 255, 0.08);
+  --sidebar-accent-foreground: var(--foreground);
+  --sidebar-hover: rgba(255, 255, 255, 0.05);
+  --sidebar-border: var(--divider);
+  --sidebar-ring: var(--ring);
+
+  --radius: 10px;
+  --border-hairline: 0.75px;
+
+  --control-compact: 32px;
+  --control-comfort: 40px;
+  --row-compact: 40px;
+  --row-comfort: 52px;
+  --header-height: 52px;
+  --topbar-height: 64px;
+  --header-mobile-height: 68px;
+  --content-pad-bottom: 48px;
+  --sidebar-width: 232px;
+  --sidebar-rail: 60px;
+  --detail-width: 340px;
+  --touch-min: 44px;
+  --glass-fade: 24px;
+  --bottom-bar-height: 84px;
+  /* Safe area della shell sul telefono: testata 12 + 44 + 12, barra con 24px sotto. */
+  --header-mobile-pad-top: calc(12px + env(safe-area-inset-top));
+  --bottom-bar-pad-bottom: max(24px, env(safe-area-inset-bottom));
+  --bottom-bar-clearance: calc(var(--bottom-bar-height) + var(--spacing) * 9);
+  --content-pad-bottom-mobile: calc(var(--bottom-bar-clearance) + env(safe-area-inset-bottom));
+  /* Da lg il dialog parte a 160px dall'alto e lascia 24px in fondo. */
+  --dialog-max-height: calc(100dvh - 160px - 24px);
+  /* vue-sonner usa mobile-offset e larghezza piena solo sotto 600px: fino a lg il toast sta sopra la barra, a 16px ai lati (100% dell'ol fisso esclude la scrollbar). */
+  --toast-offset-bottom: calc(var(--bottom-bar-height) + 20px);
+  --toast-offset-x: 16px;
+  --toast-width: calc(100% - 2 * var(--toast-offset-x));
+
+  @media (width >= 64rem) {
+    --toast-offset-bottom: 24px;
+    --toast-offset-x: 24px;
+    --toast-width: 320px;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  html {
+    color-scheme: dark;
+    scrollbar-color: var(--border-strong) transparent;
+    scrollbar-width: thin;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    /* Fixed attachment keeps the glow still behind scrolling content. */
+    background-image:
+      radial-gradient(560px 460px at 104% -8%, var(--ambient-strong), transparent 70%),
+      radial-gradient(480px 480px at -14% 62%, var(--ambient-soft), transparent 70%);
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    font-variant-numeric: tabular-nums;
+    caret-color: var(--foreground);
+  }
+
+  @media (width >= 64rem) {
+    body {
+      background-image:
+        radial-gradient(900px 620px at 96% -12%, var(--ambient-strong), transparent 70%),
+        radial-gradient(760px 620px at -6% 70%, var(--ambient-soft), transparent 70%);
+    }
+  }
+
+  ::selection {
+    background-color: color-mix(in srgb, var(--foreground) 22%, transparent);
+  }
+}
+
+/* Header and bottom bar: glass that fades into the content instead of a hard edge. */
+@utility glass-header {
+  background: var(--header);
+  backdrop-filter: blur(var(--blur-header)) saturate(140%);
+  mask-image: linear-gradient(to bottom, #000 calc(100% - var(--glass-fade)), transparent);
+}
+
+@utility glass-bar {
+  background: linear-gradient(to top, var(--bar) 55%, var(--header));
+  backdrop-filter: blur(var(--blur-bar)) saturate(140%);
+  mask-image: linear-gradient(to top, #000 calc(100% - var(--glass-fade)), transparent);
+}
+
+@utility shimmer {
+  background-image: linear-gradient(
+    100deg,
+    rgba(255, 255, 255, 0.05) 30%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0.05) 70%
+  );
+  background-size: 300% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+@keyframes shimmer {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: 0 0;
+  }
+}
+
+/* Linea tratteggiata della proiezione: trattini brand da 4px ogni 8px. */
+@utility dashed-brand {
+  background-image: repeating-linear-gradient(90deg, var(--brand) 0 4px, transparent 4px 8px);
+}
+
+/* Bottom sheet surface: the popover glass, open at the bottom edge. */
+@utility sheet-surface {
+  background: var(--popover);
+  border: var(--border-hairline) solid var(--border-strong);
+  border-bottom-width: 0;
+  box-shadow: var(--shadow-popover), var(--shadow-glass);
+  backdrop-filter: blur(var(--blur-popover));
+}
+
+/* 44px touch target around a smaller control, without changing its look; the control must be position: relative. */
+@utility touch-target {
+  @media (pointer: coarse) {
+    &::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: max(100%, var(--touch-min));
+      height: max(100%, var(--touch-min));
+      transform: translate(-50%, -50%);
+    }
+  }
+}
