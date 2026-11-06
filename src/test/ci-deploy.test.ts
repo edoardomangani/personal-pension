@@ -1,9 +1,11 @@
 // @vitest-environment node
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 const leggi = (percorso: string) => readFileSync(join(process.cwd(), percorso), 'utf8')
+// ciclo/ non va nelle PR: fuori dal branch di lavoro questi controlli si saltano.
+const inCiclo = (percorso: string) => existsSync(join(process.cwd(), percorso))
 
 // Il blocco di un job va dalla sua chiave (due spazi) alla chiave di job successiva o alla fine.
 function job(workflow: string, nome: string): string {
@@ -72,24 +74,29 @@ describe('deploy (PWA-01 R22-R23)', () => {
   })
 })
 
-describe('rilascio (PWA-01 R24)', () => {
-  const rilascio = leggi('ciclo/rilascio/PWA-01-pwa-manifest-service-worker-deploy.md')
-  const passi = rilascio.slice(
-    rilascio.indexOf('## Passi a mano'),
-    rilascio.indexOf('## Attenzione'),
-  )
+describe.skipIf(!inCiclo('ciclo/rilascio/PWA-01-pwa-manifest-service-worker-deploy.md'))(
+  'rilascio (PWA-01 R24)',
+  () => {
+    const rilascio = inCiclo('ciclo/rilascio/PWA-01-pwa-manifest-service-worker-deploy.md')
+      ? leggi('ciclo/rilascio/PWA-01-pwa-manifest-service-worker-deploy.md')
+      : ''
+    const passi = rilascio.slice(
+      rilascio.indexOf('## Passi a mano'),
+      rilascio.indexOf('## Attenzione'),
+    )
 
-  it('ha le sezioni «Passi a mano» e «Attenzione»', () => {
-    expect(rilascio).toContain('## Passi a mano')
-    expect(rilascio).toContain('## Attenzione')
-  })
+    it('ha le sezioni «Passi a mano» e «Attenzione»', () => {
+      expect(rilascio).toContain('## Passi a mano')
+      expect(rilascio).toContain('## Attenzione')
+    })
 
-  it('i passi coprono Pages, Variables e dominio di Neon Auth', () => {
-    expect(passi).toContain('«GitHub Actions»')
-    expect(passi).toContain('Variables')
-    for (const nome of ['VITE_NEON_DATABASE_URL', 'VITE_NEON_AUTH_URL', 'VITE_NEON_DATA_API_URL'])
-      expect(passi).toContain(nome)
-    expect(passi).toContain('https://edoardomangani.github.io')
-    expect(passi).toContain('Neon Auth')
-  })
-})
+    it('i passi coprono Pages, Variables e dominio di Neon Auth', () => {
+      expect(passi).toContain('«GitHub Actions»')
+      expect(passi).toContain('Variables')
+      for (const nome of ['VITE_NEON_DATABASE_URL', 'VITE_NEON_AUTH_URL', 'VITE_NEON_DATA_API_URL'])
+        expect(passi).toContain(nome)
+      expect(passi).toContain('https://edoardomangani.github.io')
+      expect(passi).toContain('Neon Auth')
+    })
+  },
+)
