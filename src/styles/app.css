@@ -243,6 +243,8 @@
     background-color: var(--background);
     scrollbar-color: var(--border-strong) transparent;
     scrollbar-width: thin;
+    /* DS-05 R10: niente doppio tocco né pizzico, lo scorrimento resta nei due assi. */
+    touch-action: pan-x pan-y;
   }
 
   body {
