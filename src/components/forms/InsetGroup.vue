@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { insetGroupClass } from '@/components/forms/inset'
-import { FieldDescription, FieldGroup, FieldLegend, FieldSet } from '@/components/ui/field'
+import { FieldDescription, FieldLegend, FieldSet } from '@/components/ui/field'
+import { cn } from '@/lib/utils'
 
 const { title, description } = defineProps<{
   title?: string
@@ -18,10 +19,13 @@ const { title, description } = defineProps<{
       class="mb-2 px-1 text-xs font-semibold text-muted-foreground data-[variant=label]:text-xs"
       >{{ title }}</FieldLegend
     >
-    <!-- shrink-0: con overflow-hidden la card nel fieldset flex poteva schiacciarsi al solo bordo quando compare l'aiuto. -->
-    <FieldGroup :class="`shrink-0 gap-0 ${insetGroupClass}`">
+    <!-- Né container query né scroll container: con l'aiuto comparso la card nel fieldset flex collassava al solo bordo. -->
+    <div
+      data-slot="field-group"
+      :class="cn('group/field-group flex w-full flex-col gap-0', insetGroupClass, 'overflow-clip')"
+    >
       <slot />
-    </FieldGroup>
+    </div>
     <FieldDescription v-if="description" class="px-1 text-xs text-subtle-foreground">{{
       description
     }}</FieldDescription>

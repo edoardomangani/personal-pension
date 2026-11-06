@@ -95,10 +95,15 @@ describe('insetGroupClass (R4, R5)', () => {
     )
   })
 
-  it('InsetGroup la applica con gap-0 al posto del gap della base', () => {
+  it('InsetGroup la applica con gap-0 e overflow-clip al posto di overflow-hidden', () => {
     const gruppo = montaRiga({ label: 'Importo TFR' }).get('[data-slot="field-group"]')
-    expect(gruppo.classes()).toEqual(expect.arrayContaining([...classiGruppo, 'gap-0']))
+    const attese = classiGruppo.filter((c) => c !== 'overflow-hidden')
+    expect(gruppo.classes()).toEqual(
+      expect.arrayContaining([...attese, 'gap-0', 'overflow-clip', 'flex', 'flex-col', 'w-full']),
+    )
+    expect(gruppo.classes()).toContain('group/field-group')
     expect(gruppo.classes()).not.toContain('gap-7')
+    expect(gruppo.classes()).not.toContain('overflow-hidden')
   })
 
   it('la lista aperta di InsetChoiceRow ha la stessa card', async () => {
@@ -121,7 +126,7 @@ describe('insetGroupClass (R4, R5)', () => {
 })
 
 describe('InsetGroup con l’aiuto che compare dopo un errore (R1)', () => {
-  it('la card resta intera e non comprimibile, l’aiuto sta sotto', async () => {
+  it('la card resta intera: né container query né scroll container, l’aiuto sta sotto', async () => {
     const description = ref<string | undefined>(undefined)
     const errore = ref<string | undefined>('Scrivi un anno valido.')
     const valore = ref('')
@@ -155,7 +160,11 @@ describe('InsetGroup con l’aiuto che compare dopo un errore (R1)', () => {
     expect(card.find('[data-slot="field"]').exists()).toBe(true)
     expect(card.find('#anno').exists()).toBe(true)
     expect(wrapper.find('[role="alert"]').exists()).toBe(false)
-    expect(card.classes()).toContain('shrink-0')
+    expect(card.classes().filter((c) => c.startsWith('@container'))).toEqual([])
+    expect(card.classes()).toContain('overflow-clip')
+    expect(card.classes().filter((c) => /^overflow-(x-|y-)?(hidden|auto|scroll)$/.test(c))).toEqual(
+      [],
+    )
 
     await card.get('#anno').setValue('1994')
     expect(valore.value).toBe('1994')
