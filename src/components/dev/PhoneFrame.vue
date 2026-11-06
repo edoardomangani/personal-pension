@@ -15,7 +15,7 @@ const heights = {
 </script>
 
 <template>
-  <!-- Il transform fa della cornice il blocco contenitore: la barra in basso fixed si ancora qui, non alla finestra. -->
+  <!-- Il transform fa della cornice il blocco contenitore: testata e barra in basso fixed si ancorano qui, non alla finestra. -->
   <div
     class="relative w-[390px] max-w-full shrink-0 [transform:translateZ(0)] overflow-hidden rounded-[40px] border-[0.75px] border-border-strong bg-background"
     :class="heights[size]"

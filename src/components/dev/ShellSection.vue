@@ -240,7 +240,7 @@ const vociMobiliCampione = computed(() => conHomeAttiva(vociMobili.value))
         <RottaCampione percorso="/">
           <PhoneFrame>
             <AppMobileHeader />
-            <div class="flex flex-col gap-3 px-4 pt-7 pb-(--bottom-bar-clearance)">
+            <div class="flex flex-col gap-3 px-4 pt-8 pb-(--bottom-bar-clearance)">
               <Skeleton v-for="index in 8" :key="index" class="h-28 rounded-card-mobile" />
             </div>
             <AppBottomBar />
@@ -259,7 +259,7 @@ const vociMobiliCampione = computed(() => conHomeAttiva(vociMobili.value))
           <PhoneFrame>
             <AppMobileHeader />
             <!-- Il padding sta nella shell, non nella vista: nella cornice lo rimette l'involucro. -->
-            <div class="px-4 pt-3 pb-(--bottom-bar-clearance)">
+            <div class="px-4 pt-8 pb-(--bottom-bar-clearance)">
               <VistaProfilo />
             </div>
             <AppBottomBar />

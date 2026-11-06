@@ -924,3 +924,24 @@ describe('DESIGN.md del bagliore e del vetro (DS-05 R12 fase 1)', () => {
     expect(design).toContain('pieno a 160px')
   })
 })
+
+describe('DESIGN.md della testata fissa (DS-05 R12 fase 2)', () => {
+  const RADICE = fileURLToPath(new URL('../../../', import.meta.url))
+  const design = readFileSync(`${RADICE}DESIGN.md`, 'utf8')
+
+  it('la testata del telefono è fissa, non sticky', () => {
+    expect(design).not.toContain('testata sticky')
+    expect(design).not.toContain('Sticky, `glass-header`')
+    expect(design).toContain('testata di vetro fissa in cima')
+    const principale = /^- \*\*Testata principale \(telefono\):\*\*.*$/m.exec(design)?.[0] ?? ''
+    expect(principale).toContain('Fissa in cima alla finestra')
+    expect(design).toContain('Sul telefono sta dentro la testata fissa')
+  })
+
+  it('sul telefono il contenuto ha 32px sopra; la barra in alto desktop resta sticky', () => {
+    expect(design).toContain('con padding 32px sopra e 16px ai lati')
+    expect(design).not.toContain('padding 12px 16px (sopra e ai lati)')
+    expect(design).toContain('32px sotto la testata')
+    expect(design).toContain('**Barra in alto (desktop):** sticky')
+  })
+})

@@ -210,6 +210,7 @@
   --bottom-bar-height: 84px;
   /* Safe area della shell sul telefono: testata 12 + 44 + 12, barra con 24px sotto. */
   --header-mobile-pad-top: calc(12px + env(safe-area-inset-top));
+  --header-mobile-space: calc(var(--header-mobile-height) + env(safe-area-inset-top));
   --bottom-bar-pad-bottom: max(24px, env(safe-area-inset-bottom));
   --bottom-bar-clearance: calc(var(--bottom-bar-height) + var(--spacing) * 9);
   --content-pad-bottom-mobile: calc(var(--bottom-bar-clearance) + env(safe-area-inset-bottom));

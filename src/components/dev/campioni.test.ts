@@ -278,6 +278,57 @@ describe('ShellSection: la shell nuova (R16)', () => {
   })
 })
 
+describe('ShellSection: testata fissa nella cornice (DS-05 R11 testata)', () => {
+  const CAMPIONI = [
+    'SHL-header-mobile',
+    'SHL-header-mobile-offline',
+    'SHL-header-secondaria-mobile',
+    'SHL-header-secondaria-azione-mobile',
+    'SHL-bottombar-mobile',
+    'SHL-phone-mobile',
+  ]
+
+  async function montaShell() {
+    const router = await routerSuVetrina()
+    const Sezione = defineComponent({
+      setup: () => () => h(SidebarProvider, null, () => h(ShellSection)),
+    })
+    return mount(Sezione, { global: { plugins: [router] }, attachTo: document.body })
+  }
+
+  it('i sei campioni della shell ci sono coi loro codici', async () => {
+    const wrapper = await montaShell()
+    for (const codice of CAMPIONI) {
+      expect(wrapper.find(`[data-specimen="${codice}"]`).exists(), codice).toBe(true)
+    }
+  })
+
+  it('le testate dei campioni sono fixed dentro la cornice col transform', async () => {
+    const wrapper = await montaShell()
+    const testate = wrapper.findAllComponents(AppMobileHeader)
+    expect(testate.length).toBeGreaterThan(0)
+    for (const testata of testate) {
+      const header = testata.get('header')
+      expect(header.classes()).toContain('fixed')
+      expect(header.classes()).not.toContain('sticky')
+      // La cornice è l'antenato col transform: il fixed si ancora lì, non alla finestra.
+      const cornice = header.element.closest('.rounded-\\[40px\\]')
+      expect(cornice?.classList.contains('[transform:translateZ(0)]')).toBe(true)
+    }
+  })
+
+  it('nel telefono e nel Profilo lo spazio della testata precede il contenuto', async () => {
+    const wrapper = await montaShell()
+    for (const codice of ['SHL-phone-mobile', 'SHL-profilo-mobile']) {
+      const campione = wrapper.get(`[data-specimen="${codice}"]`)
+      const spazio = campione.get('[data-spazio-testata]').element
+      const contenuto = spazio.nextElementSibling
+      expect(contenuto?.classList.contains('pt-8'), codice).toBe(true)
+      expect(spazio.contains(campione.get('header').element)).toBe(true)
+    }
+  })
+})
+
 describe('PhoneFrame: bagliore del telefono (DS-05 R11)', () => {
   it('la cornice screen monta lo strato del bagliore, dietro e senza tocchi', () => {
     const strato = mount(PhoneFrame, { props: { size: 'screen' } }).get('[data-bagliore]')
