@@ -468,12 +468,13 @@ describe('testata mobile fissa (DS-05 R7)', () => {
   }
   const osservatori: OsservatoreFinto[] = []
 
-  function riporta(header: Element, altezza: number): void {
+  // senzaBordo: voce come nei browser senza borderBoxSize, che ripiegano sulla misura dell'elemento.
+  function riporta(header: Element, altezza: number, senzaBordo = false): void {
     const misura = [{ blockSize: altezza, inlineSize: 390 }]
     const voce: ResizeObserverEntry = {
       target: header,
       contentRect: header.getBoundingClientRect(),
-      borderBoxSize: misura,
+      borderBoxSize: senzaBordo ? [] : misura,
       contentBoxSize: misura,
       devicePixelContentBoxSize: misura,
     }
@@ -522,11 +523,10 @@ describe('testata mobile fissa (DS-05 R7)', () => {
   })
 
   // jsdom misura 0: l'altezza simulata dipende dalla variante già nel DOM, come nel browser.
+  // offsetHeight resta quello di jsdom, così i test provano che non viene letto.
   function simulaAltezza(header: Element, misura: (secondaria: boolean) => number): void {
-    Object.defineProperty(header, 'offsetHeight', {
-      configurable: true,
-      get: () => misura(header.querySelector('[aria-label="Indietro"]') !== null),
-    })
+    header.getBoundingClientRect = () =>
+      new DOMRect(0, 0, 390, misura(header.querySelector('[aria-label="Indietro"]') !== null))
   }
 
   async function montaSu(percorso: string, misura: (secondaria: boolean) => number) {
@@ -550,6 +550,24 @@ describe('testata mobile fissa (DS-05 R7)', () => {
     await router.push('/profilo')
     await nextTick()
     expect(spazio.style.height).toBe('60px')
+  })
+
+  it('al cambio di variante lo spazio prende la misura frazionaria senza arrotondare (C1-C1-C1 T1)', async () => {
+    const { router, spazio } = await montaSu('/profilo', (secondaria) => (secondaria ? 60 : 92.73))
+    await router.push('/')
+    await nextTick()
+    expect(spazio.style.height).toBe('92.73px')
+  })
+
+  it('senza borderBoxSize lo spazio prende la misura frazionaria dell’elemento (C1-C1-C1 T6)', async () => {
+    const wrapper = mount(AppMobileHeader, { global: { plugins: [await routerSu('/')] } })
+    await flushPromises()
+    const header = wrapper.get('header').element
+    simulaAltezza(header, () => 92.73)
+    riporta(header, 0, true)
+    await nextTick()
+    const spazio = wrapper.get('[data-spazio-testata]').element as HTMLElement
+    expect(spazio.style.height).toBe('92.73px')
   })
 
   it('al cambio di variante assente (Home → Valori) lo spazio non cambia (T3)', async () => {

@@ -32,13 +32,14 @@ const testata = useTemplateRef<HTMLElement>('testata')
 const altezza = ref<number | null>(null)
 useResizeObserver(testata, ([voce]) => {
   const bordo = voce?.borderBoxSize?.[0]?.blockSize
-  altezza.value = bordo ?? testata.value?.offsetHeight ?? null
+  altezza.value = bordo ?? testata.value?.getBoundingClientRect().height ?? null
 })
 // Al cambio di variante misura subito: col ResizeObserver lo spazio cambierebbe dopo lo scorrimento del router e lo scroll anchoring sposterebbe la pagina.
+// Misura frazionaria come quella del ResizeObserver: l'altezza intera arrotonda e la pagina scatterebbe di nuovo.
 watch(
   secondaria,
   () => {
-    const misura = testata.value?.offsetHeight ?? 0
+    const misura = testata.value?.getBoundingClientRect().height ?? 0
     if (misura > 0) altezza.value = misura
   },
   { flush: 'post' },
