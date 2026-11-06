@@ -216,6 +216,14 @@ describe('sessione', () => {
     })
   })
 
+  it('sessione con 401 → sessione scaduta', async () => {
+    authFinto({ getSession: () => errore(401) })
+    await expect(rifiuto(sessioneCorrente())).resolves.toEqual({
+      tipo: 'sessione',
+      messaggio: MESSAGGI.sessione,
+    })
+  })
+
   describe('verifier non valido: SESSION_CHALLENGE_COOKIE_NOT_FOUND', () => {
     const CODICE = 'SESSION_CHALLENGE_COOKIE_NOT_FOUND'
 
@@ -271,6 +279,14 @@ describe('sessione', () => {
       await expect(rifiuto(sessioneCorrente())).resolves.toEqual({
         tipo: 'altro',
         messaggio: MESSAGGIO_TROPPI,
+      })
+    })
+
+    it('status 0 con lo stesso codice → rete', async () => {
+      authFinto({ getSession: () => errore(0, CODICE) })
+      await expect(rifiuto(sessioneCorrente())).resolves.toEqual({
+        tipo: 'rete',
+        messaggio: MESSAGGI.rete,
       })
     })
   })
