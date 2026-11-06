@@ -158,6 +158,29 @@ export function urlApp(percorso: string): string {
 /** I parametri con questo prefisso li legge l'SDK di Neon Auth dalla search: lì restano. */
 export const PREFISSO_NEON = 'neon_'
 
+/** Il verifier dello scambio con Neon Auth: segreto monouso, nella search. */
+export const PARAMETRO_VERIFIER = 'neon_auth_session_verifier'
+
+/** ACC-01-C1-C1-C1 R1: l'indirizzo senza il verifier nella search; `null` se non c'è. */
+export function indirizzoSenzaVerifier(
+  pathname: string,
+  search: string,
+  hash: string,
+): string | null {
+  const parametri = new URLSearchParams(search)
+  if (!parametri.has(PARAMETRO_VERIFIER)) return null
+  parametri.delete(PARAMETRO_VERIFIER)
+  const resto = parametri.toString()
+  return `${pathname}${resto === '' ? '' : `?${resto}`}${hash}`
+}
+
+/** ACC-01-C1-C1-C1 R2: toglie il verifier dall'indirizzo, conservando `history.state`. */
+export function togliVerifierDallaSearch(): void {
+  const { pathname, search, hash } = window.location
+  const indirizzo = indirizzoSenzaVerifier(pathname, search, hash)
+  if (indirizzo !== null) window.history.replaceState(window.history.state, '', indirizzo)
+}
+
 /**
  * Better Auth mette i suoi parametri prima del `#`: li sposta nella query del frammento,
  * tranne quelli `neon_`. `null` se non c'è niente da spostare; sui nomi doppi vince il frammento.
@@ -194,6 +217,10 @@ export async function guardAccesso(to: RouteLocationNormalized): Promise<true | 
   await sessione.ripristina()
   const utente = sessione.utente
   const diAccesso = to.meta.accesso === true
+  // ACC-01-C1-C1-C1 R3: senza sessione in modo definitivo il verifier fallito non serve più; con rete o `altro` si riprova.
+  if (utente === null && (sessione.errore === null || sessione.errore.tipo === 'sessione')) {
+    togliVerifierDallaSearch()
+  }
 
   if (utente === null) {
     if (diAccesso) return true

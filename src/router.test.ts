@@ -5,7 +5,7 @@ import { createMemoryHistory, createRouter, type Router } from 'vue-router'
 import App from './App.vue'
 import { ErroreDati } from './data/errori'
 import { elencaFondi } from './data/fondi'
-import { metodiDiAccesso, sessioneCorrente } from './data/sessione'
+import { metodiDiAccesso, sessioneCorrente, type Utente } from './data/sessione'
 import { salvaUltimoUtente } from './data/ultimoUtente'
 import { inSospeso } from './test/promesse'
 import { utenteDiProva } from './test/utenti'
@@ -15,11 +15,13 @@ import VistaSegnaposto from './views/VistaSegnaposto.vue'
 import {
   guardAccesso,
   indirizzoConSearchNelFrammento,
+  indirizzoSenzaVerifier,
   rotte,
   rottaDiRitorno,
   router,
   spostaSearchNelFrammento,
   titoloDocumento,
+  togliVerifierDallaSearch,
   urlApp,
 } from './router'
 import { useSessioneStore } from './stores/sessione'
@@ -346,6 +348,28 @@ describe('search nel frammento (ACC-01-C1 R1-R3, R5; ACC-01-C1-C1 R1-R3, R5)', (
   })
 })
 
+describe('verifier tolto dalla search (ACC-01-C1-C1-C1 R1)', () => {
+  const BASE = '/personal-pension/'
+
+  it.each([
+    ['?neon_auth_session_verifier=V', '#/accedi', '/personal-pension/#/accedi'],
+    ['?neon_popup=1&neon_auth_session_verifier=V', '#/', '/personal-pension/?neon_popup=1#/'],
+    [
+      '?neon_auth_session_verifier=V&neon_popup=1',
+      '#/accedi?error=x',
+      '/personal-pension/?neon_popup=1#/accedi?error=x',
+    ],
+    ['?neon_auth_session_verifier=V&neon_auth_session_verifier=W', '#/', '/personal-pension/#/'],
+    ['', '#/accedi', null],
+    ['?neon_popup=1', '#/', null],
+    ['?Neon_auth_session_verifier=V', '#/', null],
+    ['?neon_auth_session_verifierX=V', '#/', null],
+    ['', '#/accedi?neon_auth_session_verifier=V', null],
+  ])('%j con %j → %s', (search, hash, atteso) => {
+    expect(indirizzoSenzaVerifier(BASE, search, hash)).toBe(atteso)
+  })
+})
+
 describe('vetrina /dev/ui (R8)', () => {
   it('in sviluppo la rotta dev.ui esiste con titolo «Vetrina dei componenti»', () => {
     const vetrina = router.resolve('/dev/ui')
@@ -411,17 +435,24 @@ describe('avvio da indirizzo reale (ACC-01-C1 R1, R3, R4, R8; ACC-01-C1-C1 R2-R5
   })
 
   /**
-   * Porta jsdom all'indirizzo, ricarica il router senza sessione e fa la navigazione iniziale.
-   * `allaRichiesta` gira dentro `sessioneCorrente`, al posto dello scambio dell'SDK.
+   * Porta jsdom all'indirizzo, ricarica il router e fa la navigazione iniziale.
+   * `allaRichiesta` gira dentro `sessioneCorrente`, al posto dello scambio dell'SDK;
+   * `esito` è la risposta del server, senza sessione se manca.
    */
-  async function avviaDa(indirizzo: string, allaRichiesta?: () => void): Promise<Router> {
+  async function avviaDa(
+    indirizzo: string,
+    allaRichiesta?: () => void,
+    esito: () => Promise<Utente | null> = async () => null,
+  ): Promise<Router> {
     window.history.replaceState(null, '', indirizzo)
     vi.resetModules()
     const sessione = await import('./data/sessione')
     vi.mocked(sessione.sessioneCorrente).mockImplementation(async () => {
       allaRichiesta?.()
-      return null
+      return esito()
     })
+    const fondi = await import('./data/fondi')
+    vi.mocked(fondi.elencaFondi).mockResolvedValue([FONDO])
     const { router: avviato } = await import('./router')
     await avviato.push(avviato.options.history.location)
     await avviato.isReady()
@@ -500,6 +531,22 @@ describe('avvio da indirizzo reale (ACC-01-C1 R1, R3, R4, R8; ACC-01-C1-C1 R2-R5
     expect(window.location.hash).toBe('#/accedi?error=x')
   })
 
+  it('togliVerifierDallaSearch toglie il verifier e conserva history.state (ACC-01-C1-C1-C1 R2)', () => {
+    const stato = { chiave: 'k' }
+    window.history.replaceState(stato, '', '/?neon_auth_session_verifier=V#/accedi')
+    togliVerifierDallaSearch()
+    expect(window.location.search).toBe('')
+    expect(window.location.hash).toBe('#/accedi')
+    expect(window.history.state).toEqual(stato)
+  })
+
+  it('togliVerifierDallaSearch senza verifier non chiama replaceState (ACC-01-C1-C1-C1 R2)', () => {
+    window.history.replaceState(null, '', '/#/accedi')
+    const replaceState = vi.spyOn(window.history, 'replaceState')
+    togliVerifierDallaSearch()
+    expect(replaceState).not.toHaveBeenCalled()
+  })
+
   /** Come l'SDK: registra l'indirizzo della richiesta, poi toglie il verifier. */
   function scambioSimulato(): {
     richieste: { search: string; hash: string }[]
@@ -540,4 +587,80 @@ describe('avvio da indirizzo reale (ACC-01-C1 R1, R3, R4, R8; ACC-01-C1-C1 R2-R5
     expect(window.location.search).toBe('')
     expect(window.location.hash).toBe('#/nuova-password')
   }, 20_000)
+
+  describe('verifier fallito (ACC-01-C1-C1-C1 R3, R4)', () => {
+    const CON_VERIFIER = '/?neon_auth_session_verifier=V#/'
+
+    /** Come lo scambio dell'SDK fallito: registra la search e non toglie il verifier. */
+    function richiesteRegistrate(): { ricerche: string[]; registra: () => void } {
+      const ricerche: string[] = []
+      return { ricerche, registra: () => ricerche.push(window.location.search) }
+    }
+
+    // L'ErroreDati del modulo ricaricato: quello importato in cima non passa il suo instanceof.
+    function rifiutaCon(tipo: 'sessione' | 'rete' | 'altro'): () => Promise<never> {
+      return async () => {
+        const { ErroreDati: Errore } = await import('./data/errori')
+        throw new Errore(tipo, 'Errore di prova')
+      }
+    }
+
+    it('senza sessione dal server → /accedi, verifier tolto dopo la richiesta', async () => {
+      const { ricerche, registra } = richiesteRegistrate()
+      const avviato = await avviaDa(CON_VERIFIER, registra)
+      expect(ricerche[0]).toContain('neon_auth_session_verifier=V')
+      expect(avviato.currentRoute.value.path).toBe('/accedi')
+      expect(window.location.search).toBe('')
+      expect(window.location.hash).toBe('#/accedi')
+    }, 20_000)
+
+    it("con error insieme al verifier → /accedi con l'errore, verifier tolto", async () => {
+      const avviato = await avviaDa('/?neon_auth_session_verifier=V&error=access_denied#/accedi')
+      expect(avviato.currentRoute.value.path).toBe('/accedi')
+      expect(avviato.currentRoute.value.query.error).toBe('access_denied')
+      expect(window.location.search).toBe('')
+      expect(window.location.hash).toBe('#/accedi?error=access_denied')
+    }, 20_000)
+
+    it('errore sessione → /accedi, verifier tolto', async () => {
+      const avviato = await avviaDa(CON_VERIFIER, undefined, rifiutaCon('sessione'))
+      expect(avviato.currentRoute.value.path).toBe('/accedi')
+      expect(window.location.search).toBe('')
+    }, 20_000)
+
+    it('errore rete senza ultimo utente → /accedi, verifier lasciato', async () => {
+      const avviato = await avviaDa(CON_VERIFIER, undefined, rifiutaCon('rete'))
+      expect(avviato.currentRoute.value.path).toBe('/accedi')
+      expect(window.location.search).toBe('?neon_auth_session_verifier=V')
+    }, 20_000)
+
+    it('errore altro → verifier lasciato', async () => {
+      await avviaDa(CON_VERIFIER, undefined, rifiutaCon('altro'))
+      expect(window.location.search).toBe('?neon_auth_session_verifier=V')
+    }, 20_000)
+
+    it("sessione confermata → Home, l'app non tocca l'indirizzo", async () => {
+      const avviato = await avviaDa(CON_VERIFIER, undefined, async () => UTENTE)
+      expect(avviato.currentRoute.value.path).toBe('/')
+      expect(window.location.search).toBe('?neon_auth_session_verifier=V')
+    }, 20_000)
+
+    it('dopo la pulizia push(/registrati) non rimette la search', async () => {
+      const avviato = await avviaDa(CON_VERIFIER)
+      await avviato.push('/registrati')
+      expect(window.location.search).toBe('')
+      expect(window.location.hash).toBe('#/registrati')
+    }, 20_000)
+
+    it('dopo la pulizia accedi() e push(/) → Home, search vuota', async () => {
+      const avviato = await avviaDa(CON_VERIFIER)
+      const dati = await import('./data/sessione')
+      vi.mocked(dati.accedi).mockResolvedValue(UTENTE)
+      const { useSessioneStore: storeRicaricato } = await import('./stores/sessione')
+      await storeRicaricato().accedi(UTENTE.email, 'password')
+      await avviato.push('/')
+      expect(avviato.currentRoute.value.path).toBe('/')
+      expect(window.location.search).toBe('')
+    }, 20_000)
+  })
 })
